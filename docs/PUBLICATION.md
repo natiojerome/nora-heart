@@ -19,3 +19,10 @@ Les essais distants et fournisseurs réels sont opt-in et nécessitent leurs pro
 Après cette initialisation, main suit normalement origin/main. Ne pas pousser les
 références archive ni utiliser `git push --all` : elles conservent l’historique privé.
 Les contributions publiques utilisent des commits ordinaires et des pull requests.
+
+Publication réalisée et vérifiée le 20 novembre 2026 : premier commit public
+`8ddfcfc`, 901 fichiers, branche main poussée sur origin/main et dépôt public relu
+via GitHub. Référence privée locale : archive/private-before-publication-20261120.
+Le scan de motifs de secrets sur les 1 413 fichiers suivis avant export ne détecte
+aucune valeur correspondante ; cette vérification ne constitue pas une garantie
+universelle. Les captures et rapports opérateur sont exclus indépendamment du scan.
