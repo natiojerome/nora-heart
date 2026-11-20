@@ -26,3 +26,9 @@ via GitHub. Référence privée locale : archive/private-before-publication-2026
 Le scan de motifs de secrets sur les 1 413 fichiers suivis avant export ne détecte
 aucune valeur correspondante ; cette vérification ne constitue pas une garantie
 universelle. Les captures et rapports opérateur sont exclus indépendamment du scan.
+
+Contrôle de l’export public : `pnpm check` réussit ses 228 tests avec uniquement
+les fichiers de main (sans rapports privés, état ni historique opérateur). Les
+dépendances installées ont été réutilisées ; ce contrôle ne prétend pas être une
+nouvelle installation depuis le registre. Arbre de travail propre et HEAD distant
+comparé au HEAD local après push.
