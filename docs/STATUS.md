@@ -28,6 +28,8 @@ d’échec de revue). SQLite/fichiers jetables, aucune
 écriture métier propriétaire et aucun repli API. Un premier essai du protocole
 réel avait échoué à une assertion ; le rejeu instrumenté est passé. Cette preuve
 ciblée ne qualifie pas tous les modèles ni toutes les causes de panne fournisseur.
+Déployé après sauvegarde chiffrée ; service redémarré et santé vérifiée. Aucun
+message propriétaire réécrit, aucun changement des droits ou du modèle du fil.
 
 ## Correctif — conscience des outils
 
