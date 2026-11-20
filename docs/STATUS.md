@@ -36,6 +36,12 @@ terminal.read pour les commandes courtes, aucun repli API. Un essai antérieur a
 checksum, corrigée par les références courtes. Cela ne garantit pas les décisions
 ou la disponibilité de tous les modèles. Aucun changement des conversations ou permissions du propriétaire.
 
+Déployé après sauvegarde locale chiffrée : web et worker root redémarrés sous
+maintenance, sans commande propriétaire active. Contrôle sous l’identité Unix du
+web : lecture/édition d’un fichier QA inaccessible directement, référence courte,
+commande root et sortie inline réussies. Données QA retirées ; HTTPS 200 et santé
+interne vérifiés. Aucun changement demandé aux réglages des conversations.
+
 ## Reprise après échec du contrôle mémoire
 
 Le nouvel échange de Test reconnaît les outils, puis la demande de description

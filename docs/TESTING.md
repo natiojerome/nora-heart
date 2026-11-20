@@ -457,3 +457,8 @@ Un essai a été interrompu en attente fournisseur ; un autre a identifié une m
 copie du SHA-256 par le modèle. Les références courtes ont ensuite passé le parcours
 complet. La limite de 180 s par appel concerne seulement ce protocole QA, pas le
 runtime produit. Les preuves détaillées restent privées sous docs/qualification.
+
+Après déploiement : contrôle réel sous l’identité personal-harness, fichier QA root
+hors workspace et illisible directement, lecture/édition via socket, référence courte
+et commande root avec sortie inline. Données QA retirées. Web/worker actifs, HTTPS
+200 et healthz interne sain après sauvegarde chiffrée et redémarrage coordonné.
