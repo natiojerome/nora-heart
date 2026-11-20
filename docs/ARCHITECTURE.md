@@ -478,9 +478,15 @@ facultatifs. Aucune tarification ou logique de catalogue n’entre dans le core.
 Le module `tools/files` implémente le contrat `WorkspaceFiles` et ses outils,
 indépendamment du modèle. Le core conserve les contrôles habituels ; app assemble
 les permissions none/read/write persistées par fil (migration 006, lecture par
-défaut). Les fichiers restent sur disque dans le workspace UUID du fil. Flux
+défaut). Le workspace UUID du fil est le périmètre protégé ; YOLO utilise les
+chemins du serveur via HostFiles. Flux
 AsyncIterable<Uint8Array> pour import/téléchargement tous formats ; lecture UTF-8
-et listes paginées, sans plafond global de fichier imposé.
+et listes paginées, sans plafond global de fichier imposé. L’adaptateur outils
+remplace les longues révisions par des références de lecture éphémères, liées au
+chemin et résolues dans le même ensemble d’outils vers le SHA-256 canonique. La
+persistance et l’UI gardent leurs révisions complètes ; le contrôle de conflit est
+inchangé. Une référence expirée impose une relecture, sans résolution implicite
+vers une version plus récente.
 `app/workspace.ts` utilise Engine pour les mutations manuelles, sans LLM : journal
 d’audit séparé, contenu de l’éditeur hors journal, claim partagé avec le fil.
 Le navigateur a un contrôleur `workspace.js`, un panneau de réglages de fil
@@ -510,7 +516,13 @@ Voir [DEVELOPMENT.md](DEVELOPMENT.md) pour les écarts explicites à la cible Co
 
 Le mode YOLO (migration 008) est un choix durable par fil. L’app sélectionne
 HostExecutionClient vers un worker root optionnel sur socket Unix privé ;
-`app/host-terminal.ts` assemble HostExecution et sa petite interface IPC.
+`app/host-terminal.ts` assemble HostExecution et LocalFiles en mode hôte.
+HostFiles implémente WorkspaceFiles sur le même socket : l’app sélectionne cette
+factory pour les outils et l’explorateur YOLO. Import/téléchargement en flux,
+révisions conservées et aucune construction croisée de modules. Le mode protégé
+garde LocalFiles confiné ; le workspace UUID est seulement le départ en YOLO.
+terminal.exec attend brièvement (yieldTimeMs, 500 ms par défaut) et retourne
+statut/sortie sans imposer terminal.read aux commandes courtes.
 L’interface `host-terminal.ts` démarre ce worker sans credentials du web.
 Les commandes host sont des unités systemd transitoires, hors du sandbox et du
 budget de ressources web. L’arrêt utilise leur cgroup ; aucun shell hôte en repli

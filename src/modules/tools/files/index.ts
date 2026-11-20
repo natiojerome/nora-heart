@@ -4,6 +4,7 @@ import {
   lstat,
   readdir,
   realpath,
+  stat as fileStat,
   writeFile,
   rename,
   unlink,
@@ -11,16 +12,18 @@ import {
   rmdir,
   link,
 } from "node:fs/promises";
-import { createHash, randomUUID } from "node:crypto";
+import { createHash, randomUUID, randomBytes } from "node:crypto";
 import path from "node:path";
 import type { Json } from "../../../contracts/json.ts";
 import type { Tool } from "../../../contracts/tools.ts";
 import type {
   WorkspaceFiles,
   WorkspaceEntry,
+  WorkspaceFilesFactory,
 } from "../../../contracts/files.ts";
 
-export class WorkspaceError extends Error {}
+import {WorkspaceError} from "../../../contracts/files.ts";
+export {WorkspaceError} from "../../../contracts/files.ts";
 function argument(args: Json, key: string): string {
   if (
     !args ||
@@ -57,8 +60,14 @@ async function guarded<T>(operation: () => Promise<T>): Promise<T> {
 
 /** A workspace is trusted local storage, not an OS sandbox against other processes. */
 export class LocalFiles implements WorkspaceFiles {
-  constructor(private readonly workspace: string) {}
+  constructor(private readonly workspace: string, private readonly host = false) {}
   private async resolve(input: string, creating = false, rootAllowed = false) {
+    if(this.host){
+      if(typeof input!=='string'||input.includes('\0'))throw new WorkspaceError('Chemin invalide.');
+      const target=path.resolve(this.workspace,input||'.');
+      if(creating){try{return await realpath(target);}catch(error){if((error as NodeJS.ErrnoException).code!=='ENOENT')throw error;return path.join(await realpath(path.dirname(target)),path.basename(target));}}
+      return realpath(target);
+    }
     if (
       typeof input !== "string" ||
       input.includes("\0") ||
@@ -102,7 +111,7 @@ export class LocalFiles implements WorkspaceFiles {
     );
     try {
       const stat = await handle.stat();
-      if (!stat.isFile() || stat.nlink !== 1)
+      if (!stat.isFile() || (!this.host && stat.nlink !== 1))
         throw new WorkspaceError("Fichier non régulier ou lié.");
       return { target, handle, stat };
     } catch (error) {
@@ -194,6 +203,8 @@ export class LocalFiles implements WorkspaceFiles {
           path.dirname(target),
           `.heart-${randomUUID()}.tmp`,
         );
+      let attributes:{mode:number;uid:number;gid:number}|undefined;
+      if(revision!==undefined){const current=await this.file(input);attributes={mode:current.stat.mode&0o7777,uid:current.stat.uid,gid:current.stat.gid};await current.handle.close();}
       try {
         const handle = await open(temporary, "wx", 0o600);
         try {
@@ -207,6 +218,11 @@ export class LocalFiles implements WorkspaceFiles {
               );
               position += result.bytesWritten;
             }
+          }
+          if(attributes){
+            const owner=await handle.stat();
+            if(owner.uid!==attributes.uid||owner.gid!==attributes.gid)await handle.chown(attributes.uid,attributes.gid);
+            await handle.chmod(attributes.mode);
           }
           await handle.sync();
         } finally {
@@ -240,9 +256,8 @@ export class LocalFiles implements WorkspaceFiles {
       const names = (await readdir(target, { withFileTypes: true }))
         .filter(
           (item) =>
-            !item.name.startsWith(".heart-") &&
-            !item.isSymbolicLink() &&
-            (item.isFile() || item.isDirectory()),
+            (!item.name.startsWith(".heart-") || this.host) &&
+            (item.isFile() || item.isDirectory() || (this.host && item.isSymbolicLink())),
         )
         .sort(
           (a, b) =>
@@ -251,15 +266,15 @@ export class LocalFiles implements WorkspaceFiles {
         );
       const entries: WorkspaceEntry[] = [];
       for (const item of names.slice(offset, offset + count)) {
-        const relative = input ? `${input}/${item.name}` : item.name;
+        const relative = input ? path.join(input,item.name) : item.name;
         // Listing includes large/binary files; opening them as text is explicitly refused.
-        const stat = await lstat(path.join(target, item.name));
+        const stat = this.host && item.isSymbolicLink() ? await fileStat(path.join(target,item.name)).catch(()=>lstat(path.join(target,item.name))) : await lstat(path.join(target, item.name));
         entries.push({
           name: item.name,
           path: relative,
-          kind: item.isDirectory() ? "directory" : "file",
+          kind: stat.isDirectory() ? "directory" : "file",
           size: stat.size,
-          revision: item.isDirectory()
+          revision: stat.isDirectory()
             ? digest(`${stat.ino}:${stat.mtimeMs}`)
             : "",
           updatedAt: stat.mtime.toISOString(),
@@ -377,7 +392,7 @@ export class LocalFiles implements WorkspaceFiles {
           "Le fichier a changé. Recharge-le avant de réessayer.",
         );
       if (file.kind !== "file") throw new WorkspaceError("Choisis un fichier.");
-      const source = await this.resolve(input);
+      const source = this.host ? path.join(await realpath(path.dirname(path.resolve(this.workspace,input))),path.basename(input)) : await this.resolve(input);
       await link(source, target); // Exclusive destination: rename() would overwrite it.
       try {
         await unlink(source);
@@ -394,7 +409,8 @@ export class LocalFiles implements WorkspaceFiles {
         throw new WorkspaceError(
           "Le fichier a changé. Recharge-le avant de réessayer.",
         );
-      const target = await this.resolve(input);
+      const target = this.host ? path.join(await realpath(path.dirname(path.resolve(this.workspace,input))),path.basename(input)) : await this.resolve(input);
+      if(this.host&&(await lstat(target)).isSymbolicLink()){await unlink(target);return;}
       if (entry.kind === "directory") await rmdir(target);
       else await unlink(target);
     });
@@ -406,15 +422,18 @@ export class LocalFiles implements WorkspaceFiles {
   }
 }
 
-export function fileTools(): Tool[] {
+export function fileTools(factory: WorkspaceFilesFactory = workspace=>new LocalFiles(workspace), host = false): Tool[] {
+  // Tool receipts are short and run-local; storage/UI keep their canonical revision.
+  const receipts=new Map<string,{path:string;revision:string}>();
+  const prefix=randomBytes(6).toString('base64url');let serial=0;
   const action = (
     name: string,
     description: string,
     fields: string[],
-    execute: (files: LocalFiles, args: Json) => Promise<unknown>,
+    execute: (files: WorkspaceFiles, args: Json) => Promise<unknown>,
   ): Tool => ({
     name,
-    description,
+    description: description + (host ? ' YOLO : chemins absolus acceptés.' : ''),
     permission:
       name === "files.read" || name === "files.list" || name === "files.info"
         ? "files.read"
@@ -422,11 +441,11 @@ export function fileTools(): Tool[] {
     parameters: {
       type: "object",
       properties: Object.fromEntries(
-        fields.map((field) => [
+        fields.map((field):[string,Json] => [
           field,
           ["offset", "length"].includes(field)
             ? { type: "integer", minimum: field === "length" ? 1 : 0 }
-            : { type: "string" },
+            : field === "revision" ? { type:"string", description:"Recopier exactement revision de files.read/info pour ce chemin." } : { type: "string" },
         ]),
       ) as Record<string, Json>,
       required: fields.filter(
@@ -438,17 +457,29 @@ export function fileTools(): Tool[] {
     },
     async execute(args, context) {
       context.signal?.throwIfAborted();
-      return JSON.stringify(
-        (await execute(new LocalFiles(context.workspace), args)) ?? {
-          ok: true,
-        },
-      );
+      let input=args;
+      const filePath=name==='files.list'?'':argument(args,'path');
+      const key=path.resolve(context.workspace,filePath);
+      if(fields.includes('revision')){
+        const revision=argument(args,'revision'),receipt=receipts.get(revision);
+        if(receipt){
+          if(receipt.path!==key)throw new WorkspaceError('Cette revision appartient à un autre chemin. Relis le fichier.');
+          input={...(args as Record<string,Json>),revision:receipt.revision};
+        }else if(!/^[a-f0-9]{64}$/.test(revision))throw new WorkspaceError('Référence de lecture inconnue ou expirée. Relis ce chemin avec files.read/info.');
+      }
+      const result=await execute(factory(context.workspace,context.signal),input);
+      if((name==='files.read'||name==='files.info')&&result&&typeof result==='object'&&'revision' in result&&typeof result.revision==='string'){
+        const receipt=`r-${prefix}-${++serial}`;
+        receipts.set(receipt,{path:key,revision:result.revision});
+        return JSON.stringify({...result,revision:receipt});
+      }
+      return JSON.stringify(result??{ok:true});
     },
   });
   return [
     action(
       "files.list",
-      "Lister un dossier par pages (offset/length, 200 par défaut). nextOffset permet de poursuivre tant que truncated vaut true. path vide pour la racine.",
+      "Lister un dossier paginé (offset/length, 200 par défaut). path vide = départ ; nextOffset/truncated pour poursuivre.",
       ["path", "offset", "length"],
       async (files, args) =>
         files.list(
@@ -459,7 +490,7 @@ export function fileTools(): Tool[] {
     ),
     action(
       "files.read",
-      "Lire un texte UTF-8 par blocs (offset/length en octets, longueur par défaut 65536, configurable). nextOffset permet de poursuivre jusqu’à la fin. Tenir compte du contexte du modèle.",
+      "Lire un texte UTF-8 paginé en octets (offset/length, 65536 par défaut). revision de lecture ; nextOffset/truncated pour poursuivre.",
       ["path", "offset", "length"],
       (files, args) =>
         files.read(
@@ -470,7 +501,7 @@ export function fileTools(): Tool[] {
     ),
     action(
       "files.info",
-      "Obtenir taille, type et revision SHA-256 de tout fichier avant déplacement ou suppression, sans charger son contenu dans le contexte.",
+      "Obtenir taille, type et référence de revision de tout fichier, sans charger son contenu.",
       ["path"],
       (files, args) => files.info(argument(args, "path")),
     ),
@@ -483,7 +514,7 @@ export function fileTools(): Tool[] {
     ),
     action(
       "files.update",
-      "Remplacer le contenu d’un fichier avec la revision obtenue par files.read. Refuse une version périmée.",
+      "Remplacer un texte UTF-8 avec la revision exacte du même fichier.",
       ["path", "content", "revision"],
       (files, args) =>
         files.update(
@@ -492,10 +523,10 @@ export function fileTools(): Tool[] {
           argument(args, "revision"),
         ),
     ),
-    action("files.replace","Appliquer une modification ciblée à un texte UTF-8 avec sa revision courante. Le texte before doit apparaître exactement une fois ; sinon aucune modification. Évite de réécrire un grand fichier.",["path","before","after","revision"],(files,args)=>files.replace(argument(args,"path"),argument(args,"before"),argument(args,"after"),argument(args,"revision"))),
+    action("files.replace","Remplacer before par after une seule fois, avec revision courante. Zéro ou plusieurs occurrences : refus sans modification.",["path","before","after","revision"],(files,args)=>files.replace(argument(args,"path"),argument(args,"before"),argument(args,"after"),argument(args,"revision"))),
     action(
       "files.move",
-      "Renommer ou déplacer un fichier de tout format sans écraser la destination, avec sa revision courante.",
+      "Déplacer ou renommer un fichier vers une destination libre, avec sa revision.",
       ["path", "destination", "revision"],
       (files, args) =>
         files.move(
@@ -506,7 +537,7 @@ export function fileTools(): Tool[] {
     ),
     action(
       "files.delete",
-      "Supprimer un fichier avec sa revision courante. Pour un dossier vide, utiliser la revision fournie par l’explorateur.",
+      "Supprimer un fichier ou dossier vide, avec sa revision courante.",
       ["path", "revision"],
       (files, args) =>
         files.remove(argument(args, "path"), argument(args, "revision")),

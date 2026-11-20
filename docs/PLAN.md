@@ -40,7 +40,7 @@ sans formulaire ; les cas sensibles ou ambigus demandent un accord. Le jugement
 reste celui du modèle et la revue a un coût supplémentaire documenté.
 
 Configuration et Instructions partagent cinq onglets : Apparence,
-Assistant, Discussions, Instructions, Limites. Identité/personnalité/pack et douze blocs
+Assistant, Discussions, Instructions, Limites. Identité/personnalité/pack et treize blocs
 modifiables avec défauts, resets et conflits conservés. Catalogue différé/versionné,
 panneaux persistants et réponses périmées ignorées. Qualification de ce complément : 175 tests, démo
 et trois parcours navigateur ; qualification HTTPS en lecture seule. Voir

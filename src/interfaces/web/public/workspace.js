@@ -127,16 +127,16 @@
       if (folder !== path) get("workspace-search").value = "";
       folder = path;
       const crumbs = get("workspace-breadcrumbs");
-      crumbs.replaceChildren(button("Racine", () => load("")));
-      let parent = "";
+      crumbs.replaceChildren(button(current.fileAccess === "yolo" ? "Serveur" : "Racine", () => load(current.fileAccess === "yolo" ? "/" : "")));
+      let parent = path.startsWith("/") ? "/" : "";
       for (const part of path.split("/").filter(Boolean)) {
-        parent += (parent ? "/" : "") + part;
+        parent += (parent && !parent.endsWith("/") ? "/" : "") + part;
         const target = parent;
         crumbs.append(node("span", "›"), button(part, () => load(target)));
       }
       crumbs.lastElementChild?.setAttribute("aria-current", "location");
-      get("workspace-path").textContent = path || "Racine";
-      get("workspace-up").disabled = !path;
+      get("workspace-path").textContent = path || (current.fileAccess === "yolo" ? "Dossier de départ" : "Racine");
+      get("workspace-up").disabled = !path || path === "/";
       if (!append) get("workspace-list").replaceChildren();
       get("workspace-more")?.remove();
       nextOffset = data.nextOffset;
@@ -392,7 +392,7 @@
   get("workspace-refresh").addEventListener("click", () => void load());
   get("workspace-up").addEventListener(
     "click",
-    () => void load(folder.split("/").slice(0, -1).join("/")),
+    () => void load(folder.startsWith("/") ? (folder.slice(0,folder.lastIndexOf("/")) || "/") : folder.split("/").slice(0, -1).join("/")),
   );
   get("workspace-new-file").addEventListener("click", () => editor(null));
   get("workspace-new-folder").addEventListener("click", () => {
@@ -469,7 +469,6 @@
         maxSteps: networkOnly?(current.maxSteps??0):Number(get("execution-steps").value),
       });
       if (current?.id === id) {
-        current = data.conversation;
         await renderConversation(data);
         message(networkOnly?"Réseau enregistré.":"Budget enregistré.");
       }
@@ -495,7 +494,6 @@
         access: get("workspace-access").value,
       });
       if (current?.id === id) {
-        current = data.conversation;
         await renderConversation(data);
         message("Accès de l’assistant mis à jour.");
       }
@@ -591,13 +589,14 @@
       if(current?.id === "projects-root") { sync(); return; }
       const wasBusy = current?.busy;
       const changed = current?.id !== data.conversation?.id;
-      if (changed) {
-        get("context-dialog").close();
+      const scopeChanged = !changed && (current?.fileAccess === "yolo") !== (data.conversation?.fileAccess === "yolo");
+      if (changed || scopeChanged) {
+        if (changed) get("context-dialog").close();
         generation++;
         folder = "";
         get("workspace-search").value = "";
         documentFile = null;
-        dialogs.forEach((id) => get(id).close());
+        dialogs.filter(id => changed || id !== "workspace-dialog").forEach((id) => get(id).close());
       }
       current = { ...data.conversation, busy: !!data.busy };
       get('workspace-access').querySelector('option[value="yolo"]').disabled=!data.yoloAvailable;
@@ -605,7 +604,7 @@
       get('execution-network').checked=current.fileAccess==='yolo'||!!current.networkAccess;
       get("workspace-conversation-select").value = current.id;
       sync();
-      if (!changed && wasBusy && !current.busy && get("workspace-dialog").open)
+      if (!changed && (scopeChanged || (wasBusy && !current.busy)) && get("workspace-dialog").open)
         void load();
     },
     reset() {

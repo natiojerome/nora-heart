@@ -1,3 +1,4 @@
+import {HostFiles} from '../modules/tools/host-files/index.ts';
 import type {ProjectRepository} from "../contracts/projects.ts";
 import {McpProjectsRepository} from "../modules/storage/mcp-projects/index.ts";
 import {McpMemoryRepository} from "../modules/storage/mcp-memory/index.ts";
@@ -64,17 +65,20 @@ export async function openWebConversations(
         nodeBinary: process.execPath,
       })
     : undefined;
-  const hostExecution =
-    process.env.HARNESS_HOST_SOCKET &&
-    existsSync(process.env.HARNESS_HOST_SOCKET)
-      ? new HostExecutionClient(process.env.HARNESS_HOST_SOCKET)
-      : undefined;
+  const hostSocket = process.env.HARNESS_HOST_SOCKET;
+  const hostExecution = hostSocket && existsSync(hostSocket)
+    ? new HostExecutionClient(hostSocket) : undefined;
+  const hostFiles = (workspace:string,signal?:AbortSignal) => {
+    if(!hostExecution || !hostSocket)throw new Error('Worker YOLO indisponible. Aucun repli implicite.');
+    return new HostFiles(hostSocket,workspace,signal);
+  };
   const projectsWorkspace = new ProjectsWorkspace(projectsDirectory,storage.sessions,execution);
   await projectsWorkspace.prepare();
   let tasks:Tasks;
   const conversations = new Conversations({
     execution,
     hostExecution,
+    hostFiles:hostExecution?hostFiles:undefined,
     chatAssets: new ChatAssets(storage.chatAssets),
     repository: storage.conversations,
     sessions: storage.sessions,
@@ -102,7 +106,7 @@ export async function openWebConversations(
         [
           ...(await externalTools.toolsFor(conversation,memoryConnectionId?[memoryConnectionId]:[])),
           ...(runSkills?skillTools(runSkills,runSkills.entries):[]),
-          ...fileTools(),
+          ...fileTools(conversation.fileAccess==='yolo'?hostFiles:undefined,conversation.fileAccess==='yolo'),
           ...(selected
             ? terminalTools(
                 selected,

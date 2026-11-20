@@ -1,3 +1,4 @@
+import {setTimeout as wait} from 'node:timers/promises';
 import { spawn, type ChildProcessWithoutNullStreams } from "node:child_process";
 import { randomUUID } from "node:crypto";
 import {
@@ -396,24 +397,29 @@ export function terminalTools(
   return [
     tool(
       "terminal.exec",
-      host ? "Mode YOLO autorisé : commande sur le serveur entier en root, réseau disponible, cwd absolu accepté. Aucune confirmation d’outil supplémentaire requise pour la tâche demandée. Ne demande pas les permissions déjà accordées. Vérifie les résultats. Retourne un id ; suivre avec terminal.read. Aucun timeout imposé." : "Lancer une commande shell dans le projet isolé (Git, recherche rg, tests, scripts, installations). Retourne un id ; lire terminal.read jusqu’à la fin. Réseau selon le réglage du propriétaire. Aucun timeout imposé ; timeoutMs facultatif.",
+      host ? "Mode YOLO autorisé : commande sur le serveur entier en root, réseau disponible, cwd absolu accepté. Aucune confirmation d’outil supplémentaire requise pour la tâche demandée. Ne demande pas les permissions déjà accordées. Vérifie les résultats. Retourne id, état et première sortie ; terminal.read seulement si running ou more. yieldTimeMs règle l’attente de retour (500 ms par défaut, 0 immédiat), sans arrêter la commande. Aucun timeout imposé." : "Lancer une commande shell dans le projet isolé (Git, recherche rg, tests, scripts, installations). Retourne id, état et première sortie ; terminal.read seulement si running ou more. yieldTimeMs règle l’attente de retour (500 ms par défaut, 0 immédiat). Réseau selon le réglage du propriétaire. Aucun timeout imposé ; timeoutMs facultatif.",
       {
         command: string,
         cwd: string,
         timeoutMs: { type: "integer", minimum: 1 },
+        yieldTimeMs: integer,
       },
       ["command"],
-      (args, workspace, signal) =>
-        execution.start(
-          workspace,
-          {
-            command: args.command as string,
-            cwd: args.cwd as string | undefined,
-            timeoutMs: args.timeoutMs as number | undefined,
-            network,
-          },
-          signal,
-        ),
+      async (args, workspace, signal) => {
+        const yieldTimeMs=args.yieldTimeMs??500;
+        if(typeof yieldTimeMs!=='number'||!Number.isSafeInteger(yieldTimeMs)||yieldTimeMs<0)throw new ExecutionError('Attente de retour invalide.');
+        const command=await execution.start(workspace,{
+          command:args.command as string,cwd:args.cwd as string|undefined,
+          timeoutMs:args.timeoutMs as number|undefined,network,
+        },signal);
+        const deadline=performance.now()+yieldTimeMs;
+        let output=await execution.read(workspace,command.id);
+        while(output.command.status==='running'&&performance.now()<deadline){
+          await wait(Math.min(25,Math.max(0,deadline-performance.now())),undefined,{signal});
+          output=await execution.read(workspace,command.id);
+        }
+        return {...output.command,output:output.output,offset:output.offset,nextOffset:output.nextOffset,more:output.more};
+      },
     ),
     tool(
       "terminal.read",

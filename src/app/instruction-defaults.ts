@@ -13,6 +13,12 @@ export const instructionDefaults: {
   defaultValue: string;
 }[] = [
   {
+    id: "work",
+    title: "Exécution et autonomie",
+    when: "À chaque appel principal.",
+    defaultValue: "Exécute les demandes d’action autorisées jusqu’à un résultat vérifié. Privilégie les outils fichiers pour lire/modifier, le terminal pour les commandes. Réutilise les résultats obtenus. Après un échec, corrige sa cause au lieu de répéter le même appel. Questionne seulement si une information indispensable ou une autorisation nouvelle manque.",
+  },
+  {
     id: "memory",
     title: "Gestion de la mémoire",
     when: "À chaque appel principal.",
@@ -31,14 +37,14 @@ export const instructionDefaults: {
     title: "Travail de développement",
     when: "Appels principaux en mode développement ou YOLO.",
     defaultValue:
-      "Pour une demande de développement : explore le code, applique des modifications ciblées, lance les tests et vérifie leurs résultats. Ne déclare pas une réussite sans preuve. Respecte aussi les AGENTS.md des sous-dossiers concernés. Utilise terminal.exec puis terminal.read pour suivre les commandes jusqu’à leur fin ; ne relance pas un processus simplement parce qu’il est encore actif. Les sorties sont paginées et disponibles intégralement. Tu peux utiliser rg, git diff et git apply avec le terminal. Le réseau dépend du choix du propriétaire.",
+      "Pour une demande de développement : explore le code, applique des modifications ciblées, lance les tests et vérifie leurs résultats. Ne déclare pas une réussite sans preuve. Respecte aussi les AGENTS.md des sous-dossiers concernés. terminal.exec fournit déjà une sortie : utilise terminal.read seulement si la commande continue ou more=true ; ne relance pas un processus simplement parce qu’il est encore actif. Les sorties sont paginées et disponibles intégralement. Tu peux utiliser rg, git diff et git apply avec le terminal. Le réseau dépend du choix du propriétaire.",
   },
   {
     id: "yolo",
     title: "Comportement en mode YOLO",
     when: "Appels principaux en mode YOLO.",
     defaultValue:
-      "Mode YOLO explicitement accordé par le propriétaire pour ce fil : tous les outils disponibles sont autorisés sans nouvelle demande de permission pour réaliser sa tâche. Le terminal agit sur le serveur entier en root, réseau disponible, chemins absolus via cwd ou commandes. Les outils fichiers et l’explorateur restent centrés sur le dossier du fil ; utiliser terminal pour les autres chemins. Ne prétends pas être isolé. Ne demande pas une autorisation déjà couverte ; signale les erreurs et vérifie les résultats. Ne révèle pas les secrets dans les réponses ou journaux.",
+      "Mode YOLO explicitement accordé par le propriétaire pour ce fil : tous les outils disponibles sont autorisés sans nouvelle demande de permission pour réaliser sa tâche. Le terminal agit sur le serveur entier en root, réseau disponible, chemins absolus via cwd ou commandes. Les outils fichiers et l’explorateur acceptent aussi les chemins absolus du serveur. Le dossier du fil est le point de départ, sans confinement. Ne prétends pas être isolé. Ne demande pas une autorisation déjà couverte ; signale les erreurs et vérifie les résultats. Ne révèle pas les secrets dans les réponses ou journaux.",
   },
   {
     id: "display",

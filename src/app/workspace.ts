@@ -1,3 +1,4 @@
+import type {WorkspaceFilesFactory} from "../contracts/files.ts";
 import { randomUUID } from "node:crypto";
 import { Engine } from "../core/engine.ts";
 import {
@@ -10,7 +11,7 @@ import type { Json } from "../contracts/json.ts";
 
 /** Owner actions use the same permission checks, claim and tool journal as model actions. */
 export class Workspace {
-  constructor(private readonly sessions: SessionStore) {}
+  constructor(private readonly sessions: SessionStore, private readonly factory:WorkspaceFilesFactory = directory=>new LocalFiles(directory)) {}
   async inspect(
     directory: string,
     input: string,
@@ -18,16 +19,16 @@ export class Workspace {
     offset?: number,
     count?: number,
   ) {
-    const files = new LocalFiles(directory);
+    const files = this.factory(directory);
     return read
       ? { document: await files.read(input, offset, count) }
       : await files.list(input, offset, count);
   }
   async download(directory: string, input: string) {
-    return new LocalFiles(directory).download(input);
+    return this.factory(directory).download(input);
   }
   async info(directory: string, input: string) {
-    return { document: await new LocalFiles(directory).info(input) };
+    return { document: await this.factory(directory).info(input) };
   }
   async action(
     id: string,
@@ -59,7 +60,7 @@ export class Workspace {
     const engine = new Engine(
       this.sessions,
       [
-        ...fileTools(),
+        ...fileTools(this.factory),
         ...(source
           ? [
               {
@@ -75,7 +76,7 @@ export class Workspace {
                 execute: async () => {
                   if (typeof body.path !== "string")
                     throw new WorkspaceError("Chemin requis.");
-                  await new LocalFiles(directory).import(
+                  await this.factory(directory).import(
                     body.path,
                     source,
                     typeof body.revision === "string"

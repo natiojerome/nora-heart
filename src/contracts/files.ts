@@ -44,3 +44,6 @@ export interface WorkspaceFiles {
   remove(path: string, revision: string): Promise<void>;
   mkdir(path: string): Promise<void>;
 }
+
+export type WorkspaceFilesFactory = (workspace: string, signal?: AbortSignal) => WorkspaceFiles;
+export class WorkspaceError extends Error {}

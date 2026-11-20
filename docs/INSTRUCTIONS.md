@@ -1,7 +1,7 @@
 # Instructions modifiables du web
 
 L’onglet **Instructions** de **Configuration**
-présente douze blocs avec leur texte effectif, leur statut Par défaut/Personnalisé
+présente treize blocs avec leur texte effectif, leur statut Par défaut/Personnalisé
 et le moment d’injection. Édition dans un overlay commun, aperçu du défaut fourni,
 retour de chargement/sauvegarde et conservation du brouillon en cas d’échec.
 Rétablir charge le défaut dans le brouillon ; Enregistrer applique ce retour.
@@ -26,7 +26,7 @@ le cache. Aucune sauvegarde ni inférence n’est déclenchée par la navigation
 
 ## Source et persistance
 
-`app/instruction-defaults.ts` assemble les douze blocs livrés.
+`app/instruction-defaults.ts` assemble les treize blocs livrés.
 La personnalité reste stockée dans `personalityInstructions`, le nom et le genre
 dans leurs champs existants : pas de seconde source dans les surcharges.
 `Assistant` dérive `presentationInstructions` et `personalityDefault` pour les
@@ -58,6 +58,7 @@ ne change donc pas ses consignes en cours ; elles sont relues au prochain échan
 | --- | --- |
 | Mémoire, consentement, affichage, mathématiques, suivi, formulaires, web | Chaque appel principal ; les outils restent filtrés par les permissions. |
 | Développement | Accès develop ou yolo. |
+| Exécution et autonomie | Chaque appel principal : accomplir et vérifier les actions autorisées, fichiers pour lire/éditer, terminal pour exécuter. |
 | YOLO | Accès yolo. |
 | Revue mémoire | Première tentative de réponse finale, hors démo/modèle sans outils. |
 | Compression | Lorsqu’une compression devient nécessaire. |

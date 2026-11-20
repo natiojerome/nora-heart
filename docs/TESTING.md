@@ -435,3 +435,25 @@ le moteur de démo : outil fichiers, souvenir, redémarrage serveur, mêmes év�
 et fichier. Ce nouveau parcours est validé sur nora-tests en Chromium ; les anciens
 parcours ne sont pas présentés comme tous relancés. Aucun test de ce lot ne constitue
 une qualification d’un fournisseur réel ou une migration des données du propriétaire.
+
+## Autorisations et exécution — 20 novembre 2026
+
+237 tests et démo locale passent. Trois parcours navigateur : explorateur et
+changement de mode, instructions, assemblage SQLite à 8 192 tokens. Les premiers
+ajouts de consignes dépassaient cette petite fenêtre ; descriptions condensées
+sans augmenter sa taille ni retirer d’outils.
+
+Worker root réel sur nora-tests : socket privé, lecture/édition hors fil, mode et
+propriétaire Unix conservés, liens, binaire, révisions, stdin/réseau, annulation et
+arrêt des descendants. `host-files.test.ts` vérifie le transfert interrompu sans
+écriture partielle. `tools.test.ts` couvre aussi les références courtes : périmètre
+du chemin, expiration, fichier réellement modifié, compatibilité SHA-256 canonique.
+
+`tests/live-execution.ts` est opt-in, GPT‑6 Luna medium, assemblage web et données
+jetables : protégé → YOLO → lecture seule ; fichier hors fil modifié et vérifié au
+terminal, API explorateur et refus après révocation. Dernier parcours : 11 appels,
+aucun formulaire ni terminal.read inutile, aucun repli API, aucune écriture métier.
+Un essai a été interrompu en attente fournisseur ; un autre a identifié une mauvaise
+copie du SHA-256 par le modèle. Les références courtes ont ensuite passé le parcours
+complet. La limite de 180 s par appel concerne seulement ce protocole QA, pas le
+runtime produit. Les preuves détaillées restent privées sous docs/qualification.

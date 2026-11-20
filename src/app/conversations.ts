@@ -1,3 +1,4 @@
+import type {WorkspaceFilesFactory} from "../contracts/files.ts";
 import type {SkillRun} from "./skills.ts";
 import {SkillError} from "../contracts/skills.ts";
 import {resolvePolicies} from "./runtime-policies.ts";
@@ -69,6 +70,7 @@ export class Conversations {
     /** Disposable read projections; 64 entries = 32 main/workspace pairs. */
     viewCacheSize?:number;
     execution?: ExecutionService;
+    hostFiles?: WorkspaceFilesFactory;
     hostExecution?: ExecutionService;
     chatAssets?: ChatAssets;
     repository: ConversationRepository;
@@ -94,20 +96,26 @@ export class Conversations {
     await mkdir(directory,{recursive:true,mode:0o700});
     return directory;
   }
+  private async fileWorkspace(id:string){
+    const conversation=await this.require(id);
+    if(conversation.fileAccess!=='yolo')return this.workspaceFiles;
+    if(!this.options.hostFiles)throw new WorkspaceError('Fichiers YOLO indisponibles. Aucun repli vers le workspace.');
+    return new Workspace(this.options.sessions,this.options.hostFiles);
+  }
   async inspectWorkspace(id:string,input:string,read:boolean,offset?:number,count?:number) {
-    return this.workspaceFiles.inspect(await this.workspace(id),input,read,offset,count);
+    return (await this.fileWorkspace(id)).inspect(await this.workspace(id),input,read,offset,count);
   }
   async previewWorkspace(id:string,input:string){
     const {entry,body}=await this.downloadWorkspace(id,input);
     const preview=await imagePreview(body,entry.name);
     return {entry,mediaType:preview.mediaType,body:preview.body(),close:preview.close};
   }
-  async downloadWorkspace(id:string,input:string){return this.workspaceFiles.download(await this.workspace(id),input);}
-  async infoWorkspace(id:string,input:string){return this.workspaceFiles.info(await this.workspace(id),input);}
+  async downloadWorkspace(id:string,input:string){return (await this.fileWorkspace(id)).download(await this.workspace(id),input);}
+  async infoWorkspace(id:string,input:string){return (await this.fileWorkspace(id)).info(await this.workspace(id),input);}
   async mutateWorkspace(id:string,body:Record<string,unknown>,source?:AsyncIterable<Uint8Array>) {
     if(this.busy.has(id))throw new WorkspaceError("Attends la fin de la réponse avant de modifier les fichiers.");
     this.busy.add(id);
-    try {return await this.workspaceFiles.action(id,await this.workspace(id),body,source);}
+    try {return await (await this.fileWorkspace(id)).action(id,await this.workspace(id),body,source);}
     finally {this.busy.delete(id);}
   }
   async fileAccess(id:string,body:Record<string,unknown>) {
@@ -236,7 +244,7 @@ export class Conversations {
       executionAvailable:conversation.fileAccess==='yolo'?!!this.options.hostExecution:!!this.options.execution,yoloAvailable:!!this.options.hostExecution};
   }
   private async instructions(workspace:string,conversation:Conversation,blocks:InstructionOverrides,policies:RuntimePolicies,identity:string){
-    let instructions=identity;
+    let instructions=identity+"\n"+instructionValue(blocks,"work");
     const access=conversation.fileAccess??'read';
     instructions+="\nDate actuelle du serveur (UTC) : "+new Date().toISOString().slice(0,10)+". Utilise cette date pour les calculs d’âge et les dates relatives, sauf précision de l’utilisateur.";
     instructions+="\n"+instructionValue(blocks,"memory")+"\n"+instructionValue(blocks,"memoryPolicy");
@@ -244,7 +252,9 @@ export class Conversations {
     if(["develop","yolo"].includes(conversation.fileAccess??"read"))instructions+="\n"+instructionValue(blocks,"development");
     if(conversation.fileAccess==='yolo')instructions+="\n"+instructionValue(blocks,"yolo");
     if(conversation.fileAccess!=="none"){
-      const files=new LocalFiles(workspace);let exists=false;try{await files.info("AGENTS.md");exists=true;}catch(error){if(!(error instanceof WorkspaceError)||error.message!=="Fichier ou dossier introuvable.")throw error;}
+      const files=conversation.fileAccess==='yolo'?this.options.hostFiles?.(workspace):new LocalFiles(workspace);
+      if(!files)throw new WorkspaceError('Fichiers YOLO indisponibles. Aucun repli vers le workspace.');
+      let exists=false;try{await files.info("AGENTS.md");exists=true;}catch(error){if(!(error instanceof WorkspaceError)||error.message!=="Fichier ou dossier introuvable.")throw error;}
       if(exists){let offset=0,content="";for(;;){const page=await files.read("AGENTS.md",offset);content+=page.content;if(!page.truncated)break;offset=page.nextOffset!;}instructions+="\nConsignes du projet à appliquer dans le périmètre demandé et les permissions accordées (AGENTS.md) :\n"+content;}
     }
     instructions+="\n"+instructionValue(blocks,"display");
@@ -327,7 +337,7 @@ export class Conversations {
       if(!cancelling&&conversation.fileAccess==='yolo'&&!this.options.hostExecution)throw new WorkspaceError('Worker YOLO indisponible. Aucun repli implicite.');
       const execution=conversation.fileAccess==='yolo'?this.options.hostExecution:this.options.execution;
       if(!resume)await configuration?.skills?.explicit(String(body.prompt??''));
-      const engine = await this.options.engineFor?.({...conversation,selection},blocks,policies,configuration?.skills) ?? new Engine(this.options.sessions,[...fileTools(),...(execution?terminalTools(execution,conversation.fileAccess==='yolo'||(conversation.networkAccess??false),conversation.fileAccess==='yolo'):[]),...memoryTools(this.options.memory),...interactionTools()],new BoundedContext(this.options.sessions,this.options.memory,instructionValue(blocks,'compression'),policies));
+      const engine = await this.options.engineFor?.({...conversation,selection},blocks,policies,configuration?.skills) ?? new Engine(this.options.sessions,[...fileTools(conversation.fileAccess==='yolo'?(this.options.hostFiles??(()=>{throw new WorkspaceError('Fichiers YOLO indisponibles. Aucun repli vers le workspace.');})):undefined,conversation.fileAccess==='yolo'),...(execution?terminalTools(execution,conversation.fileAccess==='yolo'||(conversation.networkAccess??false),conversation.fileAccess==='yolo'):[]),...memoryTools(this.options.memory),...interactionTools()],new BoundedContext(this.options.sessions,this.options.memory,instructionValue(blocks,'compression'),policies));
       if(!resume)await this.options.chatAssets?.claim(id,references.map(file=>file.id));
       runSignal.throwIfAborted();
       await engine.run({ sessionId: id, runId:executionId, resume, prompt: typeof body.prompt==='string'?body.prompt.trim() || "Analyse les pièces jointes.":"", attachments:references, provider: model, modelIdentity:{provider,modelId},

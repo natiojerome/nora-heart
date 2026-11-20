@@ -1,8 +1,40 @@
 # État et reprise
 
-Point du 20 novembre 2026. Socle opérationnel ; la parité complète avec Codex CLI
-et la qualification de tous les fournisseurs restent partielles. Lire PLAN.md,
+Point du 20 novembre 2026. Socle livré avec correctifs d’exécution ci-dessous ;
+la parité complète avec Codex CLI et la qualification de tous les fournisseurs
+restent partielles. Lire PLAN.md,
 ARCHITECTURE.md et DECISIONS.md avant une reprise.
+
+## Autorisations et exécution
+
+Le terminal YOLO était root sur le serveur, alors que les fichiers et l’explorateur
+restaient confinés au fil. Ils passent désormais par le même worker Unix privé,
+sélectionné uniquement en YOLO. Chemins absolus et liens utilisables, révisions
+conservées, propriétaire/groupe/mode Unix préservés à l’édition. Aucun repli local
+si le worker est indisponible. Sortir de YOLO retire l’accès hôte, arrête ses
+commandes et réinitialise les vues de fichiers sans fermer les réglages.
+
+terminal.exec renvoie statut et première sortie après une courte attente réglable
+(500 ms par défaut, 0 immédiat). Les commandes longues continuent ; terminal.read
+sert aux commandes actives/pages restantes. Aucun timeout de commande ajouté.
+Le bloc « Exécution et autonomie », visible/modifiable dans Instructions, demande
+d’accomplir et vérifier le travail autorisé. Le template proactif évite d’inciter
+le modèle à seulement proposer. Les personnalisations existantes sont conservées.
+
+237 tests, démo locale et trois parcours navigateur passent, dont le contexte
+8 192 tokens, les instructions et l’explorateur mobile. Worker root réel vérifié
+sur nora-tests : fichiers hors fil, binaire, liens, révisions, commandes, stdin,
+réseau, arrêt des descendants et annulation. Le transport teste aussi un import
+annulé sans publier le contenu partiel. Les vrais essais ont révélé un checksum
+recopié avec un suffixe doublé par le modèle : les outils exposent désormais des
+références courtes, liées au chemin et au tour, tout en conservant le SHA-256 et
+le contrôle de conflit dans WorkspaceFiles. Expiration et chemins croisés testés. GPT‑6 Luna medium réel : 11 appels dans l’assemblage web, édition protégée puis
+édition absolue YOLO, vérification terminale, édition propriétaire via explorateur
+et révocation fichiers/terminal réussies. Aucun formulaire de permission, aucun
+terminal.read pour les commandes courtes, aucun repli API. Un essai antérieur a
+été interrompu en attente fournisseur ; un autre a révélé la mauvaise copie du
+checksum, corrigée par les références courtes. Cela ne garantit pas les décisions
+ou la disponibilité de tous les modèles. Aucun changement des conversations ou permissions du propriétaire.
 
 ## Reprise après échec du contrôle mémoire
 

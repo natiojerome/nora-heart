@@ -25,8 +25,8 @@ Le projet est l’espace du fil : importer une archive puis l’extraire avec Py
 ou cloner un dépôt dans cet espace avec Git et le réseau explicitement autorisé.
 Le répertoire courant du terminal est relatif à cet espace. En mode Développement, le rattachement
 à un dossier arbitraire déjà présent sur l’hôte n’est pas livré. En YOLO, le terminal
-accepte un cwd absolu et peut accéder aux dossiers hôte ; l’explorateur reste celui
-du fil. Aucun dépôt ni runtime Nora n’est modifié par l’activation du mode.
+accepte un cwd absolu ; outils fichiers et explorateur ont aussi accès aux dossiers
+hôte en root. Le dossier du fil reste seulement le point de départ. Aucun dépôt ni runtime Nora n’est modifié par l’activation du mode.
 
 ## Livré et écarts
 
@@ -34,7 +34,7 @@ du fil. Aucun dépôt ni runtime Nora n’est modifié par l’activation du mod
 | --- | --- |
 | Explorer un projet, lire des fichiers | Outils fichiers ; pagination configurable, tous formats pour les opérations génériques. |
 | Recherche dans le code | `rg` via terminal, dans le projet. |
-| Modifications ciblées | `files.replace` avec texte unique et révision ; Git apply disponible pour les diffs unifiés via terminal. |
+| Modifications ciblées | `files.replace` avec texte unique et révision ; Git apply disponible pour les diffs unifiés via fichiers ou terminal. |
 | Scripts, tests et outils de build | Commandes shell réelles avec Node.js, Python et outils installés. |
 | Git | Commandes Git natives : init, status, diff, branches, commits… Les opérations distantes dépendent du réseau et des accès explicitement configurés. |
 | Commandes longues | Exécution asynchrone, identifiant, sortie intégrale sur disque, lecture par pages, statut et code de sortie. |
@@ -45,10 +45,14 @@ du fil. Aucun dépôt ni runtime Nora n’est modifié par l’activation du mod
 | Terminal PTY complet, applications TUI | Non livré : console par pipes, sans émulation de terminal ou redimensionnement PTY. |
 | MCP, skills | MCP de lecture Streamable HTTP livré avec recherche auto-hébergée ; gestion automatique des skills non livrée. Aucun framework de plugins maison. |
 | Web search, délégation, plans structurés/revue dédiée | Non livrés comme capacités natives. Un plan textuel ou une revue demandée au modèle n’est pas un mode spécialisé. |
-| Projet partagé entre plusieurs fils, worktrees gérés | Pas de gestion dédiée. Le dossier du fil reste distinct ; YOLO peut travailler dans un répertoire hôte explicite via terminal. |
+| Projet partagé entre plusieurs fils, worktrees gérés | Pas de gestion dédiée. Le dossier du fil reste distinct ; YOLO peut travailler dans un répertoire hôte explicite via fichiers ou terminal. |
 
 Le terminal permet d’utiliser des bibliothèques pour traiter des formats que
-l’éditeur UTF-8 ne sait pas interpréter. Une capacité à exécuter Python ne prouve
+l’éditeur UTF-8 ne sait pas interpréter. Les commandes courtes rendent leur sortie directement ; `terminal.read` sert aux
+commandes encore actives ou aux pages restantes (`more`). Le terminal manuel
+reste asynchrone sans attente supplémentaire.
+
+Une capacité à exécuter Python ne prouve
 pas que toutes les bibliothèques ou tous les outils de génération sont installés.
 Le modèle reste responsable de vérifier le résultat et de signaler les échecs.
 
@@ -63,7 +67,7 @@ L’application construit une instance partagée puis fournit les outils au core
 
 | Outil | Effet |
 | --- | --- |
-| `terminal.exec` | Lance command, cwd relatif facultatif, timeoutMs facultatif ; retourne un id. |
+| `terminal.exec` | Lance command, cwd relatif facultatif, timeoutMs facultatif ; retourne id, statut et première sortie. yieldTimeMs règle l’attente (500 ms par défaut, 0 immédiat), sans délai maximal de commande. |
 | `terminal.read` | État, code de sortie et sortie stdout/stderr fusionnée ; offset/length configurables. |
 | `terminal.write` | Texte sur stdin, close facultatif pour EOF. |
 | `terminal.stop` | Arrêt avec escalade SIGKILL si nécessaire. |

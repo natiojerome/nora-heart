@@ -34,3 +34,36 @@ test("memory tools use an injected service without accessing a database or model
   await assert.rejects(search.execute({}, context), /invalide/);
   assert.deepEqual(calls, ["remember:Preference", "search:Preference"]);
 });
+
+test('explicit host scope accepts absolute paths and parent paths while protected files stay confined',async()=>{
+ const {LocalFiles}=await import('../src/modules/tools/files/index.ts');
+ const {mkdir,writeFile,stat,chmod,symlink}=await import('node:fs/promises');
+ const root=await mkdtemp(path.join(os.tmpdir(),'heart-host-files-')),workspace=path.join(root,'thread'),outside=path.join(root,'outside.txt');
+ await mkdir(workspace);await writeFile(outside,'original');await chmod(outside,0o755);await symlink(outside,path.join(workspace,'link.txt'));
+ try{
+  const protectedFiles=new LocalFiles(workspace),host=new LocalFiles(workspace,true);
+  await assert.rejects(protectedFiles.read(outside),/relatif/);await assert.rejects(protectedFiles.read('../outside.txt'),/hors/);await assert.rejects(protectedFiles.read('link.txt'),/symboliques/);
+  const read=await host.read(outside);assert.equal(read.content,'original');assert.equal((await host.read('../outside.txt')).content,'original');assert.equal((await host.read('link.txt')).content,'original');
+  await host.update(outside,'changed',read.revision);assert.equal((await stat(outside)).mode&0o777,0o755);
+  await assert.rejects(host.update(outside,'stale',read.revision),/changé/);
+  await host.update('link.txt','through-link',(await host.info('link.txt')).revision);assert.equal((await host.read(outside)).content,'through-link');
+  await host.remove('link.txt',(await host.info('link.txt')).revision);assert.equal((await host.read(outside)).content,'through-link');
+  const made=path.join(root,'created.txt');await host.create(made,'new');await host.move(made,path.join(root,'moved.txt'),(await host.info(made)).revision);await host.remove(path.join(root,'moved.txt'),(await host.info(path.join(root,'moved.txt'))).revision);
+ }finally{await rm(root,{recursive:true,force:true});}
+});
+
+test('file tool revision receipts remain short, path-bound, stale-safe and local to one tool set',async()=>{
+ const {LocalFiles}=await import('../src/modules/tools/files/index.ts');
+ const root=await mkdtemp(path.join(os.tmpdir(),'heart-file-receipts-')),files=new LocalFiles(root),tools=new Map(fileTools().map(tool=>[tool.name,tool])),context={workspace:root};
+ const run=(name:string,args:any)=>tools.get(name)!.execute(args,context);
+ try{
+  await files.create('a.txt','first');await files.create('b.txt','other');
+  const doc=JSON.parse(await run('files.read',{path:'a.txt'}));assert(doc.revision.length<30);assert.notEqual(doc.revision,(await files.info('a.txt')).revision);
+  await assert.rejects(run('files.update',{path:'b.txt',content:'bad',revision:doc.revision}),/autre chemin/);assert.equal((await files.read('b.txt')).content,'other');
+  await run('files.update',{path:'a.txt',content:'changed',revision:doc.revision});assert.equal((await files.read('a.txt')).content,'changed');
+  await assert.rejects(run('files.update',{path:'a.txt',content:'stale',revision:doc.revision}),/changé/);
+  const fresh=fileTools().find(tool=>tool.name==='files.update')!;await assert.rejects(fresh.execute({path:'a.txt',content:'expired',revision:doc.revision},context),/expirée/);
+  // Owner UI and older integrations still use the canonical revision contract.
+  await fresh.execute({path:'a.txt',content:'owner-edit',revision:(await files.info('a.txt')).revision},context);assert.equal((await files.read('a.txt')).content,'owner-edit');
+ }finally{await rm(root,{recursive:true,force:true});}
+});

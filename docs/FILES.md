@@ -46,8 +46,10 @@ Aucune liaison automatique d’un projet SQL à un dossier n’est ajoutée par 
 - Régler l’accès de l’assistant pour chaque conversation : aucun, lecture seule,
   lecture/écriture, développement isolé avec terminal, ou YOLO root sur tout le serveur si disponible. Lecture seule reste le défaut.
 
-Dans une conversation, le contenu reste dans l’espace UUID du fil ; aucun accès implicite au dépôt,
-aux fichiers de l’hôte, à un autre fil ou à `/projects/nora`. Le réglage concerne
+En mode protégé, le contenu reste dans l’espace UUID du fil. En YOLO, cet espace
+est le dossier de départ : les outils et l’explorateur accèdent au serveur entier
+en root, avec chemins absolus et navigation « Serveur ». Sortir de YOLO rétablit
+le confinement et ferme les vues de fichiers de l’ancien périmètre. Le réglage concerne
 les outils du modèle. Le propriétaire conserve ses actions manuelles, même si
 l’assistant n’a aucun accès. Une révocation ne supprime pas les informations déjà
 présentes dans les anciens messages/résumés à la suite d’une lecture autorisée.
@@ -84,7 +86,11 @@ le texte complet dans un JSON du serveur ou dans le contexte du modèle.
 
 `contracts/files.ts` décrit les entrées, les documents, `WorkspaceFiles` et
 `FileAccess`, sans type Node ni SQL. `LocalFiles` et les adaptateurs `Tool` vivent
-ensemble dans `modules/tools/files/index.ts`. Le contrat transporte les flux via AsyncIterable<Uint8Array>, sans type Node.
+ensemble dans `modules/tools/files/index.ts`. `WorkspaceFilesFactory` permet à
+l’app de sélectionner `modules/tools/host-files` en YOLO : client du même worker
+Unix root que le terminal, opérations explicites et transferts en flux, sans
+repli local si le worker est absent. Le core ignore cette sélection.
+Le contrat transporte les flux via AsyncIterable<Uint8Array>, sans type Node.
 Un autre backend de fichiers peut
 remplacer l’implémentation sans modifier le core. Le contenu des fichiers n’est
 pas stocké dans la mémoire structurée ou dans la table des pièces jointes.
@@ -109,14 +115,22 @@ du propriétaire utilisent directement le contrat `WorkspaceFiles`.
 | Outil | Permission | Résultat / condition |
 | --- | --- | --- |
 | `files.list` | files.read | Pages configurables, chemins/types/tailles/dates et révisions des dossiers ; nextOffset/truncated pour la suite. |
-| `files.read` | files.read | Bloc UTF-8, révision SHA-256 du fichier entier, offset/nextOffset/truncated. |
-| `files.info` | files.read | Métadonnées et révision de tout fichier, sans son contenu dans le contexte. |
+| `files.read` | files.read | Bloc UTF-8, référence de révision courte, offset/nextOffset/truncated. |
+| `files.info` | files.read | Métadonnées et référence de révision, sans contenu dans le contexte. |
 | `files.create` | files.write | Création exclusive, parent existant. |
 | `files.update` | files.write | Nouveau contenu avec la revision obtenue par lecture. |
 | `files.replace` | files.write | Remplacement ciblé d’un texte unique, révision courante, traitement en flux. |
 | `files.move` | files.write | Destination libre et revision courante du fichier. |
 | `files.delete` | files.write | Revision courante ; suppression non récursive. |
 | `files.mkdir` | files.write | Création d’un dossier, parent existant. |
+
+Les outils read/info donnent une référence de lecture courte, liée au chemin et
+à cette instance des outils. L’adaptateur la résout vers le SHA-256 complet avant
+la mutation : le modèle n’a plus à recopier 64 caractères. Une référence expirée
+ou d’un autre chemin impose une nouvelle lecture ; un fichier réellement modifié
+reste refusé. Aucune référence éphémère dans la persistance. L’interface propriétaire
+et le contrat WorkspaceFiles gardent la révision canonique, acceptée telle quelle
+pour compatibilité. Les références des anciens tours ne sont pas réutilisables.
 
 Les sorties de `list` et `read` sont des JSON neutres, pas des formats SDK.
 Les anciens résultats de journal ne sont pas réécrits. Les noms d’outils et
@@ -128,8 +142,12 @@ Une modification, suppression ou un déplacement exige la révision courante.
 En cas de conflit, aucun écrasement ; l’éditeur garde le brouillon. Les mises à
 jour remplacent atomiquement le fichier via un temporaire privé dans le même
 dossier. La création et la destination d’un déplacement sont exclusives.
-Les traversées `..`, chemins absolus, liens symboliques, fichiers spéciaux,
-liens physiques multiples et chemins temporaires réservés sont refusés.
+En mode protégé, les traversées `..`, chemins absolus, liens symboliques, liens
+physiques multiples et chemins temporaires réservés sont refusés. En YOLO, les
+chemins hôte et liens sont acceptés ; lecture/édition suivent la cible, suppression
+et déplacement concernent le lien lui-même. Les fichiers spéciaux restent hors
+de l’éditeur (terminal disponible). Les mises à jour conservent propriétaire,
+groupe et mode Unix ; les ACL/attributs étendus ne sont pas copiés par l’édition atomique.
 Le déplacement concerne tous les fichiers ; les dossiers non vides ne
 sont pas supprimés, les dossiers ne sont pas déplacés/renommés dans cette version.
 Les fichiers binaires conservent leurs opérations génériques ; seul le texte
@@ -179,8 +197,8 @@ aucune nouvelle qualification DeepSeek du CRUD d’écriture n’est revendiqué
 
 [Captures](design/workspace/README.md).
 
-En YOLO, les outils fichiers/explorateur restent centrés sur le fil ; le terminal
-root donne accès aux autres chemins du serveur. Changer de mode arrête les
+En YOLO, les fichiers, l’explorateur et le terminal utilisent le serveur entier
+en root ; le dossier du fil reste le point de départ. Changer de mode arrête les
 commandes actives précédentes. Voir [DEVELOPMENT.md](DEVELOPMENT.md).
 
 L’explorateur distingue son en-tête, la barre recherche/import, le chemin, les

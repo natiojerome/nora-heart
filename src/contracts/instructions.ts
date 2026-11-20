@@ -1,5 +1,6 @@
 /** Stable keys, independent of translated titles or the displayed assistant name. */
 export type InstructionId =
+  | "work"
   | "tasks"
   | "memory"
   | "memoryPolicy"

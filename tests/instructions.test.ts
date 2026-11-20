@@ -14,7 +14,7 @@ import { instructionValue } from "../src/app/instruction-defaults.ts";
 test("instruction edits merge independent blocks, reject same-block conflicts, preserve old clients and reset to shipped defaults", async () => {
   const a = assistantFixture();
   const defaults = await a.instructionCatalog();
-  assert.equal(defaults.blocks.length, 12);
+  assert.equal(defaults.blocks.length, 13);
   const first = await a.saveInstruction({
     id: "web",
     value: "Cite les pages consultées.",

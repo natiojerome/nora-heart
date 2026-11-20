@@ -1,5 +1,5 @@
 import {Engine} from '../src/core/engine.ts';
-import {fileTools} from '../src/modules/tools/files/index.ts';
+import {fileTools,LocalFiles} from '../src/modules/tools/files/index.ts';
 import {memoryTools} from '../src/modules/tools/memory/index.ts';
 import {interactionTools} from '../src/modules/tools/interactions/index.ts';
 import {BoundedContext} from '../src/modules/context/bounded/index.ts';
@@ -27,7 +27,7 @@ export async function conversationFixture(directory: string, model?: (selection:
   };
   const storage = await openJsonStorage(path.join(directory, "storage"));
   const chatAssets=chatAssetsFixture();
-  const options = { defaults, capabilities, execution, hostExecution, chatAssets:chatAssets.assets, repository, sessions: storage.sessions, memory: new BasicMemory(storage.memories),
+  const options = { defaults, capabilities, execution, hostExecution, hostFiles:hostExecution?((workspace:string)=>new LocalFiles(workspace,true)):undefined, chatAssets:chatAssets.assets, repository, sessions: storage.sessions, memory: new BasicMemory(storage.memories),
     workspaceDirectory: path.join(directory, "workspaces"), displayName: "Nora", assistantInstructions,
     model: model ?? (() => new DemoProvider()), catalog: catalog??(async () => ({ models: [{ id: "fake-chatgpt", contextWindow: 8192, reasoningEfforts:["low","high"] }] })) };
   if(extraTools)Object.assign(options,{engineFor:async(conversation:Conversation)=>new Engine(storage.sessions,[...fileTools(),...memoryTools(options.memory),...interactionTools(),...await extraTools(conversation)],new BoundedContext(storage.sessions,options.memory))});

@@ -1,3 +1,6 @@
+import {Readable} from 'node:stream';
+import {pipeline} from 'node:stream/promises';
+import {LocalFiles,WorkspaceError} from '../modules/tools/files/index.ts';
 import {createServer} from 'node:http';
 import {chmod,mkdir,realpath,unlink,lstat} from 'node:fs/promises';
 import path from 'node:path';
@@ -15,11 +18,37 @@ export async function openHostTerminal(options:{socket:string;directory:string;w
     res.setHeader('content-type','application/json');
     try {
       if(req.method!=='POST')throw new Error('POST requis.');
-      const chunks:Buffer[]=[];for await(const chunk of req)chunks.push(chunk);
-      const {workspace,args}=JSON.parse(Buffer.concat(chunks).toString('utf8'));
+      let metadata;
+      if(req.url==='/files/import')metadata=JSON.parse(Buffer.from(String(req.headers['x-heart-files-request']),'base64url').toString());
+      else{const chunks:Buffer[]=[];for await(const chunk of req)chunks.push(chunk);metadata=JSON.parse(Buffer.concat(chunks).toString('utf8'));}
+      const {workspace,args}=metadata;
       if(typeof workspace!=='string'||!Array.isArray(args))throw new Error('Requête invalide.');
       const scope=await realpath(workspace);
       if(path.dirname(scope)!==root||!/^[0-9a-f-]{36}$/.test(path.basename(scope)))throw new Error('Espace du fil invalide.');
+      if(req.url?.startsWith('/files')){
+        const files=new LocalFiles(scope,true);
+        if(req.url==='/files/import'){await files.import(args[0],req,args[1]??undefined);res.end(JSON.stringify({ok:true}));return;}
+        if(req.url==='/files/download'){
+          const file=await files.download(args[0]);res.setHeader('content-type','application/octet-stream');res.setHeader('x-heart-file-entry',Buffer.from(JSON.stringify(file.entry)).toString('base64url'));
+          try{await pipeline(Readable.from(file.body),res);}catch{res.destroy();}return;
+        }
+        if(req.url!=='/files')throw new WorkspaceError('Opération fichier inconnue.');
+        const [operation,...values]=args;
+        let result;
+        switch(operation){
+          case 'list':result=await files.list(values[0],values[1]??undefined,values[2]??undefined);break;
+          case 'read':result=await files.read(values[0],values[1]??undefined,values[2]??undefined);break;
+          case 'info':result=await files.info(values[0]);break;
+          case 'create':await files.create(values[0],values[1]);break;
+          case 'update':await files.update(values[0],values[1],values[2]);break;
+          case 'replace':await files.replace(values[0],values[1],values[2],values[3]);break;
+          case 'move':await files.move(values[0],values[1],values[2]);break;
+          case 'remove':await files.remove(values[0],values[1]);break;
+          case 'mkdir':await files.mkdir(values[0]);break;
+          default:throw new WorkspaceError('Opération fichier inconnue.');
+        }
+        res.end(JSON.stringify(result??{ok:true}));return;
+      }
       let result:unknown;
       switch(req.url){
         case '/start': result=await execution.start(scope,args[0] as CommandInput);break;
@@ -30,7 +59,7 @@ export async function openHostTerminal(options:{socket:string;directory:string;w
         default:throw new Error('Opération inconnue.');
       }
       res.end(JSON.stringify(result));
-    }catch{res.statusCode=400;res.end(JSON.stringify({error:'Commande YOLO refusée ou indisponible ; vérifier ses arguments et le worker.'}));}
+    }catch(error){if(res.headersSent){res.destroy();return;}res.statusCode=400;res.end(JSON.stringify({error:error instanceof WorkspaceError?error.message:'Commande YOLO refusée ou indisponible ; vérifier ses arguments et le worker.'}));}
   });
   await new Promise<void>((resolve,reject)=>{server.once('error',reject);server.listen(options.socket,()=>resolve());});
   await chmod(options.socket,0o660);

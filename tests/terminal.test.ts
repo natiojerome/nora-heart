@@ -317,3 +317,14 @@ test('YOLO is explicit per thread, routes tools to its worker and revokes runnin
     await fixture.service.fileAccess(first.id,{access:'read'});assert.deepEqual(calls,['host-network','host-network','stop-host']);
   }finally{await rm(root,{recursive:true,force:true});}
 });
+
+test('terminal tools return output for short commands and keep long commands readable without killing them',async()=>{
+ await fixture(async(_root,workspace,execution)=>{
+  const {terminalTools}=await import('../src/modules/tools/terminal/index.ts');const tools=terminalTools(execution,false);const run=tools.find(t=>t.name==='terminal.exec')!;
+  const short=JSON.parse(await run.execute({command:'printf inline-output',yieldTimeMs:1000},{workspace}));
+  assert.equal(short.status,'completed');assert.equal(short.exitCode,0);assert.equal(short.output,'inline-output');assert.equal(short.more,false);assert(short.id);
+  const long=JSON.parse(await run.execute({command:'sleep 0.15; printf eventual-output',yieldTimeMs:0},{workspace}));assert.equal(long.status,'running');
+  const result=await finish(execution,workspace,long.id);assert.equal(result.output,'eventual-output');assert.equal(result.command.exitCode,0);
+  await assert.rejects(run.execute({command:'true',yieldTimeMs:-1},{workspace}),/invalide/);
+ });
+});
