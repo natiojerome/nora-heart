@@ -26,6 +26,8 @@ retirées, aucune écriture métier propriétaire. Un premier essai avait échou
 la conservation de la note QA ; le rejeu instrumenté est passé, cause initiale non
 établie. La preuve ne vaut pas garantie universelle de décision mémoire par le LLM.
 L’ancien parcours ne couvrait pas l’erreur du contrôleur final.
+Correctif déployé après sauvegarde chiffrée, service redémarré et santé vérifiée.
+Aucun changement des messages de la conversation Test, de ses droits ou de son modèle.
 
 ## Projets : source unique MCP
 
