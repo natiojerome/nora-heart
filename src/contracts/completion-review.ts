@@ -7,11 +7,12 @@ export interface CompletionReview {
   readonly failureMessage: string;
   /** Replace an unverified draft rather than publish it with a warning. */
   readonly failureMode?: "append" | "replace";
+  /** A scoped observation for the primary model; never publish it as the final answer. */
   review(input: {
     provider: ModelProvider;
     request: ModelRequest;
     response: ModelResponse;
     contextWindow?: number;
     reserveTokens?: number;
-  }): Promise<{ response: ModelResponse; audit: Json }>;
+  }): Promise<{ response: ModelResponse; audit: Json; revision?: string }>;
 }

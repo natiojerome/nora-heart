@@ -234,10 +234,11 @@ présenter comme une base vide. Pour une demande générale, query vide dans mem
 liste les actifs dans la portée courante et respecte la limite de résultats choisie.
 Cette énumération explicite n’est pas injectée automatiquement à chaque message.
 
-La revue reçoit aussi les lectures mémoire du tour et peut fournir correctedAnswer
-pour retirer une confirmation non étayée, même sans nouveau fait à mémoriser. Le
-texte corrigé remplace le brouillon avant sa publication ; le mécanisme n’ajoute
-pas un second appel de revue. Les anciennes confirmations ne deviennent pas une
+La revue reçoit les lectures mémoire du tour et l’inventaire primaire. Elle peut
+fournir memoryCorrection (citation du brouillon + défaut de preuve) pour demander
+une révision. Son texte ne remplace jamais directement la réponse ; le modèle
+principal répond à nouveau avec ses outils et résultats effectifs. Ce cas ajoute
+un appel primaire, sans seconde revue. Les anciennes confirmations ne deviennent pas une
 source autorisant une écriture. La vue Mémoire recharge à l’entrée, sans polling.
 
 Incident du 20 novembre : date seule écrite, trois faits anciens présentés à tort
@@ -253,6 +254,7 @@ id/version pour known et relit chaque référence distincte via le service coura
 Une référence absente, oubliée ou obsolète invalide la revue ; son échec retient
 le brouillon au lieu d’en publier les affirmations avec un avertissement. Un état
 explicite remplace la réponse ; aucune action déjà réussie n’est annulée. Coût :
-une lecture par référence distincte confirmée, aucun nouvel appel LLM. La sélection
+une lecture par référence distincte confirmée, aucun appel LLM pour cette relecture de référence. Une correction de réponse
+ajoute en revanche un appel primaire. La sélection
 sémantique des affirmations reste effectuée par le modèle, les contrôles de version
 et d’échec par le code. Les règles s’appliquent aussi aux stockages locaux.

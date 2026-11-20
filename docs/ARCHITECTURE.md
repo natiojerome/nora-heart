@@ -896,8 +896,11 @@ Ajv restent dans chaque adaptateur, sans dépendance concrète entre modules.
 La présence d’un fait dans le journal n’est pas une preuve de son état mémoire
 courant. BoundedContext marque aussi les recherches sans résultat ; memory.search
 vide fournit une énumération explicite bornée par la politique existante. La revue
-CompletionReview peut corriger le brouillon avant journalisation/publication via
-correctedAnswer, sans écrire elle-même ni ajouter de revue en boucle. Les lectures
+CompletionReview peut demander une révision du brouillon avant publication, sans
+écrire elle-même ni ajouter de revue en boucle. Une observation mémoire structurée
+cite le brouillon ; le moteur rappelle le modèle principal avec son inventaire
+complet. La revue ne peut plus remplacer directement la réponse par son propre texte.
+Les lectures
 mémoire du tour rejoignent ses preuves, les sorties fichiers/web/Vault restent exclues.
 Une entrée dans la vue Mémoire provoque une lecture unique, sans timer supplémentaire.
 
@@ -915,3 +918,10 @@ L’absence de binding Projects désactive la création et ne lit pas le catalog
 Une injection de repository explicite sert aux fixtures de qualification ; elle
 ne constitue pas un réglage de repli en production. Les anciens modules SQL sont
 conservés pour leurs données et leurs tests, sans être sélectionnés implicitement.
+
+L’inventaire primaire est fourni à la revue par primaryToolNames ; l’unique outil
+memory.assess de ce contrôle ne représente pas les capacités du fil. La correction
+memoryCorrection contient claim/issue, vérifiée comme citation du brouillon puis
+transmise par le contrat neutre revision. Une seule revue par run ; un nouvel appel
+primaire uniquement si correction demandée, avec budget/contexte/permissions inchangés.
+Aucun brouillon rejeté ni feedback de contrôle ajouté à l’historique conversationnel.

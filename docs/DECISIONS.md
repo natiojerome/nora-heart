@@ -375,8 +375,8 @@ Le 20 novembre, une confirmation de mémoire fondée sur un ancien backend rév�
 une lacune de preuve. Séparer connaissance conversationnelle et stockage courant,
 permettre une recherche vide explicite selon les budgets configurés, et vérifier
 les affirmations de sauvegarde dans la revue déjà existante. Pas de règles NLP
-par expressions régulières ni d’appel LLM supplémentaire ; correction du brouillon
-structurée et auditée avant publication. Vue actualisée à l’ouverture sans polling.
+par expressions régulières ; observation mémoire structurée et auditée, puis
+réponse régénérée par le modèle principal uniquement lorsqu’une correction est nécessaire. Vue actualisée à l’ouverture sans polling.
 
 Renforcer la preuve au niveau moteur : une confirmation structurée known doit
 référencer une version active relue, et les anciens reçus ne transmettent plus
@@ -400,3 +400,14 @@ Conversations : conserver l’historique Heart actuel ; gestion/sauvegarde dista
 reportée explicitement. Projets/mémoire/coffre restent les autorités distantes.
 La publication publique autorisée commence par un instantané contrôlé ; historique
 privé conservé localement et non publié. Licence MIT, notices tierces préservées.
+
+## Revue mémoire limitée à son domaine
+
+Incident du 20 novembre : les outils fichiers étaient fournis au tour principal,
+mais la revue limitée à memory.assess a remplacé la réponse par un déni d’accès.
+Interdire la substitution directe correctedAnswer. La revue cite l’affirmation
+mémoire contestée et son défaut de preuve ; le moteur redonne la main au modèle
+principal avec ses outils, droits et résultats réels. Fournir l’inventaire primaire
+au contrôle. Coût supplémentaire seulement lorsqu’une révision est demandée ; une
+seule revue par run. Tester aussi une revue volontairement erronée, sans confondre
+ce test de faute avec une intégration fournisseur simulée.

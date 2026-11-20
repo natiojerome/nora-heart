@@ -527,7 +527,10 @@ test("review corrects unsupported saved claims instead of treating old conversat
                     note: "Pas de preuve de sauvegarde actuelle.",
                   },
                 ],
-                correctedAnswer: correction,
+                memoryCorrection: {
+                  claim: "Les autres informations sont déjà sauvegardées.",
+                  issue: correction,
+                },
               },
             },
           ],
@@ -535,8 +538,12 @@ test("review corrects unsupported saved claims instead of treating old conversat
       },
     },
   });
-  assert.equal(result.response.content, correction);
-  assert.equal((result.audit as any).answerCorrected, true);
+  assert.equal(
+    result.response.content,
+    "Les autres informations sont déjà sauvegardées.",
+  );
+  assert.match(result.revision!, /pas de confirmation/);
+  assert.equal((result.audit as any).revisionRequested, true);
   assert.equal((await f.memory.list()).length, 0);
 });
 
@@ -635,4 +642,118 @@ test("failed memory verification cannot publish the unchecked answer as a confir
   assert.match(result.text, /ne peux pas confirmer/);
   assert(!JSON.stringify(events).includes("Tout est déjà sauvegardé."));
   assert.equal((await f.memory.list()).length, 0);
+});
+
+test("a restricted memory review cannot publish a replacement or erase the primary tool inventory", async () => {
+  const { Engine } = await import("../src/core/engine.ts");
+  const { fileTools } = await import("../src/modules/tools/files/index.ts");
+  const f = await fixture(),
+    events: any[] = [];
+  let primary = 0,
+    reviews = 0;
+  const store = {
+    async read() {
+      return [...events];
+    },
+    async append(_id: string, event: any) {
+      events.push(event);
+    },
+  };
+  const engine = new Engine(
+    store,
+    [...f.tools, ...fileTools()],
+    undefined,
+    f.review,
+  );
+  const draft = "Oui, files.list est disponible.";
+  const result = await engine.run({
+    sessionId: "inventory-review",
+    prompt: "??? Y a pas un outil fichiers ?",
+    displayName: "QA",
+    workspace: ".",
+    permissions: new Set(["memory.read", "memory.write", "files.read"]),
+    provider: {
+      id: "fault-injection",
+      async generate(request) {
+        if (request.tools.some((t) => t.name === "memory.assess")) {
+          reviews++;
+          const payload = JSON.parse(request.messages[0].content);
+          assert(payload.primaryToolNames.includes("files.list"));
+          assert(!request.tools.some((t) => t.name === "files.list"));
+          // Even a faulty reviewer cannot substitute its prose for the primary answer.
+          return {
+            content: "",
+            toolCalls: [
+              {
+                id: "assess",
+                name: "memory.assess",
+                arguments: {
+                  decisions: [{ action: "none", evidence: "", note: "QA" }],
+                  memoryCorrection: {
+                    claim: draft,
+                    issue: "Je ne vois aucun outil fichiers.",
+                  },
+                },
+              },
+            ],
+          };
+        }
+        primary++;
+        assert(request.tools.some((t) => t.name === "files.list"));
+        assert.match(request.instructions, /Inventaire effectif/);
+        if (primary === 1) return { content: draft, toolCalls: [] };
+        assert.match(request.instructions, /revue memory/);
+        return {
+          content:
+            "Oui, files.list, files.read et files.info sont disponibles.",
+          toolCalls: [],
+        };
+      },
+    },
+  });
+  assert.equal(reviews, 1);
+  assert.equal(primary, 2);
+  assert.match(result.text, /files.list, files.read/);
+  const finals = events.filter(
+    (e) => e.type === "message" && e.data.role === "assistant",
+  );
+  assert.equal(finals.length, 1);
+  assert(!finals[0].data.content.includes("aucun outil"));
+});
+
+test("memory corrections must quote the actual draft and reject legacy full-answer replacement", async () => {
+  const f = await fixture(),
+    input = request("Quels outils ?");
+  input.tools = f.tools;
+  for (const argumentsValue of [
+    {
+      decisions: [{ action: "none", evidence: "", note: "QA" }],
+      memoryCorrection: { claim: "Fabricated quote", issue: "No proof" },
+    },
+    {
+      decisions: [{ action: "none", evidence: "", note: "QA" }],
+      correctedAnswer: "No files available",
+    },
+  ])
+    await assert.rejects(
+      f.review.review({
+        request: input,
+        response: draft,
+        provider: {
+          id: "invalid",
+          async generate() {
+            return {
+              content: "",
+              toolCalls: [
+                {
+                  id: "assess",
+                  name: "memory.assess",
+                  arguments: argumentsValue as any,
+                },
+              ],
+            };
+          },
+        },
+      }),
+    );
 });

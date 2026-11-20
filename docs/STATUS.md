@@ -4,6 +4,29 @@ Point du 20 novembre 2026. Socle opérationnel ; la parité complète avec Codex
 et la qualification de tous les fournisseurs restent partielles. Lire PLAN.md,
 ARCHITECTURE.md et DECISIONS.md avant une reprise.
 
+## Correctif — conscience des outils
+
+Conversation Test : les outils fichiers et terminal étaient présents dans le vrai
+inventaire. La revue mémoire, limitée à memory.assess, a pourtant réécrit une réponse
+pour nier les outils fichiers (audit answerCorrected). Ce défaut du contrôle final
+est distinct de la disponibilité des connexions ou des permissions du fil.
+
+La revue ne peut plus publier un remplacement complet. Elle cite une affirmation
+mémoire et son défaut de preuve ; le modèle principal régénère avec son inventaire
+complet et les résultats actuels. L’inventaire primaire est aussi fourni à la revue.
+Pas de nouvelle revue en boucle, appel primaire supplémentaire seulement sur demande
+de révision. Le brouillon non retenu ne rejoint pas le journal conversationnel.
+
+231 tests, démo et trois parcours navigateur ciblés passent. GPT‑6 Luna medium :
+23 appels réels, 21 outils MCP exposés, 45 contrôles. Fichier de preuve découvert
+par un vrai files.list après un historique niant cet outil ; même résultat après
+injection volontaire d’une revue erronée. Le modèle principal répare aussi une
+fausse assurance de sauvegarde après contrôle mémoire. Identités et données QA
+retirées, aucune écriture métier propriétaire. Un premier essai avait échoué sur
+la conservation de la note QA ; le rejeu instrumenté est passé, cause initiale non
+établie. La preuve ne vaut pas garantie universelle de décision mémoire par le LLM.
+L’ancien parcours ne couvrait pas l’erreur du contrôleur final.
+
 ## Projets : source unique MCP
 
 L’assemblage web sélectionne `McpProjectsRepository` via

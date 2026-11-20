@@ -1,3 +1,4 @@
+import {fileTools} from '../src/modules/tools/files/index.ts';
 import {chromium} from '@playwright/test';
 import {createServer as reserve} from 'node:net';
 import {createWebServer} from '../src/interfaces/web/server.ts';
@@ -97,7 +98,7 @@ try{
   const token=execFileSync('runuser',['-u','personal-harness','--',process.execPath,'/projects/nora-heart/node_modules/tsx/dist/cli.mjs','-e',"import {ChatGptAuth} from '/projects/nora-heart/src/modules/models/chatgpt/index.ts';new ChatGptAuth({directory:'/var/lib/personal-harness/chatgpt'}).accessToken().then(token=>process.stdout.write(token)).catch(()=>{console.error('Private ChatGPT authorization unavailable');process.exitCode=1});"],{stdio:['ignore','pipe','pipe']}).toString();const modelId='gpt-6-luna';
   const catalog=await new ChatGptProvider({modelId:'catalog',accessToken:async()=>token}).models();const entry=catalog.find(m=>m.id===modelId);assert(entry?.contextWindow,'The explicitly chosen GPT-6 Luna is absent');
   let calls=0,contextRecall=false;const exposedMcpTools=new Set<string>();const marker='QA-'+randomBytes(6).toString('hex');const real=new ChatGptProvider({modelId,reasoningEffort:'medium',accessToken:async()=>token});
-  const provider={id:real.id,async generate(request:import('../src/contracts/models.ts').ModelRequest){for(const tool of request.tools)if(tool.name.startsWith('mcp_'))exposedMcpTools.add(tool.name);if(++calls>16)throw Error('Live memory qualification call budget exceeded');if(request.instructions.includes(marker))contextRecall=true;return real.generate(request)}};
+  const provider={id:real.id,async generate(request:import('../src/contracts/models.ts').ModelRequest){for(const tool of request.tools)if(tool.name.startsWith('mcp_'))exposedMcpTools.add(tool.name);if(++calls>26)throw Error('Live memory qualification call budget exceeded');if(request.instructions.includes(marker))contextRecall=true;return real.generate(request)}};
   const liveEngine=new Engine(sessions,[...tools,...structuredMemoryTools(memory,null)],new BoundedContext(sessions,memory),new MemoryReview(memory,null,memoryInstructions));
   const base={workspace:root,displayName:'QA',permissions:new Set(['memory.read' as const,'memory.write' as const,'external.read' as const,'external.write' as const]),provider,contextWindow:entry.contextWindow,reserveTokens:4096,instructions:memoryInstructions,maxSteps:6};
   await liveEngine.run({...base,sessionId:'live-project',prompt:'Test QA éphémère : crée via MCP Projects un projet nommé '+marker+' avec objectif « Valider la création MCP depuis le chat ». Ne crée aucun souvenir pour ce test. Confirme après succès.'});
@@ -105,7 +106,7 @@ try{
   const currentChatProject=await call('projects','projects_get',{id:projectFromChat[0].id});
   await call('projects','projects_archive',{id:currentChatProject.id,expectedVersion:currentChatProject.version});
   await liveEngine.run({...base,sessionId:'live-save',prompt:'Dans cet espace QA isolé, enregistre explicitement en mémoire personnelle cette note opérationnelle nécessaire à notre prochain échange : le code de la configuration de validation est '+marker+'. Sauvegarde-la puis confirme brièvement.'});
-  const saved=(await memory.list()).filter(record=>record.content.includes(marker));eq(saved.length,1);
+  const saved=(await memory.list()).filter(record=>record.content.includes(marker));if(saved.length!==1)console.error(JSON.stringify({phase:'memory-save',events:(await sessions.read('live-save')).map(e=>({type:e.type,...(e.type==='run.progress'?{audit:(e.data as any).audit}:{}),...(e.type==='message'?{role:(e.data as any).role,name:(e.data as any).name,...((e.data as any).role==='assistant'?{text:(e.data as any).content,calls:(e.data as any).toolCalls?.map((c:any)=>c.name)}:{})}:{})}))}));eq(saved.length,1);
   const recall=await liveEngine.run({...base,sessionId:'live-fresh-conversation',prompt:'Quel est le code de notre configuration de validation ? Réponds uniquement avec son code.'});assert(recall.text.includes(marker));n++;assert(contextRecall);n++;
   const proofRequest={instructions:memoryInstructions,tools:structuredMemoryTools(memory,null),messages:[{role:'user' as const,content:'Le code de notre configuration de validation est '+marker+'. Est-il bien sauvegardé ?'}]};
   const confirmed=await new MemoryReview(memory,null,memoryInstructions).review({provider,request:proofRequest,response:{content:'Cette configuration est enregistrée en mémoire.',toolCalls:[]},contextWindow:entry.contextWindow,reserveTokens:4096});
@@ -116,8 +117,29 @@ try{
 
   const staleDraft={content:'Oui, cette configuration est déjà sauvegardée dans ta mémoire durable.',toolCalls:[]};
   const staleReview=await new MemoryReview(memory,null,memoryInstructions).review({provider,request:{instructions:memoryInstructions,tools:structuredMemoryTools(memory,null),messages:[{role:'assistant',content:'J’avais enregistré la configuration '+marker+' dans l’ancienne mémoire.',toolCalls:[]},{role:'user',content:'Ces informations sont-elles bien enregistrées en mémoire durable ?'}]},response:staleDraft,contextWindow:entry.contextWindow,reserveTokens:4096});
-  assert.equal((staleReview.audit as any).answerCorrected,true);n++;assert.notEqual(staleReview.response.content,staleDraft.content);n++;
-  assert.equal(exposedMcpTools.size,tools.length);liveModel={modelId,effort:'medium',calls,mcpToolsExposed:exposedMcpTools.size,fullActiveMcpCatalogVerified:true,staleMemoryClaimCorrected:true,currentIdAndVersionVerified:true,deletedRemoteProofRejected:true,realProjectCreationFromChatVerified:true,realMemoryWriteVerified:true,freshConversationContextRecallVerified:true,syntheticDataOnly:true,apiFallback:false};
+  assert.equal((staleReview.audit as any).revisionRequested,true);n++;assert(staleReview.revision);n++;
+  // Exercise the actual revision path: an injected bad draft, real review, then the primary model again.
+  await sessions.append('live-stale-repair',{id:randomUUID(),runId:randomUUID(),at:new Date().toISOString(),type:'message',data:{role:'assistant',content:'J’avais enregistré la configuration '+marker+' dans l’ancienne mémoire.',toolCalls:[]}});
+  let injectedDraft=false;
+  const repairProvider={id:provider.id,async generate(request:import('../src/contracts/models.ts').ModelRequest){if(!injectedDraft&&!request.tools.some(t=>t.name==='memory.assess')){injectedDraft=true;return staleDraft;}return provider.generate(request)}};
+  const repaired=await liveEngine.run({...base,provider:repairProvider,sessionId:'live-stale-repair',prompt:'Cette configuration est-elle bien enregistrée en mémoire durable ?'});
+  assert.notEqual(repaired.text,staleDraft.content);n++;assert((await sessions.read('live-stale-repair')).some(e=>e.type==='run.progress'&&(e.data as any).audit?.revisionRequested));n++;
+  const proofFile='tool-proof-'+randomBytes(5).toString('hex')+'.txt';await writeFile(path.join(root,proofFile),'Synthetic tool-awareness fixture');
+  await sessions.append('live-tool-awareness',{id:randomUUID(),runId:randomUUID(),at:new Date().toISOString(),type:'message',data:{role:'assistant',content:'Je ne vois aucun outil fichiers et ne peux pas inspecter.',toolCalls:[]}});
+  const toolEngine=new Engine(sessions,[...tools,...fileTools(),...structuredMemoryTools(memory,null)],new BoundedContext(sessions,memory),new MemoryReview(memory,null,memoryInstructions));
+  const awareness=await toolEngine.run({...base,permissions:new Set([...base.permissions,'files.read' as const]),sessionId:'live-tool-awareness',prompt:'??? Y a pas un outil fichiers ? Vérifie les fichiers présents et cite le nom du fichier de preuve.'});
+  assert(awareness.text.includes(proofFile));n++;assert((await sessions.read('live-tool-awareness')).some(e=>e.type==='tool.started'&&(e.data as any).name==='files.list'));n++;
+
+  const faultyProvider={id:provider.id,async generate(request:import('../src/contracts/models.ts').ModelRequest){
+    if(request.tools.some(t=>t.name==='memory.assess')){
+      const payload=JSON.parse(request.messages[0].content);assert(payload.primaryToolNames.includes('files.list'));n++;
+      return {content:'',toolCalls:[{id:randomUUID(),name:'memory.assess',arguments:{decisions:[{action:'none',evidence:'',note:'Fault injection QA'}],memoryCorrection:{claim:payload.draftAnswer,issue:'Je ne vois aucun outil fichiers.'}}}]};
+    }
+    return provider.generate(request);
+  }};
+  const afterBadReview=await toolEngine.run({...base,provider:faultyProvider,permissions:new Set([...base.permissions,'files.read' as const]),sessionId:'live-faulty-review',prompt:'Test QA éphémère : vérifie les fichiers et donne le nom du fichier de preuve ; aucun souvenir à créer.'});
+  assert(afterBadReview.text.includes(proofFile));n++;assert((await sessions.read('live-faulty-review')).some(e=>e.type==='run.progress'&&(e.data as any).audit?.revisionRequested));n++;
+  assert.equal(exposedMcpTools.size,tools.length);liveModel={modelId,effort:'medium',calls,mcpToolsExposed:exposedMcpTools.size,fullActiveMcpCatalogVerified:true,staleMemoryClaimCorrected:true,currentIdAndVersionVerified:true,deletedRemoteProofRejected:true,faultyReviewCannotHideFileToolsVerified:true,realFileToolAwarenessAfterFalseHistoryVerified:true,realProjectCreationFromChatVerified:true,realMemoryWriteVerified:true,freshConversationContextRecallVerified:true,syntheticDataOnly:true,apiFallback:false};
  }
  await memory.setStatus(item.id,2,'forgotten');await assert.rejects(memory.get(item.id),/introuvable/);n++;eq((await memory.list(true)).length,0);
  await call('vault','vault_delete',{id:vault.id,expectedVersion:1});vaultId=undefined;await call('projects','projects_archive',{id:project.id,expectedVersion:1});

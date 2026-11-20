@@ -179,3 +179,15 @@ parcours réel de l’assemblage web repassé sans relever la fenêtre. Assertio
 corrigée pour attendre la réponse de l’explorateur, et non sa seule ouverture.
 Voir STATUS.md pour les vérifications finales et leur portée ; elles ne constituent
 pas une garantie d’absence de tout bug ou une mesure de tous les temps d’inférence.
+
+## Revue mémoire et inventaire effectif
+
+Défaut constaté dans une conversation réelle : le contrôle mémoire limité à son
+outil d’évaluation remplaçait la réponse générale et niait les fichiers pourtant
+exposés au modèle principal. Retirer la substitution directe ; citation/observation
+transmises au moteur, puis nouvelle réponse primaire avec outils complets. Une
+seule revue ; coût de révision uniquement si demandé. Tests de faute : pas de
+publication du brouillon ni de la prose du contrôleur, inventaire conservé et
+fichier réellement lu par GPT‑6 Luna. Les corrections structurées sans citation
+exacte et l’ancien champ correctedAnswer sont refusés. Voir STATUS.md pour preuves
+et limites, dont l’échec d’un premier essai de conservation QA non expliqué.
