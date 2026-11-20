@@ -1,0 +1,12 @@
+{
+  "model": "bytedance/seedance-2.0",
+  "prompt": "Prisme, the rounded white robot with a rigid head shell and cyan screen eyes, preserving its three-finger robot hands. WAITING PATIENTLY FOR THE VIEWER TO ANSWER for the full clip: keep direct eye contact, attentive raised mechanical brows fixed, mouth CLOSED and unchanged. Keep the visible hand open palm UP in its asking pose; a tiny natural wrist gesture and one blink, no typing or keyboard.  Camera locked, entire square bust framing unchanged. HEAD COMPLETELY UPRIGHT AND STILL: absolutely no nod, tilt, turn, stretch, squash, head bob or neck flex. Skull silhouette and proportions must stay geometrically identical to the reference in every frame. Hard robot shells remain rigid, face plates and jaw do not deform. No speaking or lip movements. Do not enlarge eyes or open the mouth. No cuts, zoom, full body, legs, props appearing, text or symbols. Uniform pure chroma green background. Preserve hands and keyboard if present exactly as supplied. Begin and finish at the supplied pose for looping. No audio.",
+  "duration": 4,
+  "resolution": "480p",
+  "aspect_ratio": "1:1",
+  "generate_audio": false,
+  "seed": 2026111711,
+  "keyframe": "prisme-waiting-keyframe.png",
+  "keyframeSha256": "36a3649d2c834ad2062754850c1425152ac6ea150e7c721d230b6f22693bf62a",
+  "estimatedUSD": 0.2688
+}

@@ -1,0 +1,159 @@
+.instruction-list {
+  display: grid;
+  gap: 8px;
+}
+.instruction-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+}
+.instruction-row:hover {
+  border-color: var(--green);
+}
+.instruction-row-copy {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+  flex: 1;
+}
+.instruction-row-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.instruction-row-title strong {
+  font-size: 13px;
+}
+.instruction-state {
+  font-size: 10px;
+  color: var(--green);
+  white-space: nowrap;
+}
+.instruction-when {
+  font-size: 11px;
+  color: var(--ink-muted);
+}
+.instruction-preview {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--ink-muted);
+  overflow-wrap: anywhere;
+}
+.instruction-row > span:last-child svg {
+  width: 17px;
+  height: 17px;
+  color: var(--ink-muted);
+}
+#instruction-text {
+  width: 100%;
+  min-height: 230px;
+  resize: vertical;
+  font-size: 16px;
+  line-height: 1.5;
+}
+.instruction-runtime,
+.instruction-default-preview {
+  margin-top: 12px;
+  font-size: 12px;
+}
+.instruction-default-preview pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font: inherit;
+  color: var(--ink-muted);
+}
+#instruction-dialog .editor-scroll {
+  display: grid;
+  gap: 8px;
+  padding: 14px 16px;
+}
+#instruction-dialog .editor-scroll > label {
+  font-size: 12px;
+  font-weight: 600;
+}
+@media (max-width: 420px) {
+  .instruction-row-title {
+    align-items: flex-start;
+  }
+  .instruction-row {
+    padding: 10px;
+  }
+}
+
+.instruction-identity {
+  display: grid;
+  gap: 12px;
+}
+.instruction-identity > header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.instruction-identity > header > span {
+  color: var(--green);
+}
+.instruction-identity h2 {
+  font-size: 14px;
+  margin: 0;
+}
+.instruction-identity header .field-help {
+  margin: 3px 0 0;
+}
+.instruction-identity-summary {
+  display: grid;
+  gap: 4px;
+  font-size: 13px;
+}
+.instruction-identity-summary p {
+  margin: 0;
+  color: var(--ink-muted);
+  font-size: 12px;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+}
+.instruction-identity details {
+  font-size: 12px;
+}
+#assistant-presentation-preview {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font: inherit;
+  line-height: 1.5;
+  color: var(--ink-muted);
+}
+
+.instruction-identity > header > div {
+  flex: 1;
+  min-width: 0;
+}
+.instruction-identity-summary {
+  min-width: 0;
+}
+.instruction-identity-summary > strong {
+  overflow-wrap: anywhere;
+}
+
+#assistant-dialog .assistant-pack-settings > label {
+  display: block;
+  margin: 10px 0 5px;
+  font-size: 12px;
+}

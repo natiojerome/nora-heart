@@ -1,0 +1,13 @@
+{
+  "id": "neutral",
+  "model": "bytedance/seedance-2.0",
+  "status": "completed",
+  "jobId": "gen-vid-1794615139-CugVbRIPsbt5z9R60lNd",
+  "generationId": "gen-vid-1794615139-CugVbRIPsbt5z9R60lNd",
+  "usage": {
+    "cost": 0.6111,
+    "is_byok": false
+  },
+  "bytes": 2157881,
+  "sha256": "e1341085560c59d13b8c2c4b2ad47d311c702c7d18034a22df4860c36ebed8b3"
+}

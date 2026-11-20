@@ -1,0 +1,13 @@
+{
+  "id": "masculine",
+  "model": "bytedance/seedance-2.0",
+  "status": "completed",
+  "jobId": "gen-vid-1794615115-ODfjIYY6JjSDp4IUydn3",
+  "generationId": "gen-vid-1794615115-ODfjIYY6JjSDp4IUydn3",
+  "usage": {
+    "cost": 0.6111,
+    "is_byok": false
+  },
+  "bytes": 2078746,
+  "sha256": "a3deff1547a3684613245c1e1d80eca240a8bf38a816d94b7cdf45b9119eaedd"
+}

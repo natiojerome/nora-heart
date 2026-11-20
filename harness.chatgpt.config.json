@@ -1,0 +1,13 @@
+{
+  "displayName": "Nora Heart",
+  "modules": { "memory": "basic", "model": "chatgpt" },
+  "chatgpt": {
+    "modelId": "choisir-dans-pnpm-chatgpt-models",
+    "profile": "default",
+    "credentialsDirectoryEnv": "HARNESS_CHATGPT_AUTH_DIR",
+    "timeoutMs": 120000
+  },
+  "storage": { "driver": "postgres", "connectionStringEnv": "HARNESS_DATABASE_URL" },
+  "workspaceDirectory": "workspace",
+  "maxSteps": 8
+}

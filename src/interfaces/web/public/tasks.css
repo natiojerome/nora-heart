@@ -1,0 +1,136 @@
+#task-cards {
+  display: grid;
+  gap: 10px;
+}
+.task-card {
+  text-align: left;
+  display: grid;
+  gap: 7px;
+  width: 100%;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+  color: var(--ink);
+  min-width: 0;
+}
+.task-card strong {
+  overflow-wrap: anywhere;
+}
+.task-card small {
+  font-size: 12px;
+  color: var(--ink-muted);
+  overflow-wrap: anywhere;
+}
+.task-card-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  gap: 10px;
+}
+.task-last-state {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--accent);
+}
+#tasks-status:empty,
+#task-editor-status:empty,
+#task-detail-status:empty {
+  display: none;
+}
+#tasks-worker {
+  margin: 12px 0;
+}
+#task-editor .editor-scroll,
+#task-detail .editor-scroll {
+  display: grid;
+  gap: 10px;
+  padding: 16px;
+}
+#task-editor label {
+  font-size: 13px;
+  font-weight: 600;
+}
+#task-editor input,
+#task-editor select,
+#task-editor textarea {
+  font-size: 16px;
+  min-width: 0;
+}
+#task-editor textarea {
+  min-height: 90px;
+}
+.task-time-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+.task-time-grid > div {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+.task-time-grid [hidden] {
+  display: none;
+}
+#task-editor .setting-switch {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+#task-editor .setting-switch > span {
+  flex: 1;
+  min-width: 0;
+}
+#task-editor .setting-switch input {
+  flex: none;
+  margin: 0;
+}
+.task-detail-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+#task-detail-summary {
+  white-space: pre-line;
+}
+#task-history {
+  display: grid;
+  gap: 10px;
+}
+.task-run {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 12px;
+  display: grid;
+  gap: 6px;
+}
+.task-run small {
+  font-size: 12px;
+  color: var(--ink-muted);
+}
+.task-run p {
+  font-size: 13px;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+#task-conversation {
+  width: 100%;
+}
+
+#task-date-field {
+  grid-column: 1/-1;
+}
+
+/* Browser skips offscreen layout/painting while keeping accessible history in DOM. */
+.task-card,
+.task-run {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 120px;
+}
+#tasks-more {
+  min-height: 2px;
+  padding-block: 8px;
+}

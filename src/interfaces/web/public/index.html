@@ -1,0 +1,2059 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width,initial-scale=1,viewport-fit=cover"
+    />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="icon" type="image/png" href="/brand/mark.png" />
+    <title>Nora Heart</title>
+    <link rel="stylesheet" href="/styles.css" />
+    <link rel="stylesheet" href="/chat.css" />
+    <link rel="stylesheet" href="/management.css" />
+    <link rel="stylesheet" href="/components.css" />
+    <script src="/vendor/marked.js" defer></script>
+    <script src="/vendor/purify.js" defer></script>
+    <script src="/controls.js" defer></script>
+    <script src="/feedback.js" defer></script>
+    <script src="/api-client.js" defer></script>
+    <script src="/icons.js" defer></script>
+    <script src="/app.js" defer></script>
+    <script src="/work.js" defer></script>
+    <script src="/ui.js" defer></script>
+    <script src="/chat-content.js" defer></script>
+    <link rel="stylesheet" href="/chat-content.css" />
+    <script src="/chat-math.js" defer></script>
+    <link rel="stylesheet" href="/chat-math.css" />
+    <link rel="stylesheet" href="/chat-turns.css" />
+    <script src="/chat-turns.js" defer></script>
+    <script src="/history.js" defer></script>
+    <script src="/chat.js" defer></script>
+    <script src="/chat-tools.js" defer></script>
+    <script src="/chat-interactions.js" defer></script>
+    <link rel="stylesheet" href="/chat-interactions.css" />
+    <script src="/workspace.js" defer></script>
+    <script src="/terminal.js" defer></script>
+    <script src="/usage.js" defer></script>
+    <script src="/preferences.js" defer></script>
+    <script src="/policies.js" defer></script>
+    <link rel="stylesheet" href="/policies.css" />
+    <script src="/settings.js" defer></script>
+    <link rel="stylesheet" href="/settings.css" />
+    <script src="/instructions.js" defer></script>
+    <link rel="stylesheet" href="/instructions.css" />
+    <script src="/tasks.js" defer></script>
+    <link rel="stylesheet" href="/tasks.css" />
+    <link rel="stylesheet" href="/capabilities.css" />
+    <script src="/capabilities.js" defer></script>
+    <script src="/skills.js" defer></script>
+    <link rel="stylesheet" href="/skills.css" />
+    <script src="/external-tools.js" defer></script>
+    <link rel="stylesheet" href="/external-tools.css" />
+    <link rel="stylesheet" href="/workspace.css" />
+  </head>
+  <body>
+    <main id="login-view" class="auth-screen">
+      <section class="auth-identity" aria-label="Nora Heart">
+        <div class="auth-trust">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="m12 3 8 3v6c0 5-8 9-8 9s-8-4-8-9V6z" />
+            <path d="m8 12 3 3 5-6" /></svg
+          ><span>Accès privé</span>
+        </div>
+        <div class="auth-brand">
+          <img
+            class="auth-mark"
+            src="/brand/mark.png"
+            width="132"
+            height="132"
+            alt=""
+          />
+          <div class="auth-wordmark">
+            <h1>Nora Heart</h1>
+            <span class="auth-eyebrow">Assistant personnel</span>
+          </div>
+        </div>
+      </section>
+      <section class="auth-access">
+        <form id="login-form" class="auth-panel">
+          <header class="auth-panel-heading">
+            <span>Identification</span>
+            <h2>Connexion</h2>
+            <p>Utilise le token d’accès de ton installation.</p>
+          </header>
+          <label class="field-label" for="password">Token d’accès</label>
+          <div class="auth-token-field">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="8" cy="8" r="5" />
+              <path d="m12 12 9 9m-4-4 3-3m-6 0 3-3" />
+            </svg>
+            <input
+              id="password"
+              name="password"
+              type="password"
+              autocomplete="current-password"
+              autocapitalize="none"
+              spellcheck="false"
+              required
+              placeholder="Ton token privé"
+            />
+            <button
+              id="toggle-login-token"
+              type="button"
+              aria-label="Afficher le token"
+              aria-pressed="false"
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12Z" />
+                <circle cx="12" cy="12" r="3" />
+              </svg>
+            </button>
+          </div>
+          <p id="login-error" class="form-error" role="alert" hidden></p>
+          <button class="auth-submit" id="login-submit" type="submit">
+            <span id="login-submit-label">Ouvrir mon espace</span
+            ><svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M4 12h16m-6-6 6 6-6 6" />
+            </svg>
+          </button>
+        </form>
+        <footer class="auth-footer">Nora Heart · Espace personnel</footer>
+      </section>
+    </main>
+
+    <div id="app-view" class="app-shell" hidden>
+      <dialog
+        id="navigation-dialog"
+        class="navigation-dialog"
+        aria-labelledby="navigation-title"
+      >
+        <aside class="sidebar">
+          <header class="drawer-heading">
+            <div class="brand">
+              <img
+                class="brand-logo" data-assistant-logo
+                src="/brand/mark.png"
+                width="34"
+                height="34"
+                alt=""
+              /><span id="brand-name"
+                >Nora Heart<span class="brand-sub" id="navigation-title"
+                  >Menu principal</span
+                ></span
+              >
+            </div>
+            <button
+              id="close-navigation"
+              class="icon-button"
+              type="button"
+              aria-label="Fermer le menu"
+              data-icon="close"
+            ></button>
+          </header>
+          <nav aria-label="Navigation principale">
+            <a href="#home" data-nav="home" class="nav-link"
+              ><span
+                data-icon="home"
+                class="drawer-command-icon"
+                aria-hidden="true"
+              ></span
+              ><span
+                ><strong>Aujourd’hui</strong
+                ><small>Décisions et points à reprendre</small></span
+              ><span class="nav-chevron" aria-hidden="true">›</span></a
+            ><a href="#conversations" data-nav="conversations" class="nav-link"
+              ><span
+                data-icon="conversations"
+                class="drawer-command-icon"
+                aria-hidden="true"
+              ></span
+              ><span
+                ><strong>Conversations</strong
+                ><small>Tous tes échanges</small></span
+              ><span class="nav-chevron" aria-hidden="true">›</span></a
+            ><a href="#projects" data-nav="projects" class="nav-link"
+              ><span
+                data-icon="projects"
+                class="drawer-command-icon"
+                aria-hidden="true"
+              ></span
+              ><span
+                ><strong>Projets</strong><small>Espaces de travail</small></span
+              ><span class="nav-chevron" aria-hidden="true">›</span></a
+            ><a href="#memories" data-nav="memories" class="nav-link"
+              ><span
+                data-icon="memories"
+                class="drawer-command-icon"
+                aria-hidden="true"
+              ></span
+              ><span
+                ><strong>Mémoire</strong
+                ><small>Souvenirs et connaissances</small></span
+              ><span class="nav-chevron" aria-hidden="true">›</span></a
+            ><a href="#providers" data-nav="models" class="nav-link"
+              ><span
+                data-icon="models"
+                class="drawer-command-icon"
+                aria-hidden="true"
+              ></span
+              ><span
+                ><strong>Modèles</strong
+                ><small>Abonnement et clés API</small></span
+              ><span class="nav-chevron" aria-hidden="true">›</span></a
+            ><a href="#tools" data-nav="tools" class="nav-link"
+              ><span
+                data-icon="tools"
+                class="drawer-command-icon"
+                aria-hidden="true"
+              ></span
+              ><span
+                ><strong>Capacités</strong
+                ><small>Outils et modules</small></span
+              ><span class="nav-chevron" aria-hidden="true">›</span></a
+            ><a href="#automations" data-nav="automations" class="nav-link"
+              ><span
+                data-icon="automations"
+                class="drawer-command-icon"
+                aria-hidden="true"
+              ></span
+              ><span
+                ><strong>Tâches <span id="tasks-badge" class="tag" hidden></span></strong
+                ><small>Planification à venir</small></span
+              ><span class="nav-chevron" aria-hidden="true">›</span></a
+            ><a href="#files" data-nav="files" class="nav-link"
+              ><span
+                data-icon="files"
+                class="drawer-command-icon"
+                aria-hidden="true"
+              ></span
+              ><span
+                ><strong>Fichiers</strong
+                ><small>Workspaces et documents</small></span
+              ><span class="nav-chevron" aria-hidden="true">›</span></a
+            ><a href="#consumption" data-nav="consumption" class="nav-link"
+              ><span
+                data-icon="consumption"
+                class="drawer-command-icon"
+                aria-hidden="true"
+              ></span
+              ><span
+                ><strong>Consommation</strong
+                ><small>Suivi à raccorder</small></span
+              ><span class="nav-chevron" aria-hidden="true">›</span></a
+            ><a href="#settings" data-nav="settings" class="nav-link"
+              ><span
+                data-icon="settings"
+                class="drawer-command-icon"
+                aria-hidden="true"
+              ></span
+              ><span
+                ><strong>Configuration</strong
+                ><small>Assistant, consignes et préférences</small></span
+              ><span class="nav-chevron" aria-hidden="true">›</span></a
+            ><a href="#backups" data-nav="backups" class="nav-link"
+              ><span
+                data-icon="backups"
+                class="drawer-command-icon"
+                aria-hidden="true"
+              ></span
+              ><span
+                ><strong>Sauvegardes</strong
+                ><small>Contrôle à raccorder</small></span
+              ><span class="nav-chevron" aria-hidden="true">›</span></a
+            >
+          </nav>
+          <div class="sidebar-bottom">
+            <span class="status-dot"></span><span>Espace privé</span
+            ><button
+              id="logout-button"
+              class="icon-button"
+              type="button"
+              aria-label="Se déconnecter"
+              data-icon="logout"
+            ></button>
+          </div>
+        </aside>
+      </dialog>
+      <main class="main-content">
+        <header class="topbar">
+          <button
+            class="icon-button"
+            type="button"
+            data-open-navigation
+            aria-label="Ouvrir le menu principal"
+            data-icon="menu"
+          ></button>
+          <button
+            id="profile-button"
+            class="icon-button"
+            type="button"
+            aria-label="Mon assistant"
+          >
+            <span class="nora-logo topbar-logo" aria-hidden="true"></span>
+          </button>
+          <div class="topbar-title">
+            <strong data-assistant-name>Nora</strong
+            ><span id="page-label">Espace personnel</span>
+          </div>
+          <a
+            class="icon-button"
+            data-list-conversations
+            href="#conversations"
+            aria-label="Ouvrir les conversations"
+            data-icon="conversations"
+          ></a>
+          <a
+            class="icon-button"
+            href="#home"
+            aria-label="Aujourd’hui"
+            data-icon="home"
+          ></a>
+        </header>
+        <div class="page-content">
+          <section id="screen-home" data-screen="home">
+            <header class="page-heading">
+              <span
+                class="page-heading-icon"
+                data-icon="home"
+                aria-hidden="true"
+              ></span>
+              <div class="page-heading-copy">
+                <h1>Aujourd’hui</h1>
+                <p class="page-subtitle">
+                  Tes conversations, tes projets et les points à reprendre.
+                </p>
+              </div>
+              <span id="today" class="sr-only"></span>
+              <div class="page-actions">
+                <button
+                  id="home-new-conversation"
+                  type="button"
+                  class="page-create"
+                  aria-label="Nouvelle conversation"
+                  title="Nouvelle conversation"
+                  data-icon="add"
+                ></button>
+              </div>
+            </header>
+
+            <div class="home-grid">
+              <section class="panel">
+                <div class="panel-heading">
+                  <h2>À reprendre</h2>
+                  <a data-list-conversations href="#conversations"
+                    >Tout voir</a
+                  >
+                </div>
+                <div id="home-discussions" class="rows"></div>
+              </section>
+              <section class="panel">
+                <div class="panel-heading">
+                  <h2>Tes projets</h2>
+                  <a href="#projects">Tout voir</a>
+                </div>
+                <div id="home-projects" class="rows"></div>
+              </section>
+            </div>
+            <div class="presence">
+              <span id="home-presence">Disponible</span>
+            </div>
+          </section>
+          <div data-screen="conversations" id="screen-conversations">
+            <section
+              class="panel conversations-panel"
+              id="conversations"
+              hidden
+            >
+              <header class="page-heading panel-heading">
+                <span
+                  class="page-heading-icon"
+                  data-icon="conversations"
+                  aria-hidden="true"
+                ></span>
+                <div class="page-heading-copy">
+                  <h1>Conversations</h1>
+                  <p class="page-subtitle">
+                    Retrouve un échange ou démarre un nouveau fil.
+                  </p>
+                </div>
+                <div class="page-actions">
+                  <button
+                    id="new-conversation"
+                    type="button"
+                    class="page-create"
+                    aria-label="Nouvelle conversation"
+                    title="Nouvelle conversation"
+                    data-icon="add"
+                  ></button>
+                </div>
+              </header>
+              <div class="chat-heading">
+                <button
+                  class="icon-button"
+                  type="button"
+                  data-open-navigation
+                  aria-label="Ouvrir le menu principal"
+                  data-icon="menu"
+                ></button>
+
+                <span class="nora-logo topbar-logo" aria-hidden="true"></span>
+                <div class="topbar-title">
+                  <strong id="chat-name">Nora</strong
+                  ><span id="assistant-status">Disponible</span>
+                </div>
+                <button
+                  id="chat-context"
+                  class="icon-button"
+                  type="button"
+                  aria-label="Réglages de la conversation"
+                  aria-haspopup="dialog"
+                  title="Réglages du fil"
+                  data-icon="settings"
+                ></button>
+                <button
+                  id="chat-back"
+                  class="icon-button"
+                  type="button"
+                  aria-label="Revenir aux discussions"
+                  data-icon="conversations"
+                ></button>
+                <a
+                  class="icon-button"
+                  href="#home"
+                  aria-label="Aujourd’hui"
+                  data-icon="home"
+                ></a>
+              </div>
+              <section
+                class="conversation-context-bar"
+                aria-label="Contexte de la conversation"
+              >
+                <div class="conversation-context-topline">
+                  <strong id="chat-project" class="conversation-context-project"
+                    >Aucun projet</strong
+                  >
+                </div>
+                <span id="chat-title" class="conversation-context-conversation"
+                  >Discussion</span
+                >
+              </section>
+              <nav class="chat-status-bar" aria-label="Usage de la conversation et du fournisseur">
+                <button type="button" data-usage-detail="messages"><span>Messages</span><strong id="status-message-count">0</strong></button>
+                <button type="button" data-usage-detail="context"><span>Contexte</span><strong id="status-context">—</strong></button>
+                <button type="button" data-usage-detail="credits"><span id="status-balance-label">Crédits</span><strong id="status-credits">—</strong></button>
+                <button type="button" data-usage-detail="reset"><span>Reset</span><strong id="status-reset">—</strong></button>
+              </nav>
+              <div id="conversation-controls-slot">
+                <aside id="conversation-controls" class="conversation-controls">
+                  <div class="discussion-filters">
+                    <input id="discussion-search" type="search" placeholder="Rechercher…" aria-label="Rechercher une discussion" />
+                    <select id="discussion-project-filter" aria-label="Filtrer les discussions par projet"><option value="">Tous les projets</option><option value="none">Sans projet</option></select>
+                  </div>
+                  <div id="discussion-cards" class="rows"></div>
+                <button id="discussion-more" type="button" class="button secondary" hidden>Plus de conversations</button><p id="discussion-status" role="status" class="field-help"></p>
+                  <label for="conversation-list">Tes conversations</label
+                  ><select id="conversation-list" data-internal>
+                    <option value="">Choisir une conversation</option>
+                  </select>
+                </aside>
+              </div>
+              <div class="chat-thread">
+                <div class="chat-timeline">
+                  <div id="history-loading" class="history-pagination" role="status" aria-live="polite" hidden><span id="history-status"></span><button id="history-retry" class="text-button" type="button" hidden>Réessayer</button></div>
+                  <div
+                    id="conversation-history"
+                    class="conversation-history"
+                    aria-live="polite"
+                  >
+                    <p>Crée ou sélectionne une conversation pour commencer.</p>
+                  </div>
+                  <button
+                    id="jump-latest"
+                    class="jump-latest"
+                    type="button"
+                    hidden
+                  >
+                    <span data-icon="down" aria-hidden="true"></span>Dernier message
+                  </button>
+                </div>
+                <div class="composer-zone">
+                  <div class="chat-configuration" aria-label="Configuration du prochain message">
+                    <button
+                      id="choose-brain"
+                      class="chat-config-chip"
+                      type="button"
+                      title="Choisir le modèle"
+                    >
+                      Modèle
+                    </button>
+                    <button id="chat-yolo" class="chat-config-chip" type="button" hidden title="Accès root au serveur entier, sans confirmation">YOLO · root</button>
+                    <button id="chat-permissions" class="chat-config-chip" type="button" aria-label="Autorisations du fil" disabled><span data-icon="privacy" aria-hidden="true"></span><span data-access-label>Lecture</span></button>
+                    <button id="chat-effort" class="chat-config-chip" type="button" hidden aria-label="Régler l’effort du modèle">Effort auto</button>
+                  </div>
+                  <div class="composer-wrap">
+                    <div
+                      id="quick-prompts-popover"
+                      class="quick-prompts"
+                      role="menu"
+                      aria-label="Prompts rapides"
+                      hidden
+                    >
+                      <header>
+                        <strong>Prompts rapides</strong
+                        ><button
+                          id="quick-prompt-manage"
+                          type="button"
+                          class="icon-button"
+                          aria-label="Gérer les prompts rapides"
+                          title="Gérer les prompts"
+                        >
+                          <span data-icon="edit" aria-hidden="true"></span>
+                        </button>
+                      </header>
+                      <div id="quick-prompts-menu"></div>
+                    </div>
+                    <div
+                      id="chat-pending-files"
+                      class="pending-file-chips"
+                      aria-label="Pièces jointes du prochain message"
+                      hidden
+                    ></div>
+                    <form id="conversation-send">
+                      <div class="field-label-row">
+                        <label for="conversation-prompt">Ton message</label
+                        ><span class="tiny-label" id="conversation-brain"
+                          >SIMULATION LOCALE</span
+                        >
+                      </div>
+                      <textarea
+                        id="conversation-prompt"
+                        rows="1"
+                        maxlength="8000"
+                        placeholder="Écrire à ton assistant…"
+                      ></textarea>
+
+
+                      <div class="composer-footer">
+                        <div class="composer-leading">
+                          <span
+                            id="chat-runtime"
+                            class="composer-runtime"
+                            role="status"
+                          ></span
+                          ><span id="composer-status" class="composer-state"
+                            >Prêt à échanger</span
+                          >
+                        </div>
+                        <div class="composer-actions">
+                          <button
+                            id="chat-clear-draft"
+                            class="composer-tool"
+                            type="button"
+                            aria-label="Effacer le brouillon"
+                            title="Effacer le brouillon"
+                            data-icon="eraser"
+                          ></button>
+                          <button
+                            id="chat-quick-prompts"
+                            class="composer-tool"
+                            type="button"
+                            aria-label="Ouvrir les prompts rapides"
+                            title="Prompts rapides"
+                            data-icon="wand"
+                          ></button>
+                          <button
+                            id="chat-attachments"
+                            class="composer-tool"
+                            type="button"
+                            aria-label="Ajouter une pièce jointe"
+                            title="Pièces jointes"
+                            data-icon="paperclip"
+                          ></button>
+                          <button
+                            id="chat-workspace"
+                            class="composer-tool"
+                            type="button"
+                            aria-label="Ouvrir les fichiers de la conversation"
+                            title="Fichiers de la conversation"
+                            data-icon="files"
+                            disabled
+                          ></button>
+                          <button
+                            id="chat-stop"
+                            class="composer-action stop"
+                            type="button"
+                            aria-label="Interrompre la réponse"
+                            title="Interrompre"
+                            data-icon="stop"
+                            hidden
+                          ></button>
+                          <button
+                            id="conversation-submit"
+                            class="composer-action send"
+                            type="submit"
+                            aria-label="Envoyer"
+                            title="Envoyer"
+                            data-icon="send"
+                            disabled
+                          ></button>
+                        </div>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </section>
+          </div>
+          <section data-screen="projects" id="screen-projects">
+            <header class="page-heading">
+              <span
+                class="page-heading-icon"
+                data-icon="projects"
+                aria-hidden="true"
+              ></span>
+              <div class="page-heading-copy">
+                <h1>Projets</h1>
+                <p class="page-subtitle">
+                  Un espace commun pour tes conversations et tes souvenirs.
+                </p>
+              </div>
+              <div class="page-actions">
+                <button
+                  id="new-project"
+                  type="button"
+                  class="page-create"
+                  aria-label="Nouveau projet"
+                  title="Nouveau projet"
+                  data-icon="add"
+                ></button>
+              </div>
+            </header>
+
+            <div id="project-cards" class="card-grid"></div>
+            <section
+              id="project-detail"
+              class="project-detail"
+              hidden
+            ></section>
+          </section>
+          <div data-screen="memories" id="screen-memories">
+            <header class="page-heading">
+              <span
+                class="page-heading-icon"
+                data-icon="memories"
+                aria-hidden="true"
+              ></span>
+              <div class="page-heading-copy">
+                <h1>Mémoire</h1>
+                <p class="page-subtitle">
+                  Les informations utiles, pour toi et pour chaque projet.
+                </p>
+              </div>
+
+              <div class="page-actions">
+                <button
+                  id="memories-refresh"
+                  type="button"
+                  class="icon-button"
+                  aria-label="Actualiser les souvenirs"
+                  title="Actualiser les souvenirs"
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.7"
+                    aria-hidden="true"
+                  >
+                    <path d="M20 7a8 8 0 1 0 1 8M20 3v5h-5" />
+                  </svg></button
+                ><button
+                  id="new-memory"
+                  type="button"
+                  class="page-create"
+                  aria-label="Nouveau souvenir"
+                  title="Nouveau souvenir"
+                  data-icon="add"
+                ></button>
+              </div>
+            </header>
+            <section class="panel memories-panel" id="memories" hidden>
+              <div class="memory-filters">
+                <select
+                  id="memory-filter-scope"
+                  aria-label="Portée des souvenirs"
+                >
+                  <option value="">Toutes les portées</option>
+                  <option value="personal">Personnel</option></select
+                ><input
+                  id="memory-search"
+                  type="search"
+                  placeholder="Rechercher…"
+                  aria-label="Filtrer les souvenirs affichés"
+                /><label
+                  ><input id="memory-show-forgotten" type="checkbox" /> Afficher
+                  les oubliés</label
+                >
+              </div>
+              <details class="help-disclosure">
+                <summary>À propos de l’oubli et des versions</summary>
+                <p class="field-help">
+                  L’oubli retire le souvenir des recherches et de la sélection
+                  automatique. Il est réversible ; les messages et points de
+                  reprise existants restent dans l’historique. Liste limitée aux
+                  200 souvenirs récents.
+                </p>
+              </details>
+              <div
+                id="memory-list"
+                class="memory-list"
+                aria-live="polite"
+              ></div>
+            </section>
+          </div>
+          <section data-screen="more" id="screen-more">
+            <header class="page-heading">
+              <span
+                class="page-heading-icon"
+                data-icon="tools"
+                aria-hidden="true"
+              ></span>
+              <div class="page-heading-copy">
+                <h1>Autres espaces</h1>
+                <p class="page-subtitle">
+                  Tous les réglages et les outils de ton assistant.
+                </p>
+              </div>
+              <div class="page-actions"></div>
+            </header>
+            <div id="more-links" class="card-grid"></div>
+          </section>
+          <section data-screen="models" id="screen-models">
+            <header class="page-heading">
+              <span
+                class="page-heading-icon"
+                data-icon="models"
+                aria-hidden="true"
+              ></span>
+              <div class="page-heading-copy">
+                <h1>Fournisseurs</h1>
+                <p class="page-subtitle">
+                  Connecte tes fournisseurs et gère leurs accès.
+                </p>
+              </div>
+              <div class="page-actions"></div>
+            </header>
+            <div class="provider-connections">
+              <article class="panel provider-connection-card"><header><h2>ChatGPT</h2><span id="chatgpt-card-status" class="tag">À connecter</span></header>
+<div id="connection-box" class="connection-box" hidden>
+                  <div class="connection-top">
+                    <span class="connection-dot" id="connection-dot"></span>
+                    <div>
+                      <strong id="connection-title">Connecter ChatGPT</strong>
+                      <p id="connection-description">
+                        Utilise ton abonnement avec une connexion sécurisée.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      id="connect-chatgpt"
+                      class="button secondary compact"
+                    >
+                      Connecter</button
+                    ><button
+                      type="button"
+                      id="disconnect-chatgpt"
+                      class="text-button"
+                      hidden
+                    >
+                      Déconnecter
+                    </button>
+                  </div>
+                  <p
+                    id="connection-message"
+                    class="connection-message"
+                    hidden
+                  ></p>
+                  <a
+                    id="connection-link"
+                    class="inline-link"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    hidden
+                    >Ouvrir la connexion</a
+                  >
+                  <div id="callback-box" class="callback-box" hidden>
+                    <label for="callback-url">Adresse de retour</label>
+                    <p>
+                      Si le navigateur affiche une page inaccessible après
+                      autorisation, copie son adresse ici.
+                    </p>
+                    <div class="callback-row">
+                      <input
+                        id="callback-url"
+                        type="url"
+                        autocomplete="off"
+                        spellcheck="false"
+                        placeholder="http://127.0.0.1:…/auth/callback?…"
+                      /><button
+                        type="button"
+                        id="finish-connection"
+                        class="button secondary compact"
+                      >
+                        Terminer
+                      </button>
+                    </div>
+                  </div>
+                </div></article>
+<article class="panel provider-connection-card"><header><h2>OpenAI API</h2><span id="openai-card-status" class="tag">Clé absente</span></header><p class="field-help">Connexion directe avec ta clé OpenAI.</p><button type="button" class="button secondary" data-configure-provider="openai">Configurer la clé API</button></article><article class="panel provider-connection-card"><header><h2>Anthropic API</h2><span id="anthropic-card-status" class="tag">Clé absente</span></header><p class="field-help">Connexion directe avec ta clé Anthropic.</p><button type="button" class="button secondary" data-configure-provider="anthropic">Configurer la clé API</button></article><article class="panel provider-connection-card"><header><h2>OpenRouter</h2><span id="openrouter-card-status" class="tag">Clé absente</span></header><p class="field-help">Une connexion pour les modèles disponibles sur OpenRouter.</p><button type="button" class="button secondary" data-configure-provider="openrouter">Configurer la clé API</button></article>            </div>
+          </section>
+          <section data-screen="lab" id="screen-lab">
+            <header class="page-heading">
+              <span
+                class="page-heading-icon"
+                data-icon="lab"
+                aria-hidden="true"
+              ></span>
+              <div class="page-heading-copy">
+                <h1>Atelier de test</h1>
+                <p class="page-subtitle">
+                  Teste chaque module dans un espace isolé.
+                </p>
+              </div>
+              <div class="page-actions"></div>
+            </header>
+            <p>
+              Des essais isolés pour vérifier tes modules. Le modèle se choisit
+              dans <a href="#providers">Modèles</a>.
+            </p>
+            <div class="workspace-grid">
+              <section class="panel playground" id="playground">
+                <div class="panel-heading">
+                  <div>
+                    <span class="section-index">01</span>
+                    <h2>Un premier échange</h2>
+                  </div>
+                  <span class="subtle-tag">ESPACE D’ESSAI</span>
+                </div>
+                <form id="test-form">
+                  <div class="field-label-row prompt-label">
+                    <label for="prompt">Ta demande</label
+                    ><span class="tiny-label">À TOI DE JOUER</span>
+                  </div>
+                  <textarea
+                    id="prompt"
+                    name="prompt"
+                    rows="4"
+                    maxlength="12000"
+                    required
+                  >
+Liste les fichiers de l’espace de test et explique ce que tu as trouvé.</textarea>
+                  <div class="prompt-suggestions">
+                    <button
+                      type="button"
+                      data-prompt="Liste les fichiers de l’espace de test et explique ce que tu as trouvé."
+                    >
+                      Explorer les fichiers</button
+                    ><button
+                      type="button"
+                      data-prompt="Présente-toi en deux phrases et explique comment tu peux m’aider au quotidien."
+                    >
+                      Faire connaissance</button
+                    ><button
+                      type="button"
+                      data-prompt="Explique en trois points ce qui rend une architecture modulaire utile."
+                    >
+                      Une question simple
+                    </button>
+                  </div>
+                  <div class="test-footer">
+                    <div class="steps-field">
+                      <label for="max-steps">Étapes maximum</label
+                      ><select id="max-steps">
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="4" selected>4</option>
+                      </select>
+                    </div>
+                    <button type="submit" id="run-test" class="button primary">
+                      Lancer l’essai <span data-icon="external" aria-hidden="true"></span>
+                    </button>
+                  </div>
+                  <p class="cost-note" id="cost-note">
+                     Simulation locale. Aucun
+                    modèle payant n’est appelé.
+                  </p>
+                </form>
+              </section>
+              <section
+                class="panel response-panel"
+                aria-labelledby="response-title"
+              >
+                <div class="panel-heading">
+                  <div>
+                    <span class="section-index">02</span>
+                    <h2 id="response-title">Ce qui se passe</h2>
+                  </div>
+                  <span class="response-state" id="response-state"
+                    >EN ATTENTE</span
+                  >
+                </div>
+                <div id="response-empty" class="empty-response">
+                  <div class="empty-graphic" aria-hidden="true">
+                    <span>n<span>•</span></span
+                    ><i></i><i></i>
+                  </div>
+                  <h3>Tout commence par un essai.</h3>
+                  <p>
+                    La réponse de ton assistante et les actions<br />du moteur
+                    apparaîtront ici.
+                  </p>
+                  <span class="empty-caption">MODÈLE → OUTILS → RÉPONSE</span>
+                </div>
+                <div id="response-loading" class="response-loading" hidden>
+                  <span class="loader"></span
+                  ><strong>L’essai est en cours…</strong>
+                  <p>Le moteur prépare le contexte et attend la réponse.</p>
+                </div>
+                <div id="response-result" class="response-result" hidden>
+                  <div class="result-meta">
+                    <span class="result-avatar">n<span>•</span></span>
+                    <div>
+                      <strong id="result-provider">Nora</strong
+                      ><span id="result-timing"></span>
+                    </div>
+                    <button type="button" id="copy-answer" class="text-button">
+                      Copier
+                    </button>
+                  </div>
+                  <div id="answer-text" class="answer-text"></div>
+                  <details class="event-details">
+                    <summary>
+                      Voir le parcours du moteur <span id="event-count"></span>
+                    </summary>
+                    <ol id="event-list" class="event-list"></ol>
+                  </details>
+                </div>
+                <div
+                  id="response-error"
+                  class="response-error"
+                  role="alert"
+                  hidden
+                ></div>
+              </section>
+            </div>
+            <section class="panel checks-panel" id="checks">
+              <div class="checks-intro">
+                <span class="section-index">03</span>
+                <div>
+                  <h2>Chaque pièce compte.</h2>
+                  <p>
+                    Vérifie les modules séparément, sans utiliser ton
+                    abonnement.
+                  </p>
+                </div>
+              </div>
+              <div class="check-actions">
+                <button class="check-button" data-suite="models">
+                  <span>◈</span> Modèles</button
+                ><button class="check-button" data-suite="memory">
+                  <span>◇</span> Mémoire</button
+                ><button class="check-button" data-suite="tools">
+                  <span>⌘</span> Outils</button
+                ><button class="check-button" data-suite="storage-json">
+                  <span>▤</span> Stockage local</button
+                ><button class="button dark compact" data-suite="all">
+                  Tout vérifier <span data-icon="external" aria-hidden="true"></span>
+                </button>
+              </div>
+              <div class="check-output-wrap" id="check-output-wrap" hidden>
+                <div class="check-output-heading">
+                  <strong id="check-output-title">Vérification en cours…</strong
+                  ><span id="check-output-timing"></span>
+                </div>
+                <pre id="check-output" tabindex="0"></pre>
+              </div>
+            </section>
+          </section>
+          <section data-screen="tools" id="screen-tools">
+            <header class="page-heading">
+              <span
+                class="page-heading-icon"
+                data-icon="tools"
+                aria-hidden="true"
+              ></span>
+              <div class="page-heading-copy">
+                <h1>Capacités</h1>
+                <p class="page-subtitle">
+                  Outils, méthodes et services connectés.
+                </p>
+              </div>
+              <div class="page-actions"><button id="mcp-add" hidden type="button" class="page-create" data-icon="add" aria-label="Ajouter une connexion" title="Ajouter une connexion"></button></div>
+            </header>
+            <nav class="settings-tabs capabilities-tabs" aria-label="Types de capacités"><div class="settings-tabs-inner" role="tablist" aria-label="Capacités">
+              <button id="capabilities-tab-tools" type="button" role="tab" data-capabilities-tab="tools" aria-controls="capabilities-tools" aria-selected="true">Outils</button>
+              <button id="capabilities-tab-skills" type="button" role="tab" data-capabilities-tab="skills" aria-controls="capabilities-skills" aria-selected="false" tabindex="-1">Skills</button>
+              <button id="capabilities-tab-connections" type="button" role="tab" data-capabilities-tab="connections" aria-controls="capabilities-connections" aria-selected="false" tabindex="-1">Connexions</button>
+            </div></nav>
+            <div id="capabilities-tools" class="settings-pane" role="tabpanel" aria-labelledby="capabilities-tab-tools">
+              <section class="panel" aria-labelledby="mcp-tools-title">
+                <header class="mcp-panel-heading"><h2 id="mcp-tools-title">Outils connectés</h2><button id="mcp-tools-refresh" type="button" class="icon-button" data-icon="refresh" aria-label="Actualiser les outils connectés"></button></header>
+                <p class="field-help">Chaque outil indique la connexion MCP qui le fournit. Son utilisation dépend aussi des droits de la discussion.</p>
+                <p id="mcp-tools-status" role="status" aria-live="polite"></p><div id="mcp-tools-list" class="mcp-tool-inventory"></div>
+              </section>
+              <div class="settings-section-intro"><h2>Outils intégrés</h2><p>Accès direct à tes projets. Dans le chat, les outils suivent les droits de la discussion.</p></div>
+              <div class="card-grid capabilities-grid">
+                <article class="panel"><h2>Fichiers</h2><p>Lire, créer et modifier les fichiers dans la racine des projets.</p><button id="capabilities-files" class="button secondary" type="button">Ouvrir les fichiers</button></article>
+                <article class="panel"><h2>Terminal</h2><p>Exécuter des commandes dans la racine des projets, sans ouvrir de discussion.</p><button id="capabilities-terminal" class="button secondary" type="button">Ouvrir le terminal</button></article>
+                <article class="panel"><h2>Mémoire</h2><p>Retrouver et conserver les informations utiles entre les discussions.</p><a href="#memories">Gérer les souvenirs</a></article>
+                <article class="panel"><h2>Tâches</h2><p>Planifier un travail et retrouver ses résultats.</p><a href="#automations">Gérer les tâches</a></article>
+              </div>
+              <p class="field-help">Les outils de recherche et de lecture web figurent ci-dessus lorsqu’une connexion les fournit. Les formulaires sont intégrés à Heart. La liste exacte des outils autorisés est visible dans le contexte de chaque discussion.</p>
+            </div>
+            <div id="capabilities-skills" class="settings-pane" role="tabpanel" aria-labelledby="capabilities-tab-skills" hidden>
+            <section id="skills-section" class="panel skills-panel" aria-labelledby="skills-title">
+              <header class="skills-heading"><div><h2 id="skills-title">Skills</h2><p class="field-help">Des méthodes de travail, pas de nouveaux outils.</p></div><button id="skills-refresh" type="button" class="icon-button" data-icon="refresh" aria-label="Actualiser les skills"></button></header>
+              <p class="field-help">L’assistant choisit les skills utiles et charge leurs instructions au besoin. Tu peux aussi les demander avec leur commande.</p><p id="skills-status" role="status" aria-live="polite"></p><div id="skills-list"></div>
+            </section>
+            </div>
+            <div id="capabilities-connections" class="settings-pane" role="tabpanel" aria-labelledby="capabilities-tab-connections" hidden>
+              <section class="panel mcp-panel">
+                <header class="mcp-panel-heading"><h2>Services externes</h2><div class="mcp-panel-actions"><button id="mcp-refresh" type="button" class="icon-button" data-icon="refresh" aria-label="Actualiser les connexions" title="Actualiser"></button></div></header>
+                <p class="field-help">Des services qui ajoutent des outils via MCP. Lecture seule pour le moment ; accès réseau requis dans la discussion.</p>
+                <p id="mcp-list-status" role="status" aria-live="polite"></p>
+                <div id="mcp-connections" class="mcp-connections"></div><p id="mcp-empty" class="field-help">Aucune connexion configurée.</p>
+                <button id="mcp-exa" class="button secondary" type="button">Configurer la recherche locale</button>
+              </section>            </div>
+
+          </section>
+          <section data-screen="settings" id="screen-settings">
+            <header class="page-heading"><span class="page-heading-icon" data-icon="settings" aria-hidden="true"></span><div class="page-heading-copy"><h1>Configuration</h1><p class="page-subtitle">Ton assistant, ses consignes et ton espace.</p></div><div class="page-actions"></div></header>
+            <div class="settings-tabs" role="tablist" aria-label="Rubriques de configuration"><div class="settings-tabs-inner">
+              <button id="settings-tab-appearance" type="button" role="tab" aria-controls="settings-panel-appearance" aria-selected="true" data-settings-tab="appearance">Apparence</button>
+              <button id="settings-tab-assistant" type="button" role="tab" aria-controls="settings-panel-assistant" aria-selected="false" tabindex="-1" data-settings-tab="assistant">Assistant</button>
+              <button id="settings-tab-conversations" type="button" role="tab" aria-controls="settings-panel-conversations" aria-selected="false" tabindex="-1" data-settings-tab="conversations">Discussions</button>
+              <button id="settings-tab-instructions" type="button" role="tab" aria-controls="settings-panel-instructions" aria-selected="false" tabindex="-1" data-settings-tab="instructions">Instructions</button>
+              <button id="settings-tab-policies" type="button" role="tab" aria-controls="settings-panel-policies" aria-selected="false" tabindex="-1" data-settings-tab="policies">Limites</button>
+            </div></div>
+            <section id="settings-panel-appearance" class="settings-pane" role="tabpanel" aria-labelledby="settings-tab-appearance" tabindex="0">
+              <div class="settings-section-intro"><h2>Ton interface</h2><p>Choisis l’apparence de ton espace.</p></div>
+              <div class="settings-theme-preview" aria-hidden="true"><div class="settings-preview-nav"></div><div class="settings-preview-body"><span></span><span></span><div></div></div></div>
+              <button id="edit-appearance" type="button" class="settings-row"><span class="settings-row-icon" data-icon="settings" aria-hidden="true"></span><span class="settings-row-copy"><strong>Thème de l’interface</strong><small id="appearance-summary">Clair</small></span><span data-icon="edit" aria-hidden="true"></span></button>
+            </section>
+            <section id="settings-panel-assistant" class="settings-pane" role="tabpanel" aria-labelledby="settings-tab-assistant" tabindex="0" hidden>
+              <div class="settings-section-intro"><h2>Ton assistant</h2><p>Identité, personnalité et façon d’échanger.</p></div>
+<section class="panel instruction-identity" aria-labelledby="instruction-identity-title"><header><span data-icon="instructions" aria-hidden="true"></span><div><h2 id="instruction-identity-title">Identité et personnalité</h2><p class="field-help">À chaque appel principal.</p></div><button id="edit-assistant" class="icon-button" type="button" data-icon="edit" aria-label="Modifier l’identité et la personnalité" title="Modifier l’identité et la personnalité"></button></header><div class="instruction-identity-summary"><strong id="settings-assistant-name">Nora</strong><p id="settings-summary"></p></div><details><summary>Voir les instructions de présentation</summary><pre id="assistant-presentation-preview"></pre></details></section>
+            </section>
+            <section id="settings-panel-conversations" class="settings-pane" role="tabpanel" aria-labelledby="settings-tab-conversations" tabindex="0" hidden>
+              <div class="settings-section-intro"><h2>Nouvelles discussions</h2><p>Ces valeurs s’appliquent aux nouvelles conversations.</p></div>
+              <button id="edit-conversation-defaults" type="button" class="settings-row"><span class="settings-row-icon" data-icon="conversations" aria-hidden="true"></span><span class="settings-row-copy"><strong>Modèle et autorisations par défaut</strong><small id="defaults-summary">Fournisseur, modèle, effort et accès.</small></span><span data-icon="edit" aria-hidden="true"></span></button>
+              <a href="#models" class="settings-row"><span class="settings-row-icon" data-icon="models" aria-hidden="true"></span><span class="settings-row-copy"><strong>Fournisseurs</strong><small>Gérer les connexions aux modèles.</small></span><span data-icon="arrow-right" aria-hidden="true"></span></a>
+              <a href="#backups" class="settings-row"><span class="settings-row-icon" data-icon="backups" aria-hidden="true"></span><span class="settings-row-copy"><strong>Sauvegardes</strong><small>Conservation et reprise des données.</small></span><span data-icon="arrow-right" aria-hidden="true"></span></a>
+            </section>
+            <section id="settings-panel-policies" class="settings-pane" role="tabpanel" aria-labelledby="settings-tab-policies" tabindex="0" hidden>
+              <div class="settings-section-intro settings-instructions-heading"><div><h2>Limites de fonctionnement</h2><p>Appliquées au prochain message, dans toutes les discussions.</p></div><button id="policies-refresh" type="button" class="icon-button" data-icon="refresh" aria-label="Actualiser les limites"></button></div>
+              <p id="policies-status" role="status" aria-live="polite"></p><div id="policy-cards" class="policy-cards"></div>
+              <p class="field-help">0 = sans plafond. La fenêtre du modèle et les permissions restent respectées.</p>
+            </section>
+            <section id="settings-panel-instructions" class="settings-pane" role="tabpanel" aria-labelledby="settings-tab-instructions" tabindex="0" hidden><div id="screen-instructions">
+              <div class="settings-section-intro settings-instructions-heading"><div><h2>Consignes de fonctionnement</h2><p>Appliquées aux prochains échanges.</p></div><button id="instructions-refresh" type="button" class="icon-button" data-icon="refresh" aria-label="Actualiser les instructions"></button></div>
+<p id="instructions-status" role="status" aria-live="polite"></p><div id="instruction-list" class="instruction-list"></div>
+            <details class="instruction-runtime"><summary>Ce qui dépend de la conversation</summary><p class="field-help">Droits, outils disponibles, date, souvenirs et point de reprise sont ajoutés selon le fil. Les consignes de projet se modifient dans ses fichiers AGENTS.md. Modifier un texte ne change pas les permissions.</p></details>
+
+            </div></section>
+          </section>
+          <section data-screen="consumption">
+            <header class="page-heading">
+              <span
+                class="page-heading-icon"
+                data-icon="consumption"
+                aria-hidden="true"
+              ></span>
+              <div class="page-heading-copy">
+                <h1>Consommation</h1>
+                <p class="page-subtitle">
+                  Dépenses, budgets et quotas des fournisseurs connectés.
+                </p>
+              </div>
+              <div class="page-actions"></div>
+            </header>
+            <div class="consumption-toolbar"><p id="consumption-status" class="field-help" role="status"></p><button id="consumption-refresh" type="button" class="button secondary">Actualiser</button></div>
+            <div id="consumption-providers" class="consumption-grid"></div>
+            <p class="field-help">Chiffres du compte ou de la clé, selon le fournisseur. Ils peuvent inclure des usages hors Heart. Périodes définies par le fournisseur ; données absentes signalées.</p>
+          </section>
+          <section data-screen="automations" id="screen-tasks"><header class="page-heading"><span class="page-heading-icon" data-icon="automations" aria-hidden="true"></span><div class="page-heading-copy"><h1>Tâches</h1><p class="page-subtitle">Planification et résultats dans tes discussions.</p></div><div class="page-actions"><button id="task-create" type="button" class="page-create" data-icon="add" aria-label="Créer une tâche"></button><button id="tasks-refresh" type="button" class="icon-button" data-icon="refresh" aria-label="Actualiser les tâches"></button></div></header><p id="tasks-worker" class="field-help"></p><p id="tasks-status" role="status" aria-live="polite"></p><div id="task-cards"></div><div id="tasks-more" role="status"><span id="tasks-more-status"></span><button id="tasks-more-retry" type="button" class="text-button" hidden>Réessayer</button></div></section>
+          <section data-screen="files">
+            <header class="page-heading">
+              <span
+                class="page-heading-icon"
+                data-icon="files"
+                aria-hidden="true"
+              ></span>
+              <div class="page-heading-copy">
+                <h1>Fichiers</h1>
+                <p class="page-subtitle">
+                  Racine des projets et espaces de tes conversations.
+                </p>
+              </div>
+              <div class="page-actions">
+                <button
+                  id="workspace-page-open"
+                  class="button secondary"
+                  type="button"
+                >
+                  Ouvrir
+                </button>
+              </div>
+            </header>
+            <article class="panel">
+              <h2>Racine des projets</h2><p>Accès direct aux projets, sans conversation.</p><button id="workspace-root-open" class="button secondary" type="button">Ouvrir les projets</button>
+              <h2>Choisir une conversation</h2>
+              <p>
+                Chaque conversation possède ses fichiers. L’assistant peut les
+                consulter ou les modifier selon les permissions que tu lui
+                accordes.
+              </p>
+              <label for="workspace-conversation-select">Conversation</label
+              ><select id="workspace-conversation-select">
+                <option value="">Choisir une conversation</option>
+              </select>
+              <p class="field-help">
+                Importer, télécharger, renommer, déplacer et supprimer tous les
+                formats ; éditer le texte. Les formulaires s’ouvrent dans un
+                éditeur.
+              </p>
+            </article>
+          </section>
+          <section data-screen="backups">
+            <header class="page-heading">
+              <span
+                class="page-heading-icon"
+                data-icon="backups"
+                aria-hidden="true"
+              ></span>
+              <div class="page-heading-copy">
+                <h1>Sauvegardes</h1>
+                <p class="page-subtitle">
+                  Le contrôle des sauvegardes, à venir.
+                </p>
+              </div>
+              <div class="page-actions"></div>
+            </header>
+            <div class="panel">
+              <h2>Le contrôle des sauvegardes</h2>
+              <p>
+                La consultation et la restauration depuis cette interface ne
+                sont pas encore disponibles. Cet écran n’affiche aucun statut de
+                sauvegarde non vérifié.
+              </p>
+              <span class="tag pending">Interface à venir</span>
+            </div>
+          </section>
+        </div>
+      </main>
+    </div>
+    <dialog
+      id="sessions-dialog"
+      class="navigation-dialog sessions-dialog"
+      aria-labelledby="sessions-title"
+    >
+      <header class="drawer-heading">
+        <div class="brand">
+          <img
+            class="brand-logo" data-assistant-logo
+            src="/brand/mark.png"
+            width="34"
+            height="34"
+            alt=""
+          /><span id="sessions-title"
+            >Conversations<span class="brand-sub"
+              >Ton espace de travail</span
+            ></span
+          >
+        </div>
+        <button
+          id="session-new-conversation"
+          type="button"
+          class="page-create"
+          title="Nouvelle conversation"
+          aria-label="Nouvelle conversation"
+          data-icon="add"
+        ></button>
+        <button
+          id="close-sessions"
+          class="icon-button"
+          type="button"
+          aria-label="Fermer les conversations"
+          data-icon="close"
+        ></button>
+      </header>
+      <section id="conversation-work" hidden aria-label="Travaux en cours"></section>
+      <div id="sessions-slot"></div>
+    </dialog>
+    <dialog
+      id="conversation-dialog"
+      class="editor-dialog"
+      aria-labelledby="conversation-dialog-title"
+    >
+      <header class="editor-heading">
+        <h2 id="conversation-dialog-title">Nouvelle conversation</h2>
+        <button
+          type="button"
+          class="icon-button"
+          data-close-editor
+          aria-label="Fermer"
+         data-icon="close"></button>
+      </header>
+      <form id="conversation-create">
+        <div class="editor-scroll">
+          <fieldset class="editor-fields">
+            <div id="conversation-project-box" hidden>
+              <label for="conversation-project">Projet du nouveau fil</label
+              ><select id="conversation-project">
+                <option value="">Aucun projet · souvenirs personnels</option>
+              </select>
+            </div>
+            <label for="conversation-title">Titre de la conversation</label>
+            <input
+              id="conversation-title"
+              maxlength="160"
+              placeholder="Titre de la nouvelle conversation"
+              aria-label="Titre de la nouvelle conversation"
+              required
+            />
+          </fieldset>
+        </div>
+        <div class="editor-actions">
+          <button type="button" class="button secondary" data-close-editor>
+            Annuler</button
+          ><button class="button primary" type="submit">Créer</button>
+        </div>
+      </form>
+    </dialog>
+    <dialog
+      id="project-dialog"
+      class="editor-dialog"
+      aria-labelledby="project-dialog-title"
+    >
+      <header class="editor-heading">
+        <h2 id="project-dialog-title">Nouveau projet</h2>
+        <button
+          type="button"
+          class="icon-button"
+          data-close-editor
+          aria-label="Fermer"
+         data-icon="close"></button>
+      </header>
+      <form id="project-create">
+        <div class="editor-scroll">
+          <fieldset class="editor-fields">
+            <label for="project-title">Nom du projet</label>
+            <input
+              id="project-title"
+              maxlength="160"
+              placeholder="Nom d’un nouveau projet"
+              aria-label="Nom d’un nouveau projet"
+              required
+            />
+          <label for="project-objective">Objectif</label>
+            <textarea id="project-objective" rows="2" placeholder="Résultat attendu" required></textarea>
+          </fieldset>
+        </div>
+        <div class="editor-actions">
+          <button type="button" class="button secondary" data-close-editor>
+            Annuler</button
+          ><button class="button primary" type="submit">Créer un projet</button>
+        </div>
+      </form>
+    </dialog>
+    <dialog
+      id="memory-dialog"
+      class="editor-dialog"
+      aria-labelledby="memory-dialog-title"
+    >
+      <header class="editor-heading">
+        <h2 id="memory-dialog-title">Ajouter un souvenir</h2>
+        <button
+          id="close-memory-editor"
+          type="button"
+          class="icon-button"
+          data-close-editor
+          aria-label="Fermer"
+         data-icon="close"></button>
+      </header>
+      <div id="memory-edit-panel">
+        <form id="memory-editor">
+          <div class="editor-scroll">
+            <fieldset class="editor-fields">
+              <label for="memory-title">Titre du souvenir</label
+              ><input id="memory-title" maxlength="160" required />
+              <div class="memory-fields">
+                <div>
+                  <label for="memory-kind">Type</label
+                  ><select id="memory-kind">
+                    <option value="fact">Fait</option>
+                    <option value="preference">Préférence</option>
+                    <option value="constraint">Contrainte</option>
+                    <option value="decision">Décision</option>
+                  </select>
+                </div>
+                <div>
+                  <label for="memory-scope">Portée</label
+                  ><select id="memory-scope">
+                    <option value="">Personnel · tous les fils</option>
+                  </select><p id="memory-scope-help" class="field-help">Personnel : tous les fils. Projet : les fils de ce projet.</p><a id="memory-create-project" href="#projects">Créer un projet pour une mémoire partagée</a>
+                </div>
+              </div>
+              <label for="memory-content">Souvenir complet</label
+              ><textarea
+                id="memory-content"
+                rows="3"
+                maxlength="4000"
+                required
+                placeholder="Un fait durable et précis, sans secret…"
+              ></textarea>
+            </fieldset>
+          </div>
+          <div class="editor-actions">
+            <button
+              id="memory-save"
+              class="button primary compact"
+              type="submit"
+            >
+              Ajouter le souvenir</button
+            ><button id="memory-cancel" class="button secondary" type="button">
+              Annuler
+            </button>
+          </div>
+        </form>
+      </div>
+    </dialog>
+    <dialog
+      id="api-key-dialog"
+      class="editor-dialog"
+      aria-labelledby="api-key-dialog-title"
+    >
+      <header class="editor-heading">
+        <h2 id="api-key-dialog-title">Configurer la clé API</h2>
+        <button
+          type="button"
+          class="icon-button"
+          data-close-editor
+          aria-label="Fermer"
+         data-icon="close"></button>
+      </header>
+      <div id="api-key-editor" hidden>
+        <form id="api-key-form">
+          <div class="editor-scroll">
+            <fieldset class="editor-fields">
+              <label for="api-key">Clé du fournisseur</label
+              ><input
+                id="api-key"
+                type="password"
+                autocomplete="off"
+                spellcheck="false"
+                required
+                placeholder="Coller la clé ici"
+              />
+              <p class="field-help">
+                La clé est enregistrée côté serveur et ne sera pas réaffichée.
+              </p>
+            </fieldset>
+          </div>
+          <div class="editor-actions">
+            <button type="button" class="button secondary" data-close-editor>
+              Annuler</button
+            ><button type="submit" id="save-api-key" class="button primary">
+              Enregistrer
+            </button>
+          </div>
+        </form>
+      </div>
+    </dialog>
+    <dialog id="instruction-dialog" class="editor-dialog" aria-labelledby="instruction-editor-title">
+      <header class="editor-heading"><div><h2 id="instruction-editor-title">Instruction</h2><p id="instruction-editor-when" class="field-help"></p></div><button class="icon-button" type="button" data-close-editor data-icon="close" aria-label="Fermer l’instruction"></button></header>
+      <form id="instruction-editor" class="editor-form"><div class="editor-scroll"><label for="instruction-text">Consignes envoyées au modèle</label><textarea id="instruction-text" rows="14" spellcheck="false"></textarea><p id="instruction-editor-status" class="field-help" role="status"></p><button id="instruction-reset" class="button secondary" type="button">Rétablir les valeurs par défaut</button><details class="instruction-default-preview"><summary>Voir le texte par défaut</summary><pre id="instruction-default-text"></pre></details></div><footer class="editor-actions"><button id="instruction-save" type="submit" class="button primary">Enregistrer</button></footer></form>
+    </dialog>
+    <dialog id="assistant-dialog" class="editor-dialog" aria-labelledby="assistant-editor-heading">
+      <header class="editor-heading"><div><h2 id="assistant-editor-heading">Identité et personnalité</h2><p class="field-help">Nom, façon de se présenter et d’interagir.</p></div><button class="icon-button" type="button" data-close-editor data-icon="close" aria-label="Fermer la personnalisation"></button></header>
+      <form id="assistant-editor" class="editor-form"><div class="editor-scroll assistant-editor-fields">
+        <label for="assistant-editor-name">Nom</label><input id="assistant-editor-name" type="text" required maxlength="60" autocomplete="off">
+        <label for="assistant-editor-gender">Genre de l’assistant</label><select id="assistant-editor-gender"><option value="feminine">Féminin</option><option value="masculine">Masculin</option><option value="neutral">Neutre</option></select>
+
+        <label for="assistant-personality-text">Personnalité et instructions</label><textarea id="assistant-personality-text" rows="8" placeholder="Décris le ton, la façon de travailler et les préférences de ton assistant."></textarea><p class="field-help">Ce texte définit sa personnalité. Tu peux l’affiner librement.</p>
+        <button id="assistant-personality-reset" class="button secondary" type="button">Rétablir la personnalité par défaut</button><p id="assistant-personality-status" class="field-help" role="status"></p><details class="personality-templates"><summary>Partir d’un modèle de personnalité</summary><label for="assistant-personality-template">Modèle de départ</label><select id="assistant-personality-template"></select><button id="assistant-apply-template" class="button secondary" type="button">Utiliser ce modèle</button><p class="field-help">Remplace le brouillon affiché. Rien ne change avant l’enregistrement.</p></details><details class="assistant-pack-settings"><summary>Identité visuelle</summary><label for="assistant-avatar-pack">Pack d’avatar</label><select id="assistant-avatar-pack"></select><div id="assistant-pack-preview" class="assistant-pack-preview"></div></details>
+      </div><footer class="editor-actions"><button id="assistant-save" type="submit" class="button primary">Enregistrer</button></footer></form>
+    </dialog>
+    <dialog
+      id="appearance-dialog"
+      class="editor-dialog"
+      aria-labelledby="appearance-dialog-title"
+    >
+      <header class="editor-heading">
+        <h2 id="appearance-dialog-title">Apparence</h2>
+        <button
+          type="button"
+          class="icon-button"
+          data-close-editor
+          aria-label="Fermer"
+         data-icon="close"></button>
+      </header>
+      <form id="appearance-form">
+        <div class="editor-scroll">
+          <fieldset class="editor-fields">
+            <label for="theme-choice">Thème de l’interface</label
+            ><select id="theme-choice">
+              <option value="light">Clair</option>
+              <option value="night">Nocturne</option>
+              <option value="sage">Sauge</option>
+              <option value="graphite">Graphite</option>
+              <option value="system">Suivre le système</option>
+            </select>
+          </fieldset>
+        </div>
+        <div class="editor-actions">
+          <button type="button" class="button secondary" data-close-editor>
+            Annuler</button
+          ><button type="submit" id="save-appearance" class="button primary">
+            Enregistrer l’apparence
+          </button>
+        </div>
+      </form>
+    </dialog>
+    <dialog id="setup-dialog">
+      <form id="setup-form">
+        <div class="setup-top">
+          <button
+            id="setup-back"
+            type="button"
+            class="icon-button"
+            aria-label="Étape précédente"
+          >
+            <span data-icon="back" aria-hidden="true"></span></button
+          ><span id="setup-progress">1 / 5</span
+          ><button id="setup-later" type="button" class="text-button">
+            Plus tard
+          </button>
+        </div>
+        <div id="setup-content"></div>
+        <p id="setup-error" class="form-error" role="alert" hidden></p>
+        <button id="setup-next" type="submit" class="button primary full">
+          Continuer
+        </button>
+      </form>
+    </dialog>
+    <dialog id="model-preferences-dialog" class="editor-dialog model-preferences-dialog" aria-labelledby="model-preferences-heading">
+      <header class="editor-heading"><div><h2 id="model-preferences-heading">Modèle du fil</h2><p id="model-preferences-summary" class="field-help">Uniquement pour cette conversation.</p></div><button class="icon-button" type="button" data-close-model-preferences data-icon="close" aria-label="Fermer le modèle du fil"></button></header>
+      <div class="editor-scroll"><div class="editor-fields" id="conversation-model-fields">
+<div id="provider-config">
+                <label class="field-title">Fournisseur</label>
+                <fieldset class="provider-options">
+                  <legend class="sr-only">Fournisseur de modèle</legend>
+                  <label class="provider-card"
+                    ><input
+                      type="radio"
+                      name="provider"
+                      value="demo"
+                      checked
+                    /><span class="provider-icon" data-icon="models" aria-hidden="true"></span
+                    ><strong>Simulation</strong
+                    ><span class="provider-meta">Sans compte · gratuit</span
+                    ></label
+                  >
+                  <label class="provider-card"
+                    ><input type="radio" name="provider" value="chatgpt" /><span class="provider-icon" data-icon="models" aria-hidden="true"></span
+                    ><strong>ChatGPT</strong
+                    ><span class="provider-meta" data-provider-choice="chatgpt"
+                      >Abonnement</span
+                    ></label
+                  >
+                  <label class="provider-card"
+                    ><input type="radio" name="provider" value="openai" /><span class="provider-icon" data-icon="models" aria-hidden="true"></span
+                    ><strong>OpenAI</strong
+                    ><span class="provider-meta" data-provider-choice="openai"
+                      >Clé API</span
+                    ></label
+                  >
+                  <label class="provider-card"
+                    ><input
+                      type="radio"
+                      name="provider"
+                      value="anthropic"
+                    /><span class="provider-icon" data-icon="models" aria-hidden="true"></span
+                    ><strong>Claude</strong
+                    ><span class="provider-meta" data-provider-choice="anthropic"
+                      >Clé API</span
+                    ></label
+                  >
+                  <label class="provider-card"
+                    ><input
+                      type="radio"
+                      name="provider"
+                      value="openrouter"
+                    /><span class="provider-icon" data-icon="models" aria-hidden="true"></span
+                    ><strong>OpenRouter</strong
+                    ><span class="provider-meta" data-provider-choice="openrouter"
+                      >Clé absente</span
+                    ></label
+                  >
+                </fieldset>
+
+                <div class="model-field" id="model-field" hidden>
+                  <div class="field-label-row">
+                    <label id="model-label" for="model-id">Modèle</label
+                    ><button
+                      class="text-button"
+                      type="button"
+                      id="refresh-models"
+                      hidden
+                    >
+                      Actualiser
+                    </button>
+                  </div>
+                  <select id="model-options" hidden>
+                    <option value="">Choisir un modèle ChatGPT</option></select
+                  ><input
+                    id="model-id"
+                    type="text"
+                    placeholder="Identifiant du modèle"
+                    autocomplete="off"
+                    spellcheck="false"
+                  />
+                  <p class="field-help" id="model-help">
+                    Choisis le modèle à utiliser pour cet essai.
+                  </p>
+                </div>
+              </div>
+        <div id="model-reasoning-options" hidden><label for="reasoning-effort">Effort de raisonnement</label><select id="reasoning-effort"><option value="">Automatique</option></select></div>
+        <p id="conversation-model-status" class="field-help" role="status"></p><a href="#providers" id="model-open-providers">Gérer les connexions fournisseurs</a>
+      </div></div><footer class="editor-actions"><button id="conversation-model-default" class="button secondary" type="button">Modèle par défaut</button><button id="conversation-model-save" class="button primary" type="button">Enregistrer</button></footer>
+    </dialog>
+    <dialog id="defaults-dialog" class="editor-dialog" aria-labelledby="defaults-heading">
+      <header class="editor-heading"><div><h2 id="defaults-heading">Nouvelles conversations</h2><p class="field-help">Modifiables ensuite dans chaque fil.</p></div><button type="button" id="close-defaults" class="icon-button" data-icon="close" aria-label="Fermer les valeurs par défaut"></button></header>
+      <form id="defaults-form" class="editor-form"><div class="editor-scroll defaults-fields">
+        <label for="defaults-provider">Fournisseur</label><select id="defaults-provider"><option value="chatgpt">ChatGPT</option><option value="openrouter">OpenRouter</option><option value="openai">OpenAI API</option><option value="anthropic">Anthropic API</option><option value="demo">Simulation</option></select>
+        <div class="defaults-catalog-actions"><label for="defaults-model">Modèle</label><button id="defaults-reload-models" type="button" class="text-button">Actualiser la liste</button></div><select id="defaults-model"></select><input id="defaults-model-id" type="text" aria-label="Identifiant du modèle par défaut" placeholder="Identifiant du modèle" maxlength="200" hidden>
+        <label for="defaults-effort" id="defaults-effort-label">Effort</label><select id="defaults-effort"><option value="">Automatique</option></select><p id="defaults-model-status" class="field-help" role="status"></p>
+        <div id="defaults-capacity-field"><label for="defaults-capacity">Fenêtre de contexte</label><input id="defaults-capacity" type="number" min="4096" max="2000000" value="32768"></div>
+      <label for="defaults-access">Mode</label><select id="defaults-access"><option value="none">Aucun outil fichier</option><option value="read">Lecture seule</option><option value="write">Lecture et écriture</option><option value="develop">Développement isolé</option><option value="yolo">YOLO · serveur entier, root</option></select>
+        <label class="setting-switch" for="defaults-network"><span><strong>Accès réseau</strong><small>Commandes et outils web du nouveau fil.</small></span><input id="defaults-network" type="checkbox" role="switch"></label><p id="defaults-access-help" class="field-help">Le réseau autorise les commandes et les outils MCP activés. YOLO donne accès au serveur entier et au réseau sans confirmations supplémentaires.</p>
+      </div><footer class="editor-actions"><button type="submit" id="save-defaults" class="button primary">Enregistrer</button></footer></form>
+    </dialog>
+    <dialog id="usage-dialog" class="editor-dialog usage-dialog" aria-labelledby="usage-heading">
+      <header class="editor-heading"><div><h2 id="usage-heading">Usage</h2><p id="usage-model" class="field-help"></p></div><button type="button" id="close-usage" class="icon-button" aria-label="Fermer l’usage" data-icon="close"></button></header>
+      <div class="editor-scroll"><div class="editor-fields usage-content"><dl id="usage-details" class="usage-details"></dl><p id="usage-message" class="field-help" role="status"></p><p id="usage-observed" class="field-help"></p></div></div>
+      <footer class="editor-actions"><button id="usage-done" class="button secondary" type="button">Fermer</button><a id="usage-dashboard" class="button" target="_blank" rel="noopener noreferrer" aria-label="Voir l’usage sur le site du fournisseur" hidden>Voir l’usage</a><button id="refresh-usage" class="button primary" type="button">Actualiser</button></footer>
+    </dialog>
+    <dialog id="context-dialog" class="editor-dialog conversation-settings" aria-labelledby="conversation-settings-heading">
+      <header class="editor-heading"><div><h2 id="conversation-settings-heading">Réglages du fil</h2><p id="permissions-conversation" class="field-help"></p></div>
+        <button id="close-context" type="button" class="icon-button" aria-label="Fermer les réglages" data-icon="close"></button>
+      </header>
+      <nav class="settings-nav" role="tablist" aria-label="Réglages du fil">
+        <button type="button" data-settings-section="model" role="tab" aria-controls="settings-model" aria-selected="false">Modèle</button><button type="button" data-settings-section="access" role="tab" aria-controls="settings-access" aria-selected="false">Accès</button><button type="button" data-settings-section="execution" role="tab" aria-controls="settings-execution" aria-selected="false">Exécution</button><button type="button" data-settings-section="context" role="tab" aria-controls="settings-context" aria-selected="false">Contexte</button>
+      </nav>
+      <div class="editor-scroll settings-scroll">
+        <section id="settings-model" class="settings-section" role="tabpanel"><div class="settings-section-heading"><div><h3>Modèle</h3><p>Choix pour le prochain message.</p></div></div><div id="brain-slot"><p id="conversation-model-summary" class="field-help">Choix propre à cette conversation.</p><button id="edit-conversation-model" type="button" class="button secondary">Choisir le modèle du fil</button></div></section>
+        <section id="settings-access" class="settings-section" role="tabpanel"><div class="settings-section-heading"><div><h3>Autorisations</h3><p>Droits de ce fil.</p></div></div>
+          <label for="workspace-access">Mode d’accès</label>
+          <select id="workspace-access">
+            <option value="none" data-detail="Aucun outil fichier ni terminal. Tu peux toujours gérer les fichiers toi-même.">Aucun accès</option>
+            <option value="read" data-detail="Lire les fichiers du fil, sans les modifier ni lancer de commande.">Lecture seule</option>
+            <option value="write" data-detail="Lire, créer, modifier et supprimer les fichiers du fil. Sans terminal.">Lecture et écriture</option>
+            <option value="develop" data-detail="Fichiers et commandes isolés dans ce fil. Réseau réglable ci-dessous.">
+              Développement · fichiers et terminal
+            </option>
+            <option value="yolo" data-detail="Commandes root sur tout le serveur, réseau inclus. Modifications et suppressions possibles sans confirmation supplémentaire." disabled>YOLO · serveur entier, root, sans confirmation</option>
+          </select>
+          <p id="workspace-access-help" class="field-help"></p>
+          <p class="settings-save-note">Mode enregistré automatiquement.</p>
+          <form id="network-policy-form" class="execution-policy">            <label class="setting-switch" for="execution-network"><span><strong>Accès au réseau</strong><small>Commandes et outils MCP activés. Toujours actif en YOLO.</small></span><input id="execution-network" type="checkbox" role="switch" /></label><div class="settings-inline-actions"><button class="button secondary compact" type="submit">Enregistrer le réseau</button></div></form>
+        </section>
+        <section id="settings-execution" class="settings-section" role="tabpanel"><div class="settings-section-heading"><div><h3>Exécution</h3><p>Budget de travail.</p></div></div>
+          <form id="execution-policy-form" class="execution-policy">
+
+            <div class="setting-field"><div><label for="execution-steps">Tours d’outils maximum</label><p class="field-help">0 : sans plafond, jusqu’à la réponse ou ton arrêt.</p></div><input id="execution-steps" type="number" min="0" step="1" value="0" /></div>
+            <div class="settings-inline-actions"><button class="button secondary compact" type="submit">Enregistrer le budget</button></div>
+          </form>
+        </section>
+        <section id="settings-context" class="settings-section" role="tabpanel"><div class="settings-section-heading"><div><h3>Contexte et mémoire</h3><p>Capacité et continuité.</p></div></div>
+          <div id="context-slot"><div id="context-options" class="context-settings"><label for="context-window">Capacité du modèle · tokens</label><input id="context-window" type="number" min="4096" max="2000000" step="1" value="32768" /><p class="field-help" id="context-capacity-help">Valeur configurée à vérifier pour le modèle choisi. Comptage des entrées estimé.</p></div></div>
+          <p class="field-help">Compression à 80 %. Mémoire pertinente sélectionnée automatiquement.</p>
+          <div class="settings-stats"><span><small>Messages</small><strong id="chat-message-count">0</strong></span><span><small>Capacité</small><strong id="chat-context-limit">32 768</strong></span></div>
+          <span class="field-help" id="conversation-segments">Historique conservé</span>
+          <details class="settings-inventory"><summary>Outils déclarés au dernier envoi</summary><p class="field-help">Liste réellement déclarée au dernier envoi.</p><ul id="conversation-tools"><li>Aucun envoi sélectionné.</li></ul></details>
+        </section>
+      </div>
+      <footer class="editor-actions"><span class="field-help">Prochain message</span><button id="use-brain" class="button primary" type="button">Terminé</button></footer>
+    </dialog>
+    <dialog id="task-editor" class="editor-dialog" aria-labelledby="task-editor-title"><header class="editor-heading"><div><h2 id="task-editor-title">Nouvelle tâche</h2></div><button type="button" class="icon-button" data-close-editor data-icon="close" aria-label="Fermer"></button></header><form id="task-form" class="editor-form"><div class="editor-scroll"><label for="task-title">Nom</label><input id="task-title" required><label for="task-prompt">Objectif et instructions</label><textarea id="task-prompt" rows="3" required></textarea><label for="task-search">Discussion</label><input id="task-search" type="search" placeholder="Rechercher une discussion"><select id="task-conversation" required></select><button id="task-more-conversations" type="button" class="text-button" hidden>Charger la suite</button><p class="field-help">Modèle, effort, fichiers et réseau hérités de cette discussion à chaque exécution.</p><div class="task-time-grid"><div><label for="task-frequency">Fréquence</label><select id="task-frequency"><option value="once">Une fois</option><option value="daily">Tous les jours</option><option value="weekdays">Du lundi au vendredi</option><option value="weekly">Chaque semaine</option></select></div><div id="task-weekday-field" hidden><label for="task-weekday">Jour</label><select id="task-weekday"><option value="1">Lundi</option><option value="2">Mardi</option><option value="3">Mercredi</option><option value="4">Jeudi</option><option value="5">Vendredi</option><option value="6">Samedi</option><option value="0">Dimanche</option></select></div><div id="task-date-field"><label for="task-date">Date et heure</label><input id="task-date" type="datetime-local"></div><div id="task-time-field" hidden><label for="task-time">Heure</label><input id="task-time" type="time"></div><div><label for="task-timezone">Fuseau horaire</label><input id="task-timezone" list="task-timezones" required><datalist id="task-timezones"><option value="Indian/Reunion"><option value="Europe/Paris"><option value="UTC"></datalist></div></div><label for="task-missed">Après une interruption de Heart</label><select id="task-missed"><option value="catch_up">Rattraper une fois</option><option value="skip">Ignorer les échéances manquées</option></select><label class="setting-switch" for="task-notify"><span><strong>Notifier dans Heart</strong><small>Résultat, erreur ou réponse attendue.</small></span><input id="task-notify" type="checkbox" role="switch" checked></label><label class="setting-switch" for="task-active"><span><strong>Tâche active</strong><small>Une pause reporte les prochaines exécutions.</small></span><input id="task-active" type="checkbox" role="switch" checked></label><p id="task-editor-status" role="status" aria-live="polite"></p></div><footer class="editor-actions"><button id="task-save" class="button" type="submit">Enregistrer</button></footer></form></dialog>
+    <dialog id="task-detail" class="editor-dialog" aria-labelledby="task-detail-title"><header class="editor-heading"><div><h2 id="task-detail-title">Tâche</h2></div><button type="button" class="icon-button" data-close-editor data-icon="close" aria-label="Fermer"></button></header><div class="editor-scroll"><p id="task-detail-summary" class="field-help"></p><div class="task-detail-actions"><button id="task-run-now" type="button" class="button">Exécuter maintenant</button><button id="task-toggle" type="button" class="button secondary">Pause</button><button id="task-edit" type="button" class="icon-button" data-icon="edit" aria-label="Modifier la tâche"></button><button id="task-open-chat" type="button" class="icon-button" data-icon="conversations" aria-label="Ouvrir la discussion"></button></div><p class="field-help">Exécuter maintenant ne décale pas le planning. Pause laisse le travail en cours se terminer.</p><p id="task-detail-status" role="status" aria-live="polite"></p><div id="task-history"></div><button id="task-history-more" type="button" class="text-button" hidden>Charger les résultats précédents</button></div></dialog>
+    <dialog id="skill-dialog" class="editor-dialog" aria-labelledby="skill-title"><header class="editor-heading"><div><h2 id="skill-title">Skill</h2></div><button type="button" class="icon-button" data-close-editor data-icon="close" aria-label="Fermer"></button></header><div class="editor-scroll"><p id="skill-description" class="field-help"></p><label class="setting-switch" for="skill-enabled"><span><strong>Disponible pour l’assistant</strong><small>Pour les prochains messages. Aucun droit supplémentaire.</small></span><input id="skill-enabled" type="checkbox" role="switch"></label><p id="skill-status" role="status" aria-live="polite"></p><div class="skill-invocation"><code id="skill-invocation"></code><button id="skill-copy" type="button" class="icon-button" data-icon="copy" aria-label="Copier l’invocation"></button></div><details><summary>Méthode complète</summary><pre id="skill-source"></pre></details><details id="skill-resources"><summary>Fichiers associés</summary><ul id="skill-resource-list"></ul></details></div></dialog>
+    <dialog id="policy-dialog" class="editor-dialog" aria-labelledby="policy-dialog-title">
+      <header class="editor-heading"><div><h2 id="policy-dialog-title">Limites</h2></div><button type="button" class="icon-button" data-close-editor data-icon="close" aria-label="Fermer"></button></header>
+      <form id="policy-form" class="editor-form"><div class="editor-scroll"><p id="policy-help" class="field-help"></p><div id="policy-fields" class="policy-fields"></div><p id="policy-status" role="status" aria-live="polite"></p></div>
+      <footer class="editor-actions"><button id="policy-reset" type="button" class="text-button">Rétablir</button><button id="policy-save" type="submit" class="button">Enregistrer</button></footer></form>
+    </dialog>
+    <div class="feedback-viewport" aria-label="Notifications">
+      <div id="request-progress" role="status" aria-live="polite" hidden></div>
+      <div id="global-message" class="notice" role="status" hidden></div>
+    </div>
+
+    <dialog
+      id="quick-prompts-dialog"
+      class="chat-tool-dialog editor-dialog"
+      aria-labelledby="quick-prompts-heading"
+    >
+      <header class="editor-heading">
+        <div>
+          <h2 id="quick-prompts-heading">Gérer les prompts rapides</h2>
+          <p class="field-help">Crée et organise tes raccourcis.</p>
+        </div>
+        <div class="page-actions">
+          <button
+            id="quick-prompt-new"
+            class="page-create"
+            type="button"
+            aria-label="Créer un prompt rapide"
+            title="Nouveau prompt"
+            data-icon="add"
+          ></button
+          ><button
+            class="icon-button"
+            type="button"
+            data-close-chat-dialog
+            aria-label="Fermer"
+            data-icon="close"
+          ></button>
+        </div>
+      </header>
+      <div id="quick-prompt-list" class="chat-tool-list"></div>
+    </dialog>
+    <dialog
+      id="quick-prompt-editor-dialog"
+      class="editor-dialog"
+      aria-labelledby="quick-prompt-editor-heading"
+    >
+      <header class="editor-heading">
+        <h2 id="quick-prompt-editor-heading">Nouveau prompt</h2>
+        <button
+          class="icon-button"
+          type="button"
+          data-close-editor
+          aria-label="Fermer"
+          data-icon="close"
+        ></button>
+      </header>
+      <form id="quick-prompt-form">
+        <div class="editor-scroll">
+          <fieldset class="editor-fields">
+            <label for="quick-prompt-title">Nom</label
+            ><input id="quick-prompt-title" maxlength="80" required />
+            <label for="quick-prompt-description">Description courte</label
+            ><input id="quick-prompt-description" maxlength="160" />
+            <label for="quick-prompt-context">Disponible dans</label
+            ><select id="quick-prompt-context">
+              <option value="all">Toutes les conversations</option>
+              <option value="general">Conversations personnelles</option>
+              <option value="project">Conversations de projet</option>
+            </select>
+            <label for="quick-prompt-content">Prompt</label
+            ><textarea
+              id="quick-prompt-content"
+              rows="5"
+              maxlength="10000"
+              required
+            ></textarea>
+          </fieldset>
+        </div>
+        <footer class="editor-actions">
+          <button class="button secondary" type="button" data-close-editor>
+            Annuler</button
+          ><button class="button primary" type="submit">Enregistrer</button>
+        </footer>
+      </form>
+    </dialog>
+    <dialog
+      id="quick-prompt-delete-dialog"
+      class="editor-dialog"
+      aria-labelledby="quick-prompt-delete-heading"
+    >
+      <header class="editor-heading">
+        <h2 id="quick-prompt-delete-heading">Supprimer ce prompt ?</h2>
+      </header>
+      <p class="chat-confirm-copy">
+        Il sera retiré de tes raccourcis. Les messages déjà envoyés restent
+        conservés.
+      </p>
+      <footer class="editor-actions">
+        <button class="button secondary" type="button" data-close-editor>
+          Annuler</button
+        ><button
+          id="quick-prompt-delete-confirm"
+          class="button danger"
+          type="button"
+        >
+          Supprimer
+        </button>
+      </footer>
+    </dialog>
+
+    <dialog id="workspace-dialog" class="editor-dialog workspace-dialog" aria-labelledby="workspace-heading">
+      <header class="editor-heading"><div><h2 id="workspace-heading">Fichiers</h2><p id="workspace-conversation" class="field-help"></p></div><div class="page-actions"><button id="workspace-permissions" class="icon-button" type="button" data-icon="settings" aria-label="Réglages de la conversation" title="Réglages"></button><button class="icon-button" type="button" data-workspace-close aria-label="Fermer les fichiers" data-icon="close"></button></div></header>
+      <div class="workspace-toolbar">
+        <div class="workspace-search-row"><label class="sr-only" for="workspace-search">Rechercher dans ce dossier</label><input id="workspace-search" type="search" placeholder="Rechercher un nom…" autocomplete="off" /><button id="workspace-import" class="button primary compact" type="button">Importer</button><input id="workspace-import-input" type="file" multiple hidden /></div>
+        <nav class="workspace-path" aria-label="Dossier courant"><button id="workspace-up" class="icon-button" type="button" aria-label="Dossier parent" data-icon="up"></button><strong id="workspace-path" hidden>Racine</strong><nav id="workspace-breadcrumbs" class="workspace-breadcrumbs" aria-label="Chemin du dossier"></nav><button id="workspace-refresh" class="icon-button" type="button" aria-label="Actualiser" title="Actualiser" data-icon="refresh"></button></nav>
+        <div class="workspace-actions"><button id="workspace-new-file" class="text-button" type="button"><span data-icon="add" aria-hidden="true"></span>Fichier</button><button id="workspace-new-folder" class="text-button" type="button"><span data-icon="folder" aria-hidden="true"></span>Dossier</button><button id="workspace-terminal" class="text-button" type="button"><span data-icon="terminal" aria-hidden="true"></span>Terminal</button></div>
+      </div>
+      <div class="editor-scroll workspace-scroll"><div class="workspace-list-heading"><strong>Nom</strong><span id="workspace-count" role="status"></span></div><div id="workspace-list" class="workspace-list" aria-live="polite"></div></div>
+      <footer class="workspace-help"><span>Ouvre un fichier pour le consulter ou le modifier.</span><details><summary>Formats et pièces jointes</summary><p>Tous les formats peuvent être importés, téléchargés, déplacés ou supprimés. L’éditeur lit le texte UTF-8. Les pièces jointes du chat restent dans le trombone.</p></details></footer>
+    </dialog>
+    <dialog id="workspace-item-menu" class="editor-dialog file-action-sheet" aria-labelledby="workspace-item-heading">
+      <header class="editor-heading"><div><h2 id="workspace-item-heading">Actions du fichier</h2><p id="workspace-item-meta" class="field-help"></p></div><button class="icon-button" type="button" data-workspace-close aria-label="Fermer les actions" data-icon="close"></button></header>
+      <div class="file-action-list"><button id="workspace-item-open" type="button">Ouvrir</button><button id="workspace-item-download" type="button">Télécharger</button><button id="workspace-item-move" type="button">Renommer ou déplacer</button><button id="workspace-item-delete" class="danger" type="button">Supprimer…</button></div>
+    </dialog>
+    <dialog
+      id="terminal-dialog"
+      class="editor-dialog workspace-dialog"
+      aria-labelledby="terminal-heading"
+    >
+      <header class="editor-heading">
+        <div>
+          <h2 id="terminal-heading">Terminal du projet</h2>
+          <p class="field-help" id="terminal-context"></p>
+        </div>
+        <button
+          class="icon-button"
+          type="button"
+          data-terminal-close
+          aria-label="Fermer le terminal"
+         data-icon="close"></button>
+      </header>
+      <div class="editor-scroll">
+        <div class="editor-fields">
+          <p class="field-help" id="terminal-access-help"></p>
+          <form id="terminal-command-form">
+            <label id="terminal-cwd-label" for="terminal-cwd">Dossier depuis la racine du projet</label
+            ><input id="terminal-cwd" value="." autocomplete="off" /><label
+              for="terminal-command"
+              >Commande shell</label
+            ><textarea
+              id="terminal-command"
+              rows="2"
+              spellcheck="false"
+              placeholder="git status"
+            ></textarea
+            ><button id="terminal-run" class="button primary" type="submit">
+              Exécuter
+            </button>
+          </form>
+          <label for="terminal-sessions">Commandes</label
+          ><select id="terminal-sessions">
+            <option value="">Aucune commande</option>
+          </select>
+          <p class="field-help" id="terminal-status" role="status"></p>
+          <pre
+            id="terminal-output"
+            class="terminal-output"
+            tabindex="0"
+            aria-label="Sortie de la commande"
+          ></pre>
+          <form id="terminal-input-form">
+            <label for="terminal-input">Entrée standard</label
+            ><input
+              id="terminal-input"
+              autocomplete="off"
+              placeholder="Texte à envoyer suivi d’un saut de ligne"
+            />
+            <div class="workspace-actions">
+              <button id="terminal-send" class="button secondary" type="submit">
+                Envoyer</button
+              ><button id="terminal-eof" class="button secondary" type="button">
+                Fermer l’entrée
+              </button>
+            </div>
+          </form>
+          <p class="field-help">
+            Commandes dans /workspace, avec Node.js, Python, Git et rg. Console
+            par flux ; les applications exigeant un vrai terminal TTY ne sont
+            pas encore prises en charge.
+          </p>
+        </div>
+      </div>
+      <footer class="editor-actions">
+        <button
+          type="button"
+          class="button secondary"
+          data-terminal-close-footer
+        >
+          Fermer</button
+        ><button
+          id="terminal-stop"
+          class="button danger"
+          type="button"
+          disabled
+        >
+          Arrêter la commande
+        </button>
+      </footer>
+    </dialog>
+    <dialog
+      id="workspace-editor"
+      class="editor-dialog workspace-dialog"
+      aria-labelledby="workspace-editor-heading"
+    >
+      <header class="editor-heading">
+        <div>
+          <h2 id="workspace-editor-heading">Nouveau fichier</h2>
+          <p class="field-help" id="workspace-document-meta"></p>
+        </div>
+        <button
+          class="icon-button"
+          type="button"
+          data-workspace-close
+          aria-label="Fermer l’éditeur"
+         data-icon="close"></button>
+      </header>
+      <form id="workspace-editor-form">
+        <div class="editor-scroll">
+          <div class="editor-fields">
+            <label for="workspace-name">Chemin du fichier</label
+            ><input
+              id="workspace-name"
+              required
+              autocomplete="off"
+              spellcheck="false"
+              placeholder="notes/compte-rendu.md"
+            />
+            <button id="workspace-wrap" type="button" class="text-button" aria-pressed="false">Retour à la ligne</button>
+            <label id="workspace-content-label" for="workspace-content"
+              >Contenu</label
+            ><textarea
+              id="workspace-content"
+              class="workspace-content"
+              spellcheck="false"
+              aria-describedby="workspace-editor-help"
+            ></textarea>
+            <p id="workspace-editor-help" class="field-help">
+              Le parent doit exister. Une version modifiée ailleurs ne sera pas
+              écrasée.
+            </p>
+            <div class="workspace-actions" id="workspace-document-actions">
+              <button id="workspace-download" class="text-button" type="button">
+                Télécharger</button
+              ><button id="workspace-move" class="text-button" type="button">
+                Renommer / déplacer</button
+              ><button
+                id="workspace-delete"
+                class="text-button danger"
+                type="button"
+              >
+                Supprimer
+              </button>
+            </div>
+          </div>
+        </div>
+        <footer class="editor-actions">
+          <button class="button secondary" type="button" data-workspace-close>
+            Annuler</button
+          ><button class="button primary" id="workspace-save" type="submit">
+            Enregistrer
+          </button>
+        </footer>
+      </form>
+    </dialog>
+    <dialog
+      id="workspace-path-dialog"
+      class="editor-dialog"
+      aria-labelledby="workspace-path-heading"
+    >
+      <header class="editor-heading">
+        <h2 id="workspace-path-heading">Nouveau dossier</h2>
+        <button
+          class="icon-button"
+          type="button"
+          data-workspace-close
+          aria-label="Fermer"
+         data-icon="close"></button>
+      </header>
+      <form id="workspace-path-form">
+        <div class="editor-scroll">
+          <div class="editor-fields">
+            <label for="workspace-destination">Chemin depuis la racine</label
+            ><input id="workspace-destination" required autocomplete="off" />
+            <p class="field-help">
+              Le dossier parent doit exister. Aucun fichier existant ne sera
+              remplacé.
+            </p>
+          </div>
+        </div>
+        <footer class="editor-actions">
+          <button class="button secondary" type="button" data-workspace-close>
+            Annuler</button
+          ><button
+            id="workspace-path-submit"
+            class="button primary"
+            type="submit"
+          >
+            Créer
+          </button>
+        </footer>
+      </form>
+    </dialog>
+    <dialog
+      id="workspace-confirm"
+      class="editor-dialog"
+      aria-labelledby="workspace-confirm-heading"
+    >
+      <header class="editor-heading">
+        <h2 id="workspace-confirm-heading">Confirmer la suppression</h2>
+      </header>
+      <p id="workspace-confirm-copy"></p>
+      <footer class="editor-actions">
+        <button class="button secondary" type="button" data-workspace-close>
+          Annuler</button
+        ><button
+          id="workspace-confirm-submit"
+          class="button danger"
+          type="button"
+        >
+          Supprimer
+        </button>
+      </footer>
+    </dialog>
+    <dialog
+      id="chat-files-dialog"
+      class="chat-tool-dialog editor-dialog"
+      aria-labelledby="chat-files-heading"
+    >
+      <header class="editor-heading">
+        <div>
+          <h2 id="chat-files-heading">Pièces jointes</h2>
+          <p class="field-help">
+            5 par message · 8 Mio par fichier · 20 Mio au total.
+          </p>
+        </div>
+        <button
+          class="icon-button"
+          type="button"
+          data-close-editor
+          aria-label="Fermer"
+          data-icon="close"
+        ></button>
+      </header>
+      <div class="chat-files-actions">
+        <button id="chat-add-files" class="button secondary" type="button">
+          Ajouter des fichiers</button
+        ><input
+          id="chat-file-input"
+          type="file"
+          multiple
+          accept="image/png,image/jpeg,image/webp,application/pdf,text/plain,text/markdown,text/csv,application/json,application/xml,.txt,.md,.csv,.json,.xml,.yaml,.yml,.jsonl"
+          class="sr-only"
+          tabindex="-1"
+        />
+        <p class="field-help">
+          Images, PDF ou texte UTF-8. Leur lecture dépend des capacités du
+          modèle choisi.
+        </p>
+      </div>
+      <div
+        id="attachment-upload"
+        class="attachment-upload"
+        role="status"
+        hidden
+      >
+        <span id="attachment-upload-label"></span
+        ><progress
+          id="attachment-upload-progress"
+          max="100"
+          value="0"
+        ></progress>
+      </div>
+      <div id="chat-file-list" class="chat-tool-list"></div>
+      <footer class="editor-actions">
+        <button class="button primary" type="button" data-close-editor>
+          Revenir au message
+        </button>
+      </footer>
+    </dialog>
+    <dialog
+      id="chat-file-preview"
+      class="editor-dialog"
+      aria-labelledby="chat-file-preview-heading"
+    >
+      <header class="editor-heading">
+        <h2 id="chat-file-preview-heading">Fichier</h2>
+        <button
+          class="icon-button"
+          type="button"
+          data-close-chat-dialog
+          aria-label="Fermer"
+          data-icon="close"
+        ></button>
+      </header>
+      <div id="chat-file-preview-body" class="chat-file-preview-body"></div>
+      <footer class="editor-actions">
+        <a id="chat-file-download" class="button secondary" download
+          >Télécharger</a
+        >
+      </footer>
+    </dialog>
+    <dialog id="mcp-dialog" class="editor-dialog" aria-labelledby="mcp-dialog-title">
+      <header class="editor-heading"><h2 id="mcp-dialog-title">Connexion MCP</h2><button type="button" class="icon-button" data-close-mcp data-icon="close" aria-label="Fermer"></button></header>
+      <form id="mcp-form">
+        <div class="editor-scroll"><fieldset class="editor-fields">
+          <label for="mcp-label">Nom</label><input id="mcp-label" required autocomplete="off" placeholder="Recherche web" />
+          <label for="mcp-url">URL MCP</label><input id="mcp-url" type="url" required autocomplete="off" placeholder="https://…/mcp" /><small class="field-help">Streamable HTTP. Aucun secret dans l’URL.</small>
+          <label for="mcp-auth">Authentification</label><select id="mcp-auth"><option value="none">Sans authentification</option><option value="bearer_env">Bearer · variable serveur</option><option value="header_env">En-tête · variable serveur</option></select>
+          <div id="mcp-auth-fields" hidden><label for="mcp-env">Nom de la variable secrète</label><input id="mcp-env" autocomplete="off" placeholder="EXA_API_KEY" /><div id="mcp-header-box" hidden><label for="mcp-header">En-tête HTTP</label><input id="mcp-header" autocomplete="off" value="x-api-key" /></div><small class="field-help">La valeur reste dans l’environnement privé du serveur. OAuth non pris en charge ici.</small></div>
+          <div class="mcp-inline-fields"><div><label for="mcp-timeout">Délai MCP (secondes)</label><input id="mcp-timeout" type="number" min="0.001" step="any" value="60" required /></div><div><label class="toggle-row"><span>Activer la connexion</span><input id="mcp-enabled" type="checkbox" role="switch" /></label></div></div>
+          <label class="toggle-row"><span>Autoriser les outils d’écriture</span><input id="mcp-writes" type="checkbox" role="switch" /></label>
+          <label class="toggle-row"><span>Contenu sensible · ce tour uniquement</span><input id="mcp-transient" type="checkbox" role="switch" /></label><small class="field-help">Les arguments et résultats ne sont pas conservés dans l’historique. Les valeurs restent transmises au modèle ; ne pas les recopier dans une réponse.</small>
+          <button id="mcp-discover" class="button secondary" type="button">Tester et découvrir les outils</button>
+          <section id="mcp-catalogue" hidden><h3>Outils autorisés</h3><p class="field-help">Choisis les outils autorisés. Une écriture exige aussi l’activation ci-dessus.</p><div id="mcp-tool-choices"></div></section>
+          <p id="mcp-status" role="status" aria-live="polite"></p>
+        </fieldset></div>
+        <footer class="editor-actions"><button type="button" class="button secondary" data-cancel-mcp>Annuler</button><button id="mcp-save" type="submit" class="button primary">Enregistrer</button></footer>
+      </form>
+    </dialog>
+
+    <dialog
+      id="select-sheet"
+      class="select-sheet"
+      aria-labelledby="select-sheet-title"
+    >
+      <div class="sheet-handle" aria-hidden="true"></div>
+      <header class="sheet-heading">
+        <h2 id="select-sheet-title">Choisir une option</h2>
+        <p id="select-sheet-hint">Choisis une valeur dans la liste.</p>
+      </header>
+      <div class="sheet-search">
+        <label class="sr-only" for="select-sheet-search"
+          >Rechercher une option</label
+        ><input
+          id="select-sheet-search"
+          type="search"
+          placeholder="Rechercher…"
+          autocomplete="off"
+        />
+      </div>
+      <div
+        id="select-sheet-options"
+        class="sheet-options"
+        role="listbox"
+        aria-labelledby="select-sheet-title"
+      ></div>
+      <footer class="sheet-footer">
+        <button
+          id="cancel-select-sheet"
+          class="button secondary full"
+          type="button"
+        >
+          Annuler
+        </button>
+      </footer>
+    </dialog>
+  </body>
+</html>

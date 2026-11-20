@@ -1,0 +1,10 @@
+name: personal-harness-search
+services:
+  engine:
+    container_name: personal-harness-search
+    image: docker.io/searxng/searxng@sha256:0b9f3ddd85efc8df189e6543d65702abfa8f3ed1c32229a53f7707cd12b554ef
+    restart: unless-stopped
+    ports:
+      - '127.0.0.1:4216:8080'
+    volumes:
+      - /etc/personal-harness/search/settings.yml:/etc/searxng/settings.yml:ro

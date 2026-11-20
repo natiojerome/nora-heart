@@ -1,0 +1,13 @@
+{
+  "id": "orion-waiting",
+  "model": "bytedance/seedance-2.0",
+  "status": "completed",
+  "jobId": "gen-vid-1794616983-RcucrdogqqUYXMlROEF7",
+  "generationId": "gen-vid-1794616983-RcucrdogqqUYXMlROEF7",
+  "usage": {
+    "cost": 0.2716,
+    "is_byok": false
+  },
+  "bytes": 894000,
+  "sha256": "7f5964a281197bd290fe2f01571a648b550941d83dd458c51dcdab17669e964a"
+}

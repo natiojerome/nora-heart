@@ -1,0 +1,13 @@
+{
+  "id": "orion-working",
+  "model": "bytedance/seedance-2.0",
+  "status": "completed",
+  "jobId": "gen-vid-1794616258-vFgOB6YoZPfqxzQ1g9T4",
+  "generationId": "gen-vid-1794616258-vFgOB6YoZPfqxzQ1g9T4",
+  "usage": {
+    "cost": 0.2716,
+    "is_byok": false
+  },
+  "bytes": 916918,
+  "sha256": "b06f58f1b4f580ec8eddbabedb78165d862e313663e1552bc143f03b317b6f8f"
+}

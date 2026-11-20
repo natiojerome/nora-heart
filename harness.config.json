@@ -1,0 +1,10 @@
+{
+  "displayName": "Nora Heart",
+  "modules": { "memory": "basic", "model": "demo" },
+  "storage": {
+    "driver": "postgres",
+    "connectionStringEnv": "HARNESS_DATABASE_URL"
+  },
+  "workspaceDirectory": "workspace",
+  "maxSteps": 8
+}

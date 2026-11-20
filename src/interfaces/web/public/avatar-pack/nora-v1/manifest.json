@@ -1,0 +1,865 @@
+{
+  "formatVersion": 1,
+  "id": "bdcb9596-cc59-44de-ad7f-b3e783593ca4",
+  "version": "1.0.0",
+  "displayName": "Nora",
+  "description": "Portraits and optional full-body presence derived from approved Nora video masters.",
+  "states": [
+    "idle",
+    "working",
+    "waiting"
+  ],
+  "portraitSizes": [
+    32,
+    48,
+    64,
+    96,
+    128,
+    256
+  ],
+  "bodySizes": [
+    256,
+    512,
+    768
+  ],
+  "defaultMode": "portrait",
+  "defaultSize": 48,
+  "accessibility": {
+    "reducedMotion": "use-png",
+    "offscreen": "pause",
+    "hiddenDocument": "pause",
+    "statusTextRequired": true
+  },
+  "source": {
+    "project": "/projects/nora",
+    "revision": "ecb473c8156be912a1b0ad4be764ae37b56e4821",
+    "directory": "assets/brand/animation/openrouter/seedance-pack-v1",
+    "inputs": [
+      {
+        "path": "idle-loop-review.mp4",
+        "sha256": "ab954788279b1f2ac5e2a06658006bed65bc96a1362013d10ce0a7885bcb5092",
+        "width": 960,
+        "height": 960,
+        "r_frame_rate": "24/1",
+        "duration": "3.833333"
+      },
+      {
+        "path": "working-loop-trim.mp4",
+        "sha256": "bd87e4be9bb64231796e18e6fb72871ef12a25a5f8d57443e4d874e724b10196",
+        "width": 960,
+        "height": 960,
+        "r_frame_rate": "24/1",
+        "duration": "3.916667"
+      },
+      {
+        "path": "waiting-loop-review.mp4",
+        "sha256": "dcd80986dacad7b1aed87233c1ce1163ac91a2ae0dd3b651752db41bfc9797e8",
+        "width": 960,
+        "height": 960,
+        "r_frame_rate": "24/1",
+        "duration": "3.833333"
+      },
+      {
+        "path": "idle-to-working.mp4",
+        "sha256": "d83f65ff0e91e8a9eb25841e1c4bc37f326f904476105b7ec468dce5c84dd7e1",
+        "width": 960,
+        "height": 960,
+        "r_frame_rate": "24/1",
+        "duration": "4.041667"
+      },
+      {
+        "path": "working-to-idle.mp4",
+        "sha256": "f395ea0851d75c81c29390da82d1f628f626a02a4b82395bce194e21af7cb42f",
+        "width": 960,
+        "height": 960,
+        "r_frame_rate": "24/1",
+        "duration": "4.041667"
+      },
+      {
+        "path": "working-to-waiting.mp4",
+        "sha256": "6d06b9dc896f3e412edcf806d9448ab60d2cb29f29854a1b257e882979c996c0",
+        "width": 960,
+        "height": 960,
+        "r_frame_rate": "24/1",
+        "duration": "4.041667"
+      },
+      {
+        "path": "waiting-to-working.mp4",
+        "sha256": "033a01ab00ba7ae2cd9bb3dc999a15c9ec54f01d5014a1e5b8cd5a8a55e2613d",
+        "width": 960,
+        "height": 960,
+        "r_frame_rate": "24/1",
+        "duration": "4.041667"
+      }
+    ]
+  },
+  "notes": [
+    "Video-derived portraits, not an independently redrawn face.",
+    "Small sizes use 8fps; larger sizes use 12fps.",
+    "No paid video generation. Original seedance loop boundary may remain perceptible.",
+    "No speaking or lip-sync asset; only rest/work/wait states."
+  ],
+  "files": [
+    {
+      "path": "portrait/idle-32.webp",
+      "bytes": 28382,
+      "sha256": "4b2a375d4f7d3739f9962efeaddfb4b22adc32d2959d6633fa3ef06f7f80b09c",
+      "kind": "portrait",
+      "state": "idle",
+      "size": 32,
+      "animated": true,
+      "fps": 8,
+      "loop": true,
+      "durationMs": 3833
+    },
+    {
+      "path": "portrait/idle-32.png",
+      "bytes": 3045,
+      "sha256": "dad6286aafd7bf568b05a5a49d91620ed2b707b77ccd6b5025f56866a9c970f6",
+      "kind": "portrait",
+      "state": "idle",
+      "size": 32,
+      "animated": false
+    },
+    {
+      "path": "portrait/idle-48.webp",
+      "bytes": 47658,
+      "sha256": "c2479d71b466ccbd6527c2616df491c903f62525c3644caa164cabdde5944e29",
+      "kind": "portrait",
+      "state": "idle",
+      "size": 48,
+      "animated": true,
+      "fps": 8,
+      "loop": true,
+      "durationMs": 3833
+    },
+    {
+      "path": "portrait/idle-48.png",
+      "bytes": 6388,
+      "sha256": "f34c84533cfeafc8080c289b73c6d20ee98526047e8c976f2d6f87b821518a3e",
+      "kind": "portrait",
+      "state": "idle",
+      "size": 48,
+      "animated": false
+    },
+    {
+      "path": "portrait/idle-64.webp",
+      "bytes": 68848,
+      "sha256": "7b48e155ed3711cbce2daeaa77ed425b010690d62d55469cc8d5425796b39b6d",
+      "kind": "portrait",
+      "state": "idle",
+      "size": 64,
+      "animated": true,
+      "fps": 8,
+      "loop": true,
+      "durationMs": 3833
+    },
+    {
+      "path": "portrait/idle-64.png",
+      "bytes": 10969,
+      "sha256": "f9556be4ff340caa4bdd5b1dc7a4c26af65199ec93777d41ffbf23653adc4207",
+      "kind": "portrait",
+      "state": "idle",
+      "size": 64,
+      "animated": false
+    },
+    {
+      "path": "portrait/idle-96.webp",
+      "bytes": 173018,
+      "sha256": "2b0282ea6b8c02c706fef4ab6f82fa404c9e2c9a3477518f580e366017c0ce85",
+      "kind": "portrait",
+      "state": "idle",
+      "size": 96,
+      "animated": true,
+      "fps": 12,
+      "loop": true,
+      "durationMs": 3833
+    },
+    {
+      "path": "portrait/idle-96.png",
+      "bytes": 23264,
+      "sha256": "3cbe3238bdde8154161a99be484418abe9800a6718711b4673bfde6062f87898",
+      "kind": "portrait",
+      "state": "idle",
+      "size": 96,
+      "animated": false
+    },
+    {
+      "path": "portrait/idle-128.webp",
+      "bytes": 247570,
+      "sha256": "8e0c2a35de1ff75506480d9e50acb0e3e367cbdfa032c2bddb656fafe3a39193",
+      "kind": "portrait",
+      "state": "idle",
+      "size": 128,
+      "animated": true,
+      "fps": 12,
+      "loop": true,
+      "durationMs": 3833
+    },
+    {
+      "path": "portrait/idle-128.png",
+      "bytes": 39606,
+      "sha256": "b4790461c1550d339ea9a4b3fed8e1f4e7e351072e9b131ffbec7d5d41c98eab",
+      "kind": "portrait",
+      "state": "idle",
+      "size": 128,
+      "animated": false
+    },
+    {
+      "path": "portrait/idle-256.webp",
+      "bytes": 521654,
+      "sha256": "3251c650d628ae3233ccd4fc965200f7cb9f671a9f3d5fc3e20ecd362053b01c",
+      "kind": "portrait",
+      "state": "idle",
+      "size": 256,
+      "animated": true,
+      "fps": 12,
+      "loop": true,
+      "durationMs": 3833
+    },
+    {
+      "path": "portrait/idle-256.png",
+      "bytes": 140072,
+      "sha256": "f0741fb2d363de8a9e9f81ebc93f66bd2f5b531633b6ab5cb1429e9f21021037",
+      "kind": "portrait",
+      "state": "idle",
+      "size": 256,
+      "animated": false
+    },
+    {
+      "path": "body/idle-256.webp",
+      "bytes": 606156,
+      "sha256": "db6a4bd23b5257f9bf523a56f241e8be8f3e1d7c3ba2fd52dd0934186e702e72",
+      "kind": "body",
+      "state": "idle",
+      "size": 256,
+      "animated": true,
+      "fps": 12,
+      "loop": true,
+      "durationMs": 3833
+    },
+    {
+      "path": "body/idle-256.png",
+      "bytes": 78930,
+      "sha256": "114a665ab8402b9eee7945645b7f8250cf01d008eb21a180eff0f09b9ac2f80e",
+      "kind": "body",
+      "state": "idle",
+      "size": 256,
+      "animated": false
+    },
+    {
+      "path": "body/idle-512.webp",
+      "bytes": 1329878,
+      "sha256": "9915aad51c12e4517d385122984c6981c6ca161fdbb80f486c1a8d1f2f2af996",
+      "kind": "body",
+      "state": "idle",
+      "size": 512,
+      "animated": true,
+      "fps": 12,
+      "loop": true,
+      "durationMs": 3833
+    },
+    {
+      "path": "body/idle-512.png",
+      "bytes": 269107,
+      "sha256": "f3ee7164290eca62cb8cbc5d145ebdeeddb468940b71aa6315693eafbe5617ce",
+      "kind": "body",
+      "state": "idle",
+      "size": 512,
+      "animated": false
+    },
+    {
+      "path": "body/idle-768.webp",
+      "bytes": 2045952,
+      "sha256": "97bdbf0b59c1163cdb983685f0ea7a99bd24a6ac9dd79533d6141b1e36897b75",
+      "kind": "body",
+      "state": "idle",
+      "size": 768,
+      "animated": true,
+      "fps": 12,
+      "loop": true,
+      "durationMs": 3833
+    },
+    {
+      "path": "body/idle-768.png",
+      "bytes": 544289,
+      "sha256": "548172f4591b92d57f28bd9ed525ec871dd46afcf5bcbfa5a21eb49ed796a509",
+      "kind": "body",
+      "state": "idle",
+      "size": 768,
+      "animated": false
+    },
+    {
+      "path": "preview/idle.gif",
+      "bytes": 1667691,
+      "sha256": "c3c2faf493879bea64fa44989553cc1a6114136edae5c7e480b9f4388885f23d",
+      "kind": "preview",
+      "state": "idle",
+      "size": 256,
+      "animated": true
+    },
+    {
+      "path": "portrait/working-32.webp",
+      "bytes": 28510,
+      "sha256": "a0f6afd23e9c8e40c976bc0d3ee4d495c7a6e3948256467c3effbda177f9bf1f",
+      "kind": "portrait",
+      "state": "working",
+      "size": 32,
+      "animated": true,
+      "fps": 8,
+      "loop": true,
+      "durationMs": 3917
+    },
+    {
+      "path": "portrait/working-32.png",
+      "bytes": 2664,
+      "sha256": "a3a4fcd272c83e2f5172e571800c1027f9a743d378ce5e14befe5c1bf6741ea3",
+      "kind": "portrait",
+      "state": "working",
+      "size": 32,
+      "animated": false
+    },
+    {
+      "path": "portrait/working-48.webp",
+      "bytes": 46852,
+      "sha256": "8c199e549391b9e2d6e976eb48838999d2b669bc86790d8d593b5076245aaa5b",
+      "kind": "portrait",
+      "state": "working",
+      "size": 48,
+      "animated": true,
+      "fps": 8,
+      "loop": true,
+      "durationMs": 3917
+    },
+    {
+      "path": "portrait/working-48.png",
+      "bytes": 5553,
+      "sha256": "ebc719865b10b5ea8dea81837548653514da4db5b4a8b225e3ea31f72a74ba38",
+      "kind": "portrait",
+      "state": "working",
+      "size": 48,
+      "animated": false
+    },
+    {
+      "path": "portrait/working-64.webp",
+      "bytes": 66204,
+      "sha256": "b2ff426a86cd7a5aac52daaee400dd0c0f8ca84774b4e1bf620ebd0693a0a789",
+      "kind": "portrait",
+      "state": "working",
+      "size": 64,
+      "animated": true,
+      "fps": 8,
+      "loop": true,
+      "durationMs": 3917
+    },
+    {
+      "path": "portrait/working-64.png",
+      "bytes": 9416,
+      "sha256": "48844a3ab8360b3f2be1032222ecd37b33bb8d97ef61e917a136e09b7346762f",
+      "kind": "portrait",
+      "state": "working",
+      "size": 64,
+      "animated": false
+    },
+    {
+      "path": "portrait/working-96.webp",
+      "bytes": 165320,
+      "sha256": "d5ff7e4acd256c72562c7d6b9ec79e43e081ed7261681a703218a30bcaa14d9f",
+      "kind": "portrait",
+      "state": "working",
+      "size": 96,
+      "animated": true,
+      "fps": 12,
+      "loop": true,
+      "durationMs": 3917
+    },
+    {
+      "path": "portrait/working-96.png",
+      "bytes": 19912,
+      "sha256": "28190772f14c14cf9be6f655f79a73de16dda3f8527a078d23921bd29d04a9d6",
+      "kind": "portrait",
+      "state": "working",
+      "size": 96,
+      "animated": false
+    },
+    {
+      "path": "portrait/working-128.webp",
+      "bytes": 234628,
+      "sha256": "610287d6a78ab4d5f5b0d5cd047a2b2d856ad826d5d5d2057791ef1feb376933",
+      "kind": "portrait",
+      "state": "working",
+      "size": 128,
+      "animated": true,
+      "fps": 12,
+      "loop": true,
+      "durationMs": 3917
+    },
+    {
+      "path": "portrait/working-128.png",
+      "bytes": 33666,
+      "sha256": "b66ae8333c7e34c72003f4d443d646d6915fbbeddf30eca6f7ecaed9b3a03261",
+      "kind": "portrait",
+      "state": "working",
+      "size": 128,
+      "animated": false
+    },
+    {
+      "path": "portrait/working-256.webp",
+      "bytes": 484108,
+      "sha256": "c3bf4c518e238c4db8cd0ad47b1c26149570b9b6c5c080b1d42ec855dcc534a9",
+      "kind": "portrait",
+      "state": "working",
+      "size": 256,
+      "animated": true,
+      "fps": 12,
+      "loop": true,
+      "durationMs": 3917
+    },
+    {
+      "path": "portrait/working-256.png",
+      "bytes": 120008,
+      "sha256": "330dea394bb7115b85128c3f459d16d8d36560fd69a70194d274349135629ef0",
+      "kind": "portrait",
+      "state": "working",
+      "size": 256,
+      "animated": false
+    },
+    {
+      "path": "body/working-256.webp",
+      "bytes": 606408,
+      "sha256": "10139d45189be944ce366edadffae8d3ac95f6636b2ed89bffbe5caa5ea0d22e",
+      "kind": "body",
+      "state": "working",
+      "size": 256,
+      "animated": true,
+      "fps": 12,
+      "loop": true,
+      "durationMs": 3917
+    },
+    {
+      "path": "body/working-256.png",
+      "bytes": 73852,
+      "sha256": "f94ab20407f60a94d58e415247ee6bbb7238f99795a971c917b9b0c9e6a1be2b",
+      "kind": "body",
+      "state": "working",
+      "size": 256,
+      "animated": false
+    },
+    {
+      "path": "body/working-512.webp",
+      "bytes": 1353456,
+      "sha256": "a5383752aad218786d7afbf28b85fee8e10c585c833ab2de0e1dd29060f11d88",
+      "kind": "body",
+      "state": "working",
+      "size": 512,
+      "animated": true,
+      "fps": 12,
+      "loop": true,
+      "durationMs": 3917
+    },
+    {
+      "path": "body/working-512.png",
+      "bytes": 257753,
+      "sha256": "6467aa332bf93c4e8c52588d6d4d4397379f063a8a48839b5d1d9bad26665abd",
+      "kind": "body",
+      "state": "working",
+      "size": 512,
+      "animated": false
+    },
+    {
+      "path": "body/working-768.webp",
+      "bytes": 2064148,
+      "sha256": "513008be4c7d0ceed2e659a680ef203b0a34e5f3d06184604a54af4761a486ad",
+      "kind": "body",
+      "state": "working",
+      "size": 768,
+      "animated": true,
+      "fps": 12,
+      "loop": true,
+      "durationMs": 3917
+    },
+    {
+      "path": "body/working-768.png",
+      "bytes": 528943,
+      "sha256": "d005d0e2e6dcf4b68d8931b9270b7375cc526bccb7f5ff15b1a8eddf2e8416b0",
+      "kind": "body",
+      "state": "working",
+      "size": 768,
+      "animated": false
+    },
+    {
+      "path": "preview/working.gif",
+      "bytes": 1477360,
+      "sha256": "4074de27012330c73dc9cf43bfd595b434bb71824d7b9afcc9432b8e939f793c",
+      "kind": "preview",
+      "state": "working",
+      "size": 256,
+      "animated": true
+    },
+    {
+      "path": "portrait/waiting-32.webp",
+      "bytes": 25454,
+      "sha256": "b638a7ad40551f1378029b964f6909c5c36b0736704134408b6b5b6c903c1bf7",
+      "kind": "portrait",
+      "state": "waiting",
+      "size": 32,
+      "animated": true,
+      "fps": 8,
+      "loop": true,
+      "durationMs": 3833
+    },
+    {
+      "path": "portrait/waiting-32.png",
+      "bytes": 2513,
+      "sha256": "1d4587b0ea5d1b4d5481492c0cda402af5fbb153f955cd9552d9ba6a89092607",
+      "kind": "portrait",
+      "state": "waiting",
+      "size": 32,
+      "animated": false
+    },
+    {
+      "path": "portrait/waiting-48.webp",
+      "bytes": 42912,
+      "sha256": "295f6b09e1ced8466edb77ff962c879829330dfc8d00a24af5eec4c59ae75667",
+      "kind": "portrait",
+      "state": "waiting",
+      "size": 48,
+      "animated": true,
+      "fps": 8,
+      "loop": true,
+      "durationMs": 3833
+    },
+    {
+      "path": "portrait/waiting-48.png",
+      "bytes": 5295,
+      "sha256": "1656dfc38ae2b8fe40536e812cde1cba6083f62388e7d31f0c6b35c5297cf8d0",
+      "kind": "portrait",
+      "state": "waiting",
+      "size": 48,
+      "animated": false
+    },
+    {
+      "path": "portrait/waiting-64.webp",
+      "bytes": 61422,
+      "sha256": "9919b43a2861497333c8862e3516814fc6813939e3940d167b6efbc9e4c8645e",
+      "kind": "portrait",
+      "state": "waiting",
+      "size": 64,
+      "animated": true,
+      "fps": 8,
+      "loop": true,
+      "durationMs": 3833
+    },
+    {
+      "path": "portrait/waiting-64.png",
+      "bytes": 8992,
+      "sha256": "96f5ff904941a8699ef1088479a7b0ac86f5ade7d7c915f9499037284da12e0e",
+      "kind": "portrait",
+      "state": "waiting",
+      "size": 64,
+      "animated": false
+    },
+    {
+      "path": "portrait/waiting-96.webp",
+      "bytes": 149094,
+      "sha256": "cc3857afb228a84143816221d945b6fde616e03f527698a01dc73383d750bab5",
+      "kind": "portrait",
+      "state": "waiting",
+      "size": 96,
+      "animated": true,
+      "fps": 12,
+      "loop": true,
+      "durationMs": 3833
+    },
+    {
+      "path": "portrait/waiting-96.png",
+      "bytes": 19071,
+      "sha256": "6284cb19c3acba23d65188362ed4dca716e0d24aeb1b15499adf5b5d38c49cc9",
+      "kind": "portrait",
+      "state": "waiting",
+      "size": 96,
+      "animated": false
+    },
+    {
+      "path": "portrait/waiting-128.webp",
+      "bytes": 214442,
+      "sha256": "336282e4e6978294d51df7e0a43e799f2a7c1fe31823ee8e55b3dd0c094cf09b",
+      "kind": "portrait",
+      "state": "waiting",
+      "size": 128,
+      "animated": true,
+      "fps": 12,
+      "loop": true,
+      "durationMs": 3833
+    },
+    {
+      "path": "portrait/waiting-128.png",
+      "bytes": 32158,
+      "sha256": "86a19ff348f3c3f024a9ed6b4511fbfd504ecf20a508579be68d99f5b0747519",
+      "kind": "portrait",
+      "state": "waiting",
+      "size": 128,
+      "animated": false
+    },
+    {
+      "path": "portrait/waiting-256.webp",
+      "bytes": 459106,
+      "sha256": "f719ba3a615af40d7f4566c26c9ca0b3fbc557d4bd81a2b8dee58e502befcde4",
+      "kind": "portrait",
+      "state": "waiting",
+      "size": 256,
+      "animated": true,
+      "fps": 12,
+      "loop": true,
+      "durationMs": 3833
+    },
+    {
+      "path": "portrait/waiting-256.png",
+      "bytes": 114587,
+      "sha256": "069a14fb8992859c8c0e0131f7e10a4005037ea181e16f4ffc97cd37f5e1ae1f",
+      "kind": "portrait",
+      "state": "waiting",
+      "size": 256,
+      "animated": false
+    },
+    {
+      "path": "body/waiting-256.webp",
+      "bytes": 592792,
+      "sha256": "a07ddf00b3e550a60159d4f18fbd5f320831e612c3d68b630ae10d68ee45370b",
+      "kind": "body",
+      "state": "waiting",
+      "size": 256,
+      "animated": true,
+      "fps": 12,
+      "loop": true,
+      "durationMs": 3833
+    },
+    {
+      "path": "body/waiting-256.png",
+      "bytes": 86561,
+      "sha256": "d23a809234f37b496b00b87ecbf03ba69d473c0ef4767b70977d42af6395fb10",
+      "kind": "body",
+      "state": "waiting",
+      "size": 256,
+      "animated": false
+    },
+    {
+      "path": "body/waiting-512.webp",
+      "bytes": 1306390,
+      "sha256": "63586cc1fa4d09b9efd6d5a1cb34ba5c8e7b6903598dd94c34230d36732fe3b4",
+      "kind": "body",
+      "state": "waiting",
+      "size": 512,
+      "animated": true,
+      "fps": 12,
+      "loop": true,
+      "durationMs": 3833
+    },
+    {
+      "path": "body/waiting-512.png",
+      "bytes": 300243,
+      "sha256": "71ca1dcbef1db2f5c04586965df1fc9ffaa4dd06cb1b4c3e3fcd8fea994c42a0",
+      "kind": "body",
+      "state": "waiting",
+      "size": 512,
+      "animated": false
+    },
+    {
+      "path": "body/waiting-768.webp",
+      "bytes": 1981026,
+      "sha256": "e57e499e00b66c15f3cf411396b166b18748d97e9cac07c2f86140d9f9a9ba92",
+      "kind": "body",
+      "state": "waiting",
+      "size": 768,
+      "animated": true,
+      "fps": 12,
+      "loop": true,
+      "durationMs": 3833
+    },
+    {
+      "path": "body/waiting-768.png",
+      "bytes": 610840,
+      "sha256": "49765e1e8bdc8ca1e66f31fcaddc429f944e7c2a9d9bec65a15174a9ff27cd6c",
+      "kind": "body",
+      "state": "waiting",
+      "size": 768,
+      "animated": false
+    },
+    {
+      "path": "preview/waiting.gif",
+      "bytes": 1156141,
+      "sha256": "17b52dddf8d597ddc1a7977bf3c8a38e639265e951746c74ddd9349d551f373e",
+      "kind": "preview",
+      "state": "waiting",
+      "size": 256,
+      "animated": true
+    },
+    {
+      "path": "transitions/idle-to-working-portrait-128.webp",
+      "bytes": 246376,
+      "sha256": "f66b8614e7d89517e75f4ebcd4965facd9b456f55fa544366eb3619757a6477f",
+      "kind": "portrait",
+      "from": "idle",
+      "to": "working",
+      "size": 128,
+      "animated": true,
+      "loop": false,
+      "fps": 12,
+      "durationMs": 4042
+    },
+    {
+      "path": "transitions/idle-to-working-portrait-256.webp",
+      "bytes": 510406,
+      "sha256": "be7ecb894a713fd54e0acf00947edc28d24550531b21f0efa807db9a5dc1c945",
+      "kind": "portrait",
+      "from": "idle",
+      "to": "working",
+      "size": 256,
+      "animated": true,
+      "loop": false,
+      "fps": 12,
+      "durationMs": 4042
+    },
+    {
+      "path": "transitions/idle-to-working-body-512.webp",
+      "bytes": 1309868,
+      "sha256": "ae60d334dc8d99f217494b1c29fc85930494e9311852a69d2f4a6c6a2c5148e0",
+      "kind": "body",
+      "from": "idle",
+      "to": "working",
+      "size": 512,
+      "animated": true,
+      "loop": false,
+      "fps": 12,
+      "durationMs": 4042
+    },
+    {
+      "path": "transitions/working-to-idle-portrait-128.webp",
+      "bytes": 254242,
+      "sha256": "fa11d0dcfb53d6a3aaf2e94b78721afbbb9ff106394c5f06e8a58342cdd24814",
+      "kind": "portrait",
+      "from": "working",
+      "to": "idle",
+      "size": 128,
+      "animated": true,
+      "loop": false,
+      "fps": 12,
+      "durationMs": 4042
+    },
+    {
+      "path": "transitions/working-to-idle-portrait-256.webp",
+      "bytes": 523496,
+      "sha256": "1dfdd7793c0636baa6b312c9b32b1bdb99df9394e3b9318756f20658b0b3cb4c",
+      "kind": "portrait",
+      "from": "working",
+      "to": "idle",
+      "size": 256,
+      "animated": true,
+      "loop": false,
+      "fps": 12,
+      "durationMs": 4042
+    },
+    {
+      "path": "transitions/working-to-idle-body-512.webp",
+      "bytes": 1283668,
+      "sha256": "02a5682b748fb2ddc5dd8aa2c2d13a5b9e82bfd125abd8850eed1f5717ae9880",
+      "kind": "body",
+      "from": "working",
+      "to": "idle",
+      "size": 512,
+      "animated": true,
+      "loop": false,
+      "fps": 12,
+      "durationMs": 4042
+    },
+    {
+      "path": "transitions/working-to-waiting-portrait-128.webp",
+      "bytes": 260766,
+      "sha256": "b82bf504c5e45fc73e5948395bc34cc3e894d64e0aa23afddd0d1c3ff75b134e",
+      "kind": "portrait",
+      "from": "working",
+      "to": "waiting",
+      "size": 128,
+      "animated": true,
+      "loop": false,
+      "fps": 12,
+      "durationMs": 4042
+    },
+    {
+      "path": "transitions/working-to-waiting-portrait-256.webp",
+      "bytes": 546556,
+      "sha256": "58531e56f5e2752da337c3efcc643b27210605e4c5b83f50a22f74edd16c104e",
+      "kind": "portrait",
+      "from": "working",
+      "to": "waiting",
+      "size": 256,
+      "animated": true,
+      "loop": false,
+      "fps": 12,
+      "durationMs": 4042
+    },
+    {
+      "path": "transitions/working-to-waiting-body-512.webp",
+      "bytes": 1485262,
+      "sha256": "1a584b183193bd2ede50089048da586a9ed3d51745def84b73afbcfd941195f1",
+      "kind": "body",
+      "from": "working",
+      "to": "waiting",
+      "size": 512,
+      "animated": true,
+      "loop": false,
+      "fps": 12,
+      "durationMs": 4042
+    },
+    {
+      "path": "transitions/waiting-to-working-portrait-128.webp",
+      "bytes": 248580,
+      "sha256": "8d25563fe0bacfaee08d5871aee90dc09c37f38778a79a7e165bd1f63781cb89",
+      "kind": "portrait",
+      "from": "waiting",
+      "to": "working",
+      "size": 128,
+      "animated": true,
+      "loop": false,
+      "fps": 12,
+      "durationMs": 4042
+    },
+    {
+      "path": "transitions/waiting-to-working-portrait-256.webp",
+      "bytes": 517936,
+      "sha256": "e163cc0b12003086139d20fb71ce58d22d4fb93f78992c8099d431f29ef52228",
+      "kind": "portrait",
+      "from": "waiting",
+      "to": "working",
+      "size": 256,
+      "animated": true,
+      "loop": false,
+      "fps": 12,
+      "durationMs": 4042
+    },
+    {
+      "path": "transitions/waiting-to-working-body-512.webp",
+      "bytes": 1472386,
+      "sha256": "0d04339b1192e49e5d2cdb509a65534c7098652a6d7f97a5c536b735cde418ba",
+      "kind": "body",
+      "from": "waiting",
+      "to": "working",
+      "size": 512,
+      "animated": true,
+      "loop": false,
+      "fps": 12,
+      "durationMs": 4042
+    },
+    {
+      "path": "symbol.svg",
+      "kind": "symbol",
+      "animated": false,
+      "bytes": 220,
+      "sha256": "27a8b0b2f3a8087a2ae469806e7a6e7b49b859020df0c6efe1272fe0e4e99418"
+    }
+  ],
+  "downloads": {
+    "portraits": 6762443,
+    "complete": 31191480
+  }
+}

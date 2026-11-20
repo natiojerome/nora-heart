@@ -1,0 +1,21 @@
+# Publication publique
+
+Jérôme autorise le 20 novembre 2026 la création du dépôt public et le push de
+l’état vérifié après correction et optimisation.
+
+Dépôt cible : https://github.com/natiojerome/nora-heart, branche main.
+Licence du code Heart : MIT ; dépendances et composants réutilisés conservent leurs
+propres licences et notices, listées dans THIRD_PARTY_NOTICES.md.
+
+La première publication est un instantané source relu, avec un nouvel historique
+public. L’historique opérateur précédent est conservé localement sous une référence
+archive et n’est pas poussé. Les preuves et captures privées de docs/qualification
+et docs/design restent locales, ainsi que artifacts, les états, dossiers utilisateurs,
+secrets, dépendances installées et runtimes téléchargés. Les rapports privés cités
+dans certains documents ne sont donc pas tous disponibles dans le dépôt public.
+Les tests de base restent exécutables avec les sources/assets et des données jetables.
+Les essais distants et fournisseurs réels sont opt-in et nécessitent leurs propres accès.
+
+Après cette initialisation, main suit normalement origin/main. Ne pas pousser les
+références archive ni utiliser `git push --all` : elles conservent l’historique privé.
+Les contributions publiques utilisent des commits ordinaires et des pull requests.

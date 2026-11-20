@@ -1,0 +1,12 @@
+{
+  "model": "bytedance/seedance-2.0",
+  "prompt": "Orion, the masculine ceramic and metal robot: articulated white face plates, glowing mechanical blue eyes, silver sculpted metal crest, jaw hinges and segmented neck. Preserve all mechanical seams and hard materials; absolutely no human skin, hair, realistic lips or face display. Focused work in progress: eyes attentively track an unseen task just below camera, blink naturally, brows concentrate, tiny deliberate nod of progress, brief satisfied expression, then return to initial pose. Clearly engaged and thinking, no speaking. Locked static camera, square close-up head-and-shoulders portrait. Preserve exact supplied character identity, hair, face, clothing, materials and framing. No full body, hands, props, keyboard, text, icons or symbols. Keep head within original margins, background uniformly pure chroma green, no camera move, no cuts, no zoom, no morphing. High-quality subtle fluid character animation, coordinated eyes, eyebrows and neck, not a rigid puppet. Start and end precisely at supplied pose for a seamless loop. No audio.",
+  "duration": 4,
+  "resolution": "480p",
+  "aspect_ratio": "1:1",
+  "generate_audio": false,
+  "seed": 2026111600,
+  "keyframe": "orion-keyframe.png",
+  "keyframeSha256": "c2ed3da2da46a810aac62432f1066999fb6ea97b1c304650b0143f27e09e195d",
+  "estimatedUSD": 0.2688
+}

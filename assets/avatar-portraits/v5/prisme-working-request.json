@@ -1,0 +1,12 @@
+{
+  "model": "bytedance/seedance-2.0",
+  "prompt": "Prisme, the rounded white robot with a rigid head shell and cyan screen eyes, preserving its three-finger robot hands. ACTIVELY WORKING for the full clip: both visible hands continuously type on the supplied holographic keyboard, alternating articulated fingers clearly press different keys, wrists and forearms coordinated naturally. Eyes remain focused DOWN on the keyboard and scan left to right across the work, mechanical eyelids blink once, mouth stays CLOSED and neutral. Keep typing throughout; no pausing to smile or pose, no looking at the viewer, no dance or bounce. The typing action is the main animation and must be clearly legible in a small portrait. Camera locked, entire square bust framing unchanged. HEAD COMPLETELY UPRIGHT AND STILL: absolutely no nod, tilt, turn, stretch, squash, head bob or neck flex. Skull silhouette and proportions must stay geometrically identical to the reference in every frame. Hard robot shells remain rigid, face plates and jaw do not deform. No speaking or lip movements. Do not enlarge eyes or open the mouth. No cuts, zoom, full body, legs, props appearing, text or symbols. Uniform pure chroma green background. Preserve hands and keyboard if present exactly as supplied. Begin and finish at the supplied pose for looping. No audio.",
+  "duration": 4,
+  "resolution": "480p",
+  "aspect_ratio": "1:1",
+  "generate_audio": false,
+  "seed": 2026111710,
+  "keyframe": "prisme-working-keyframe.png",
+  "keyframeSha256": "f3ae58237759dac05b6adb0ce8448dc268666f53c4e7adbaff7ca708d0761d3a",
+  "estimatedUSD": 0.2688
+}

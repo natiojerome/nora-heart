@@ -1,0 +1,120 @@
+{
+  "model": "bytedance/seedance-2.0",
+  "status": "awaiting-visual-review",
+  "sizes": [
+    64,
+    128,
+    256
+  ],
+  "questionMark": "rounded 3D speech bubble, local floating overlay; original MP4 has no symbol",
+  "portraits": [
+    {
+      "id": "orion-idle",
+      "identity": "orion",
+      "state": "idle",
+      "sourceId": "orion-idle",
+      "sourceVersion": "v4",
+      "method": "generated-video",
+      "width": 640,
+      "height": 640,
+      "r_frame_rate": "24/1",
+      "duration": "4.041667",
+      "nb_frames": "97",
+      "usage": {
+        "cost": 0.2716,
+        "is_byok": false
+      },
+      "sha256": "742a0dbd6babfdb5332e87ec26c96fbc24c8b95089c0e5bff7e11d2a41f10509"
+    },
+    {
+      "id": "prisme-idle",
+      "identity": "prisme",
+      "state": "idle",
+      "sourceId": "prisme-idle",
+      "sourceVersion": "v3",
+      "method": "generated-video",
+      "width": 640,
+      "height": 640,
+      "r_frame_rate": "24/1",
+      "duration": "4.041667",
+      "nb_frames": "97",
+      "usage": {
+        "cost": 0.2716,
+        "is_byok": false
+      },
+      "sha256": "0612c2ce2fd4fe9d95c4bc6de07136b44f57ba983dcb87ef102e08b225c331f7"
+    },
+    {
+      "id": "orion-working",
+      "identity": "orion",
+      "state": "working",
+      "sourceId": "orion-working",
+      "sourceVersion": "v5",
+      "method": "generated-video",
+      "width": 640,
+      "height": 640,
+      "r_frame_rate": "24/1",
+      "duration": "4.041667",
+      "nb_frames": "97",
+      "usage": {
+        "cost": 0.2716,
+        "is_byok": false
+      },
+      "sha256": "17fce0f339eaab3e8bfadc70dac4c5e313b3a0fc105f70936bf62bc7157765c5"
+    },
+    {
+      "id": "orion-waiting",
+      "identity": "orion",
+      "state": "waiting",
+      "sourceId": "orion-waiting",
+      "sourceVersion": "v5",
+      "method": "generated-video",
+      "width": 640,
+      "height": 640,
+      "r_frame_rate": "24/1",
+      "duration": "4.041667",
+      "nb_frames": "97",
+      "usage": {
+        "cost": 0.2716,
+        "is_byok": false
+      },
+      "sha256": "c8c3bc06836dd9ff31dc065b77b91a6eab6ccfee2c4d9e58c8c78faaa9b58f67"
+    },
+    {
+      "id": "prisme-working",
+      "identity": "prisme",
+      "state": "working",
+      "sourceId": "prisme-working",
+      "sourceVersion": "v5",
+      "method": "generated-video",
+      "width": 640,
+      "height": 640,
+      "r_frame_rate": "24/1",
+      "duration": "4.041667",
+      "nb_frames": "97",
+      "usage": {
+        "cost": 0.2716,
+        "is_byok": false
+      },
+      "sha256": "ac31d7a5523baa25f4cc64057f4c6deaeafc954f2398e000b8e16c217a1c7767"
+    },
+    {
+      "id": "prisme-waiting",
+      "identity": "prisme",
+      "state": "waiting",
+      "sourceId": "prisme-waiting",
+      "sourceVersion": "v5",
+      "method": "generated-video",
+      "width": 640,
+      "height": 640,
+      "r_frame_rate": "24/1",
+      "duration": "4.041667",
+      "nb_frames": "97",
+      "usage": {
+        "cost": 0.2716,
+        "is_byok": false
+      },
+      "sha256": "bbeffdfc22e92c4b638a2a510c9282e5ad778e6e5df8f5795c087210028630bf"
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "model": "bytedance/seedance-2.0",
+  "prompt": "Orion, the pearl ceramic and metal robot, preserving all face plates, seams, mechanical eyelids, metal crest and neck joints. No human skin or organic hair. WAITING PATIENTLY FOR THE VIEWER TO ANSWER for the full clip: keep direct eye contact, attentive raised mechanical brows fixed, mouth CLOSED and unchanged. One gentle eyelid blink only, hold the face expectantly toward viewer.  Camera locked, entire square bust framing unchanged. HEAD COMPLETELY UPRIGHT AND STILL: absolutely no nod, tilt, turn, stretch, squash, head bob or neck flex. Skull silhouette and proportions must stay geometrically identical to the reference in every frame. Hard robot shells remain rigid, face plates and jaw do not deform. No speaking or lip movements. Do not enlarge eyes or open the mouth. No cuts, zoom, full body, legs, props appearing, text or symbols. Uniform pure chroma green background. Preserve hands and keyboard if present exactly as supplied. Begin and finish at the supplied pose for looping. No audio.",
+  "duration": 4,
+  "resolution": "480p",
+  "aspect_ratio": "1:1",
+  "generate_audio": false,
+  "seed": 2026111701,
+  "keyframe": "orion-waiting-keyframe.png",
+  "keyframeSha256": "c2ed3da2da46a810aac62432f1066999fb6ea97b1c304650b0143f27e09e195d",
+  "estimatedUSD": 0.2688
+}

@@ -1,0 +1,7 @@
+{
+  "displayName": "Nora Heart",
+  "modules": { "memory": "basic", "model": "demo" },
+  "storage": { "driver": "json", "directory": ".state" },
+  "workspaceDirectory": "workspace",
+  "maxSteps": 8
+}

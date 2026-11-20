@@ -1,0 +1,7 @@
+{
+  "displayName": "Nora Heart",
+  "workspaceDirectory": "workspace/sqlite-demo",
+  "maxSteps": 8,
+  "storage": { "driver": "sqlite", "file": ".state/sqlite/heart.sqlite" },
+  "modules": { "memory": "structured", "model": "demo" }
+}

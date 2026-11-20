@@ -1,0 +1,27 @@
+[Unit]
+Description=Heart opt-in YOLO host command worker
+After=network-online.target
+
+[Service]
+User=root
+Group=personal-harness
+WorkingDirectory=/projects/nora-heart
+Environment=HARNESS_HOST_SOCKET=/run/personal-harness-host/terminal.sock
+Environment=HARNESS_HOST_STATE_DIR=/var/lib/personal-harness-host/commands
+Environment=HARNESS_HOST_WORKSPACES=/var/lib/personal-harness/lab/conversations
+Environment=HARNESS_HOST_HOME=/var/lib/personal-harness-host/home
+Environment=HARNESS_HOST_UNIT=personal-harness-host.service
+ExecStart=/projects/nora-heart/.tools/node-v24.22.3-linux-x64/bin/node /projects/nora-heart/node_modules/tsx/dist/cli.mjs /projects/nora-heart/src/interfaces/host-terminal.ts
+RuntimeDirectory=personal-harness-host
+RuntimeDirectoryMode=0750
+StateDirectory=personal-harness-host
+StateDirectoryMode=0700
+UMask=0007
+Restart=on-failure
+RestartSec=3
+TimeoutStopSec=15
+# This worker deliberately creates unrestricted root command units through systemd.
+# Never import the web EnvironmentFile or LLM credentials here.
+
+[Install]
+WantedBy=multi-user.target

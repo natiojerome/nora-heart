@@ -1,0 +1,119 @@
+# Contexte conversationnel et mémoire active
+
+Le module `modules/context/bounded` est raccordé aux conversations persistantes
+web. Il reçoit des contrats neutres ; aucun SDK de fournisseur ou SQL ne se
+trouve dans ce module. Les CLI et essais temporaires conservent leur assemblage
+initial sans gestion de contexte. Voir [CONVERSATIONS.md](CONVERSATIONS.md).
+
+## Données distinctes
+
+- Le journal durable conserve les messages et résultats d’outils originaux.
+- Le point de reprise versionné conserve le travail d’une conversation ; il ne
+  devient pas automatiquement un souvenir personnel.
+- La mémoire durable fournit des faits pertinents, indépendamment du cerveau.
+
+## Budget et compression implémentés
+
+Avant chaque appel de la boucle, le module recalcule la taille estimée du
+contexte pour la capacité choisie. ChatGPT fournit `context_window` dans son
+catalogue ; OpenRouter expose aussi une capacité adaptée depuis son catalogue.
+Une capacité absente doit être configurée explicitement. Le comptage
+est une estimation UTF-8 (`octets JSON / 3`, arrondis, plus 256 tokens de marge),
+pas la mesure du tokenizer ou du fournisseur. Elle peut différer du coût réel ;
+un tokenizer adapté et le suivi des tokens observés restent à ajouter.
+
+Le budget utilisable est `capacité - réserve`. L’assemblage web réserve le plus
+petit de 4096 tokens ou un quart de la fenêtre. Le seuil par défaut est **80 % du budget
+utilisable**, configurable dans Configuration → Limites, avec place réservée pour sorties et outils. Une capacité inconnue
+n’est jamais déduite du nom du modèle.
+
+Le seuil déclenche une compression lorsqu’un ancien historique peut être résumé.
+Il n’est pas un plafond dur : un tour indivisible qui tient encore dans le budget
+utilisable reste accepté. Un résumé au-dessus du seuil est accepté s’il tient dans
+ce budget. Si le tour courant avec ses souvenirs le dépasse à lui seul, refuser
+avant tout appel de résumé inutile.
+
+Au seuil :
+
+1. Conserver le tour utilisateur courant avec tous ses appels et résultats
+   d’outils. Résumer les échanges antérieurs avec l’ancien point de reprise.
+2. Demander au modèle sélectionné un résumé factuel : objectif, décisions,
+   contraintes avec exceptions, progression, questions ouvertes et résultats
+   utiles ; conserver les incertitudes. Aucun outil dans l’appel de résumé.
+3. Si le nouveau cerveau est plus petit, découper les échanges à résumer en
+   morceaux compatibles avec sa fenêtre, sans séparer un lot d’appels de ses
+   résultats. Par défaut au maximum 16 appels de résumé, configurables (0 sans plafond) ; aucun retry ou repli payant.
+4. Vérifier le résultat et le budget réduit, puis enregistrer atomiquement un
+   événement `context.checkpoint` : version, UUID du segment, segment parent,
+   résumé, modèle auteur et référence au dernier message couvert.
+5. Après cet enregistrement seulement, envoyer instructions, résumé, souvenirs
+   pertinents et tour récent au cerveau. L’UI garde le même fil et indique le
+   nouveau segment. Aucun thread propriétaire de fournisseur n’est nécessaire.
+
+L’historique reste intact. Au redémarrage, le point de reprise est relu et sa
+référence source est contrôlée. Si le résumé, sa sauvegarde ou le budget échoue,
+aucun contexte vide n’est envoyé. Un tour courant ou un groupe indivisible trop
+volumineux est refusé explicitement. Sa réduction interne reste à développer.
+Un changement de modèle sous le seuil conserve le contexte sans résumé forcé.
+
+Le texte d’un résumé peut perdre des nuances malgré ces contrôles. Les tests
+simulés valident les frontières, la continuité mécanique, les échecs et l’absence
+de répétition d’outil ; ils ne prouvent pas la qualité d’une compression réelle.
+
+## Mémoire active actuelle et évolution
+
+La sélection structurée est déterministe, sans appel LLM supplémentaire.
+Elle utilise les termes du dernier sujet développé, en gardant le sujet lors
+d’un « continue ». Les candidats actifs sont limités aux souvenirs personnels
+et au projet du fil, puis classés dans le module mémoire. Par défaut jusqu’à trois faits
+entiers et 3000 caractères, ID/version compris ; aucune contrainte tronquée.
+Un souvenir long est proposé par titre et référence à consulter via `memory.get`.
+Ces deux limites sont configurables, 0 sans plafond, voir [POLICIES.md](POLICIES.md).
+Le nombre de souvenirs limite les faits/références effectivement injectés :
+les doublons et faits trop longs ignorés ne consomment pas de place.
+Le texte déjà présent dans le résumé ou les messages conservés n’est pas ajouté.
+
+La sélection est relue avant chaque appel, y compris après réduction, correction,
+oubli ou changement de modèle. Les versions courantes sont signalées ; le texte
+historique reste conservé et peut contenir des faits anciens. Ce n’est pas un
+effacement des anciens prompts. Voir [MEMORY.md](MEMORY.md) pour les limites.
+La stabilité vient du classement déterministe, sans cache invalidable ni LLM.
+Les souvenirs conservés dans le prompt coûtent toujours des tokens d’entrée.
+
+Restent à améliorer : recherche par paraphrase, pagination et candidats anciens,
+mesures d’usage, cache avec invalidation si un besoin mesuré le justifie, qualité
+des longs résumés. La recherche/injection reste distincte de la revue mémoire
+post-tour par LLM, désormais raccordée et qualifiée sur les scénarios ciblés.
+
+L’audit de `/projects/nora` et les comportements réutilisables sont dans
+[NORA-REUSE.md](NORA-REUSE.md). Aucun code ni donnée de ce projet n’est importé.
+
+## Pièces jointes
+
+Le budget inclut leurs métadonnées et une estimation prudente supplémentaire :
+8192 tokens par image, taille en octets/3 pour les documents. Ce n’est pas le
+compteur réel du fournisseur. Les références des échanges résumés accompagnent
+les appels de compression pour ne pas résumer silencieusement sans leur contenu.
+Un document trop volumineux pour le modèle est refusé ; pas de retrait implicite.
+
+## Qualification réelle
+
+Le [parcours DeepSeek initial](OPENROUTER.md#deepseek-v4-flash-0731-choisi-par-le-propriétaire)
+a validé résumé/checkpoint PostgreSQL et mémoire avec un seul modèle. Le
+[parcours ChatGPT/DeepSeek](CONTINUITY.md) qualifie maintenant la bascule entre deux
+fournisseurs réels, un budget réduit à 32 768, une vraie compression, réouverture,
+document/fichier conservés et souvenirs corrigés/oubliés. La capacité native des
+modèles reste distinguée de ce budget de test. Les archives de charge sont
+synthétiques ; le résumé et les réponses sont réellement produits par les LLM.
+
+Les tests simulés couvrent séparément erreurs de sauvegarde et autres bords. Pas
+de promesse de qualité universelle des très longs résumés, autres paires ou médias.
+Voir [STATUS.md](STATUS.md) pour la portée exacte.
+
+## Guidances de skills
+
+L’assemblage peut envelopper `BoundedContext` avec le contexte de skills de l’app.
+Les skills effectivement chargés restent hors résumé, une seule copie par skill ;
+les anciens résultats sont présentés comme reçus sans changer le journal ni les
+indices du checkpoint. Désactiver un skill enlève sa guidance au tour suivant.
+Le module de contexte et le core ne dépendent d’aucun catalogue concret. [SKILLS.md](SKILLS.md).

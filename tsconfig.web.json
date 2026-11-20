@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "target": "ES2023",
+    "module": "None",
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
+    "types": [],
+    "allowJs": true,
+    "checkJs": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "noEmit": true
+  },
+  "include": [
+    "src/interfaces/web/public/browser.d.ts",
+    "src/interfaces/web/public/api-client.js",
+    "src/interfaces/web/public/icons.js",
+    "src/interfaces/web/public/settings.js",
+    "src/interfaces/web/public/tasks.js",
+    "src/interfaces/web/public/capabilities.js"
+  ]
+}

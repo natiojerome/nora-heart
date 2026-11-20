@@ -1,0 +1,504 @@
+/* Conversation catalogue, provider/settings screens and assistant identity.
+   Loaded directly after chat.css to preserve the established cascade. */
+/* Conversation catalogue shares its available width; usage belongs to an open thread. */
+.conversations-list-mode .conversations-panel {
+  padding: 0;
+}
+.conversation-controls {
+  width: 100%;
+  max-width: none;
+  grid-template-rows: auto minmax(0, 1fr);
+}
+.discussion-filters {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(145px, 180px);
+  gap: 8px;
+  align-items: center;
+}
+.discussion-filters > *,
+.discussion-filters .select-trigger {
+  min-width: 0;
+  width: 100%;
+  margin: 0;
+}
+.discussion-filters .select-trigger {
+  font-size: 12px;
+  gap: 6px;
+  padding-inline: 10px;
+}
+#discussion-cards .discussion-copy {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+#discussion-cards .discussion-project {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.3;
+}
+.discussion-model-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--muted);
+}
+.discussion-model {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+  flex: 1;
+}
+.discussion-effort {
+  flex: none;
+  white-space: nowrap;
+  color: var(--ink);
+}
+#discussion-cards .item-row {
+  padding-block: 12px;
+}
+@media (max-width: 759px) {
+  body.conversations-list-mode .page-content {
+    width: 100%;
+    max-width: none;
+    padding-inline: 0;
+  }
+  body.conversations-list-mode .conversation-controls {
+    border: 0;
+    border-radius: 0;
+    padding: 0 12px 12px;
+  }
+  .discussion-filters {
+    grid-template-columns: minmax(0, 1fr) 145px;
+  }
+  #discussion-cards .item-row {
+    padding-inline: 4px;
+  }
+  #discussion-cards .item-row.active {
+    padding-left: 10px;
+  }
+}
+/* Fixed search row has its own reserved space, including inside the mobile catalogue. */
+body.conversations-list-mode .discussion-filters {
+  position: fixed;
+  inset-inline: 0;
+  top: calc(
+    var(--app-header-height) + var(--page-bar-height) + env(safe-area-inset-top)
+  );
+  height: 68px;
+  padding: 12px;
+  z-index: 24;
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
+  grid-template-columns: minmax(0, 1fr) 145px;
+}
+body.conversations-list-mode .page-content {
+  padding-top: calc(var(--page-bar-height) + 68px + 14px);
+}
+body.conversations-list-mode .conversation-controls {
+  grid-template-rows: minmax(0, 1fr);
+}
+body.conversations-list-mode #discussion-cards {
+  grid-row: 1;
+}
+.consumption-toolbar,
+.defaults-catalog-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.consumption-grid {
+  display: grid;
+  gap: 16px;
+  margin-top: 0;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+}
+
+.consumption-card h2 {
+  font-size: 15px;
+  margin: 0;
+}
+.consumption-card .field-help {
+  overflow-wrap: anywhere;
+}
+#defaults-dialog {
+  width: min(540px, calc(100% - 24px));
+}
+#defaults-form {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+#defaults-form .editor-scroll {
+  padding: 16px;
+  overflow: auto;
+}
+#defaults-form .editor-actions {
+  flex: none;
+}
+#models-return[hidden] {
+  display: none;
+}
+body.memory-list-mode .memory-filters {
+  position: fixed;
+  inset-inline: 0;
+  top: calc(
+    var(--app-header-height) + var(--page-bar-height) + env(safe-area-inset-top)
+  );
+  z-index: 24;
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
+  margin: 0;
+  padding: 12px;
+  height: 68px;
+  display: grid;
+  grid-template-columns: minmax(140px, 220px) minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+}
+body.memory-list-mode .memory-filters > * {
+  min-width: 0;
+  margin: 0;
+}
+body.memory-list-mode .page-content {
+  padding-top: calc(var(--page-bar-height) + 68px + 14px);
+}
+@media (max-width: 759px) {
+  body.memory-list-mode .memory-filters {
+    height: 108px;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-rows: 44px 32px;
+  }
+  body.memory-list-mode .memory-filters > label {
+    grid-column: 1/-1;
+    justify-self: start;
+  }
+  body.memory-list-mode .page-content {
+    padding-top: calc(var(--page-bar-height) + 108px + 14px);
+  }
+}
+/* Consumption cards: one main figure, compact periods and optional source detail. */
+.consumption-toolbar {
+  margin-bottom: 16px;
+  min-height: 44px;
+  align-items: center;
+}
+.consumption-toolbar .field-help {
+  margin: 0;
+}
+.consumption-grid {
+  align-items: start;
+  gap: 16px;
+}
+.consumption-card {
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  padding: 16px;
+  display: grid;
+  gap: 14px;
+}
+.consumption-card > header,
+.consumption-card > footer,
+.consumption-window > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-width: 0;
+}
+.consumption-card h2,
+.consumption-card p {
+  margin: 0;
+}
+.consumption-state {
+  font-size: 11px;
+  color: var(--muted);
+}
+.consumption-primary {
+  display: grid;
+  gap: 4px;
+}
+.consumption-primary > span {
+  font-size: 12px;
+  color: var(--muted);
+}
+.consumption-primary strong {
+  font-size: 24px;
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+}
+.consumption-card .consumption-periods {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0;
+  padding: 12px;
+  background: var(--surface-muted);
+  border-radius: 8px;
+}
+.consumption-periods > div {
+  min-width: 0;
+}
+.consumption-card .consumption-periods dt {
+  font-size: 11px;
+}
+.consumption-card .consumption-periods dd {
+  margin: 3px 0 0;
+  text-align: left;
+  font-weight: 600;
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+.consumption-windows {
+  display: grid;
+  gap: 14px;
+}
+.consumption-window {
+  display: grid;
+  gap: 6px;
+  font-size: 12px;
+}
+.consumption-window progress {
+  width: 100%;
+  height: 6px;
+  accent-color: var(--accent);
+}
+.consumption-window small {
+  font-size: 11px;
+  color: var(--muted);
+}
+.consumption-source {
+  border-top: 1px solid var(--line);
+  padding-top: 10px;
+}
+.consumption-source summary {
+  font-size: 12px;
+  color: var(--muted);
+  cursor: pointer;
+}
+.consumption-source p {
+  margin-top: 8px;
+}
+.consumption-card > footer {
+  font-size: 11px;
+  color: var(--muted);
+  align-items: baseline;
+}
+.consumption-card > footer a {
+  flex: none;
+}
+#defaults-form .defaults-fields {
+  padding: 16px 20px;
+  display: grid;
+  gap: 8px;
+}
+#defaults-form .defaults-fields > label {
+  margin: 4px 0 0;
+}
+#defaults-form .defaults-fields > .select-trigger,
+#defaults-form .defaults-fields > input {
+  margin: 0;
+}
+#defaults-form .defaults-fields .field-help {
+  margin: 0;
+}
+#defaults-form .setting-switch {
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 8px 0;
+  border: 0;
+  cursor: pointer;
+}
+.provider-connections {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 360px), 1fr));
+}
+.provider-connection-card {
+  margin: 0;
+  min-width: 0;
+}
+.provider-connection-card > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.provider-connection-card h2 {
+  margin: 0;
+  font-size: 15px;
+}
+.provider-connection-card .connection-box {
+  border: 0;
+  padding: 0;
+  margin: 0;
+}
+.provider-connection-card .connection-top {
+  flex-wrap: wrap;
+}
+.provider-connection-card .connection-top > div {
+  flex: 1;
+  min-width: 160px;
+}
+#model-preferences-dialog {
+  width: min(560px, calc(100% - 24px));
+}
+#conversation-model-fields {
+  padding: 16px;
+  display: grid;
+  gap: 12px;
+}
+#conversation-model-fields .provider-options {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+#conversation-model-fields .provider-card {
+  min-width: 0;
+}
+#conversation-model-fields #provider-config {
+  display: grid;
+  gap: 12px;
+}
+#conversation-model-fields #model-reasoning-options {
+  margin: 0;
+}
+#conversation-model-fields #model-reasoning-options[hidden] {
+  display: none;
+}
+#conversation-model-status {
+  margin: 0;
+}
+#model-preferences-dialog .editor-actions {
+  flex-wrap: wrap;
+}
+#model-preferences-dialog .editor-actions button {
+  flex: 1;
+  min-width: 0;
+  white-space: normal;
+}
+#screen-models .provider-connection-card {
+  margin: 0;
+}
+#conversation-model-fields #provider-config .provider-options {
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+#conversation-model-fields #provider-config .field-title {
+  margin: 0;
+}
+#conversation-model-fields #model-reasoning-options {
+  padding: 0;
+}
+#conversation-model-fields .model-field label {
+  margin: 0;
+}
+#conversation-model-fields .model-field .field-help {
+  margin: 6px 0 0;
+}
+#conversation-model-fields .field-label-row {
+  margin: 0 0 6px;
+}
+.nora-logo {
+  background-image: var(--assistant-portrait, url("/brand/mark.png"));
+}
+.topbar-logo {
+  background-image: var(
+    --assistant-logo,
+    var(--assistant-portrait, url("/brand/mark.png"))
+  );
+}
+#assistant-dialog {
+  width: min(560px, calc(100% - 24px));
+}
+#assistant-editor {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+#assistant-editor .assistant-editor-fields {
+  padding: 16px 20px;
+  overflow: auto;
+  display: grid;
+  gap: 8px;
+}
+#assistant-editor label {
+  margin: 4px 0 0;
+}
+#assistant-editor input,
+#assistant-editor textarea,
+#assistant-editor .select-trigger {
+  margin: 0;
+}
+#assistant-editor textarea {
+  min-height: 180px;
+  resize: vertical;
+  font-size: 14px;
+  line-height: 1.6;
+}
+.assistant-pack-preview {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+.pack-preview-images {
+  display: flex;
+  gap: 12px;
+  flex: none;
+}
+.pack-preview-images figure {
+  margin: 0;
+  text-align: center;
+}
+.pack-preview-images img {
+  display: block;
+  object-fit: contain;
+}
+.pack-preview-images figcaption {
+  font-size: 10px;
+  color: var(--muted);
+  margin-top: 4px;
+}
+.assistant-pack-preview strong {
+  font-size: 13px;
+}
+.assistant-pack-preview .field-help {
+  margin: 4px 0 0;
+  font-size: 12px;
+}
+.personality-templates {
+  margin-top: 8px;
+  border-top: 1px solid var(--line);
+  padding-top: 12px;
+}
+.personality-templates summary {
+  font-size: 13px;
+  cursor: pointer;
+}
+.personality-templates .field-help {
+  font-size: 12px;
+}
+#setup-personality-text {
+  width: 100%;
+  font-size: 14px;
+  line-height: 1.6;
+  min-height: 170px;
+}

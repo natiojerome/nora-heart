@@ -1,0 +1,117 @@
+{
+  "model": "bytedance/seedance-2.0",
+  "status": "awaiting-visual-review",
+  "sizes": [
+    64,
+    128,
+    256
+  ],
+  "questionMark": "rounded 3D speech bubble, local floating overlay; original MP4 has no symbol",
+  "portraits": [
+    {
+      "id": "prisme-working",
+      "identity": "prisme",
+      "state": "working",
+      "sourceId": "prisme-working",
+      "sourceVersion": "v3",
+      "method": "generated-video",
+      "width": 640,
+      "height": 640,
+      "r_frame_rate": "24/1",
+      "duration": "4.041667",
+      "nb_frames": "97",
+      "usage": {
+        "cost": 0.2716,
+        "is_byok": false
+      },
+      "sha256": "6bf58eaf3498ed2e7d19ec8abc3e93eca33fccbaf0a6c792bf7b636df2ec4c4d"
+    },
+    {
+      "id": "prisme-idle",
+      "identity": "prisme",
+      "state": "idle",
+      "sourceId": "prisme-idle",
+      "sourceVersion": "v3",
+      "method": "generated-video",
+      "width": 640,
+      "height": 640,
+      "r_frame_rate": "24/1",
+      "duration": "4.041667",
+      "nb_frames": "97",
+      "usage": {
+        "cost": 0.2716,
+        "is_byok": false
+      },
+      "sha256": "0612c2ce2fd4fe9d95c4bc6de07136b44f57ba983dcb87ef102e08b225c331f7"
+    },
+    {
+      "id": "prisme-waiting",
+      "identity": "prisme",
+      "state": "waiting",
+      "sourceId": "prisme-idle",
+      "sourceVersion": "v3",
+      "method": "local-composition",
+      "width": 640,
+      "height": 640,
+      "r_frame_rate": "24/1",
+      "duration": "4.041667",
+      "nb_frames": "97",
+      "usage": null,
+      "sha256": "0612c2ce2fd4fe9d95c4bc6de07136b44f57ba983dcb87ef102e08b225c331f7"
+    },
+    {
+      "id": "orion-working",
+      "identity": "orion",
+      "state": "working",
+      "sourceId": "orion-working",
+      "sourceVersion": "v4",
+      "method": "generated-video",
+      "width": 640,
+      "height": 640,
+      "r_frame_rate": "24/1",
+      "duration": "4.041667",
+      "nb_frames": "97",
+      "usage": {
+        "cost": 0.2716,
+        "is_byok": false
+      },
+      "sha256": "a70e2b67871fb686eb0c9b346ef9a184f4ed2e4c964c31f8ecef5f1dbad13c98"
+    },
+    {
+      "id": "orion-idle",
+      "identity": "orion",
+      "state": "idle",
+      "sourceId": "orion-idle",
+      "sourceVersion": "v4",
+      "method": "generated-video",
+      "width": 640,
+      "height": 640,
+      "r_frame_rate": "24/1",
+      "duration": "4.041667",
+      "nb_frames": "97",
+      "usage": {
+        "cost": 0.2716,
+        "is_byok": false
+      },
+      "sha256": "742a0dbd6babfdb5332e87ec26c96fbc24c8b95089c0e5bff7e11d2a41f10509"
+    },
+    {
+      "id": "orion-waiting",
+      "identity": "orion",
+      "state": "waiting",
+      "sourceId": "orion-waiting",
+      "sourceVersion": "v4",
+      "method": "generated-video",
+      "width": 640,
+      "height": 640,
+      "r_frame_rate": "24/1",
+      "duration": "4.041667",
+      "nb_frames": "97",
+      "usage": {
+        "cost": 0.2716,
+        "is_byok": false
+      },
+      "sha256": "7f5964a281197bd290fe2f01571a648b550941d83dd458c51dcdab17669e964a"
+    }
+  ]
+}

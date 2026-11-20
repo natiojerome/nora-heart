@@ -1,0 +1,23 @@
+#screen-tools {
+  padding-top: 48px;
+}
+.capabilities-tabs .settings-tabs-inner {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.capabilities-grid .panel {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  min-width: 0;
+}
+.capabilities-grid .panel h2,
+.capabilities-grid .panel p {
+  margin: 0;
+}
+.capabilities-grid .panel p {
+  flex: 1;
+}
+.capabilities-grid .panel a {
+  font-size: 13px;
+}

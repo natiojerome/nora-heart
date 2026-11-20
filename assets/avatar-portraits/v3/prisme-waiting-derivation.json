@@ -1,0 +1,10 @@
+{
+  "id": "prisme-waiting",
+  "method": "local-composition",
+  "sourceVideo": "prisme-idle-pilot.mp4",
+  "transformation": "Same calm portrait with a deterministic floating question mark, exported at 64/128/256 px",
+  "additionalGenerationCostUSD": 0,
+  "declinedSubmissionAttempts": 2,
+  "declinedHTTPStatus": 402,
+  "note": "No completed independent waiting video exists; declined request retained for provenance."
+}

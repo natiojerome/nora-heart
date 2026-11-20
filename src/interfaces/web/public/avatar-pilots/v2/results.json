@@ -1,0 +1,36 @@
+{
+  "model": "bytedance/seedance-2.0",
+  "status": "awaiting-visual-review",
+  "pilots": [
+    {
+      "id": "masculine",
+      "name": "Orion",
+      "status": "pilot-for-review",
+      "width": 960,
+      "height": 960,
+      "r_frame_rate": "24/1",
+      "duration": "4.041667",
+      "nb_frames": "97",
+      "usage": {
+        "cost": 0.6111,
+        "is_byok": false
+      },
+      "sha256": "a3deff1547a3684613245c1e1d80eca240a8bf38a816d94b7cdf45b9119eaedd"
+    },
+    {
+      "id": "neutral",
+      "name": "Prisme",
+      "status": "pilot-for-review",
+      "width": 960,
+      "height": 960,
+      "r_frame_rate": "24/1",
+      "duration": "4.041667",
+      "nb_frames": "97",
+      "usage": {
+        "cost": 0.6111,
+        "is_byok": false
+      },
+      "sha256": "e1341085560c59d13b8c2c4b2ad47d311c702c7d18034a22df4860c36ebed8b3"
+    }
+  ]
+}

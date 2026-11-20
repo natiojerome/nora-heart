@@ -1,0 +1,13 @@
+{
+  "id": "prisme-working",
+  "model": "bytedance/seedance-2.0",
+  "status": "completed",
+  "jobId": "gen-vid-1794618995-yrEXue8VBcEmDZ87SWpm",
+  "generationId": "gen-vid-1794618995-yrEXue8VBcEmDZ87SWpm",
+  "usage": {
+    "cost": 0.2716,
+    "is_byok": false
+  },
+  "bytes": 915298,
+  "sha256": "ac31d7a5523baa25f4cc64057f4c6deaeafc954f2398e000b8e16c217a1c7767"
+}

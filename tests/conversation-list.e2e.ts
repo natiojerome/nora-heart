@@ -1,0 +1,142 @@
+import assert from 'node:assert/strict';
+import {mkdtemp,mkdir,rm} from 'node:fs/promises';
+import {createServer} from 'node:net';
+import os from 'node:os';
+import path from 'node:path';
+import {test} from 'node:test';
+import {chromium} from '@playwright/test';
+import {TestLab} from '../src/app/test-lab.ts';
+import {WebAccess} from '../src/app/web-access.ts';
+import {defaultAssistant} from '../src/app/assistant.ts';
+import {createWebServer} from '../src/interfaces/web/server.ts';
+import {assistantFixture} from './assistant.fixture.ts';
+import {conversationFixture} from './conversation-fixture.ts';
+import {structuredMemoryFixture} from './structured-memory-fixture.ts';
+
+test('conversation catalogue fills mobile width, hides usage and filters projects with readable model and effort', {timeout:45000},async()=>{
+ const directory=await mkdtemp(path.join(os.tmpdir(),'heart-conversation-list-'));
+ const lab=new TestLab({directory:path.join(directory,'lab'),authDirectory:path.join(directory,'auth')});await lab.prepare();
+ const assistant=assistantFixture();await assistant.save({version:0,settings:{...defaultAssistant,completed:true,step:5}});
+ const fixture=await conversationFixture(path.join(directory,'threads'),undefined,undefined,undefined,undefined,async()=>(await assistant.defaults()).defaults,undefined,async()=>lab.models('chatgpt'));
+ const memory=structuredMemoryFixture();
+ const project=(await memory.manager.createProject({title:'Architecture produit'})).project;
+ const other=(await memory.manager.createProject({title:'Architecture produit'})).project;
+ const empty=(await memory.manager.createProject({title:'Sans discussion'})).project;
+ const first=(await fixture.service.create({title:'Architecture et décisions '+ 'longues '.repeat(8)})).conversation;
+ await fixture.repository.create({...first,projectId:project.id,selection:{provider:'chatgpt',modelId:'gpt-test-sol',contextWindow:8192,capacitySource:'catalog',reasoningEffort:'high'}});
+ const second=(await fixture.service.create({title:'Autre projet'})).conversation;
+ await fixture.repository.create({...second,projectId:other.id,selection:{provider:'openrouter',modelId:'deepseek/test-model-with-a-very-long-id',contextWindow:8192,capacitySource:'catalog'}});
+ const personal=(await fixture.service.create({title:'Discussion personnelle'})).conversation;
+ const reservation=createServer();await new Promise<void>(r=>reservation.listen(0,'127.0.0.1',r));const port=(reservation.address() as {port:number}).port;await new Promise<void>(r=>reservation.close(()=>r()));
+ const origin='http://127.0.0.1:'+port;
+ const originalState=lab.state.bind(lab);lab.state=async()=>({...await originalState(),chatgpt:{connected:true,profile:"fake-account"},api:{openai:false,anthropic:false,openrouter:true}});
+ lab.models=async(provider)=>({models:provider==='openrouter'?[{id:'vendor/reasoner',name:'Reasoner de test',contextWindow:32768,reasoningEfforts:['low','high']}]:[{id:'gpt-test-sol',name:'Sol de test',contextWindow:8192,reasoningEfforts:['low','high'],defaultReasoningEffort:'low'}]});
+ lab.usage=async(provider,modelId)=>({provider:provider as 'openrouter'|'chatgpt',modelId,status:'available',observedAt:new Date().toISOString(),source:'Fixture isolée',message:'Métadonnées de test',...(provider==='openrouter'?{spend:{scope:'key' as const,currency:'USD' as const,daily:0,total:2.5},balance:{scope:'key' as const,currency:'USD' as const,remaining:8}}:{quota:{scope:'account' as const,appLimitAvailable:false as const,windows:[{limitId:'codex',limitName:'Compte',usedPercent:28,remainingPercent:72,windowDurationMins:10080,resetsAt:'2026-11-20T00:00:00Z'}]}})});
+
+ lab.capabilities=async(_provider,id)=>({id,reasoningEfforts:['low','medium','high']});
+ const access=new WebAccess({secret:'fake-conversation-list-session-secret-32chars',password:'fake-password'});
+ const server=createWebServer({origin,access,lab,assistant,conversations:fixture.service,memories:memory.manager});
+ await new Promise<void>(r=>server.listen(port,'127.0.0.1',r));
+ const browser=await chromium.launch({headless:true,args:process.getuid?.()===0?['--no-sandbox']:[]});
+ try{
+  const page=await browser.newPage({viewport:{width:390,height:844}});page.setDefaultTimeout(8000);
+  const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
+  await page.route('**/*',route=>new URL(route.request().url()).origin===origin?route.continue():route.abort());
+  let releaseMemories!: () => void;
+  const memoryGate = new Promise<void>(resolve => { releaseMemories = resolve; });
+  await page.route('**/api/memories', async route => { await memoryGate; await route.continue(); });
+  await page.goto(origin+'/#conversations');await page.fill('#password','fake-password');await page.click('#login-submit');
+  await page.waitForSelector('#discussion-cards .item-row');
+  assert.equal(await page.locator('#discussion-cards .item-row').count(),3);
+  // A slow memory service must not delay the independent conversation list.
+  releaseMemories();
+  await page.waitForFunction(() => document.querySelectorAll('#conversation-project option').length === 4);
+  await page.unroute('**/api/memories');
+  assert.equal(await page.locator('.chat-status-bar').isVisible(),false);
+  const row=page.locator(`#discussion-cards [data-conversation-id="${first.id}"]`);
+  assert.match(await row.innerText(),/Architecture produit[\s\S]*ChatGPT · gpt-test-sol[\s\S]*Effort élevé/);
+  assert.match(await page.locator(`#discussion-cards [data-conversation-id="${second.id}"]`).innerText(),/OpenRouter[\s\S]*Effort —/);
+  assert.match(await page.locator(`#discussion-cards [data-conversation-id="${personal.id}"]`).innerText(),/Sans projet[\s\S]*Modèle à choisir/);
+  for(const width of [320,390,820,1440]){
+   await page.setViewportSize({width,height:900});
+   assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
+   if(width<760){const content=await page.locator('.page-content').boundingBox();assert(content);assert.equal(content.width,width);assert.equal(content.x,0);}
+   const filters=await page.locator('.discussion-filters').boundingBox(), search=await page.locator('#discussion-search').boundingBox();
+   assert(filters&&search&&search.y-filters.y>=10&&filters.y+filters.height-search.y-search.height>=10);
+   const before=filters.y;await page.evaluate(()=>window.scrollTo(0,200));assert.equal((await page.locator('.discussion-filters').boundingBox())?.y,before);await page.evaluate(()=>window.scrollTo(0,0));
+   const bounds=await row.boundingBox();assert(bounds&&bounds.height<=105&&bounds.width>(width<760?width*0.85:500),JSON.stringify({width,bounds}));
+  }
+  await page.setViewportSize({width:390,height:844});
+  const choose=async(value:string)=>{await page.click('[data-select-id="discussion-project-filter"]');await page.locator('#select-sheet [data-value="'+value+'"]').click();};
+  await choose(project.id);assert.equal(await page.locator('#discussion-cards .item-row').count(),1);assert(await row.isVisible());
+  await page.fill('#discussion-search','inexistant');assert.match(await page.textContent('#discussion-cards')||'',/Aucune discussion/);
+  await page.fill('#discussion-search','décisions');assert(await row.isVisible());
+  await page.fill('#discussion-search','');await choose(other.id);assert.equal(await page.locator('#discussion-cards .item-row').count(),1);assert(await page.locator(`#discussion-cards [data-conversation-id="${second.id}"]`).isVisible());
+  await choose(empty.id);assert.match(await page.textContent('#discussion-cards')||'',/Aucune discussion/);
+  await choose('none');assert.equal(await page.locator('#discussion-cards .item-row').count(),1);assert(await page.locator(`#discussion-cards [data-conversation-id="${personal.id}"]`).isVisible());
+  await choose('');
+  const shots=path.join(process.cwd(),'docs/design/conversation-list');await mkdir(shots,{recursive:true});await page.screenshot({path:path.join(shots,'mobile.png')});
+  await page.locator(`#discussion-cards [data-conversation-id="${personal.id}"]`).click();await page.waitForSelector('body.chat-mode',{state:'attached'});assert(await page.locator('.chat-status-bar').isVisible());
+  await page.click('.chat-heading [data-open-navigation]');await page.click('#navigation-dialog [data-nav="conversations"]');
+  await page.waitForSelector('body.conversations-list-mode',{state:'attached'});assert.equal(await page.locator('.chat-status-bar').isVisible(),false);
+  await page.setViewportSize({width:1440,height:900});await page.screenshot({path:path.join(shots,'desktop.png')});
+  const chooseSetting=async(id:string,value:string)=>{await page.locator('[data-select-id="'+id+'"]').click();await page.locator('#select-sheet [data-value="'+value+'"]').click();};
+  await page.evaluate(()=>location.hash='providers');assert.equal(await page.locator('#screen-models input[name=provider],#screen-models #model-field,#screen-models #model-reasoning-options').count(),0);assert.equal(await page.locator('#screen-models h1').innerText(),'Fournisseurs');
+  await page.evaluate(()=>location.hash='conversations');await page.locator(`#discussion-cards [data-conversation-id="${personal.id}"]`).click();await page.waitForSelector('body.chat-mode',{state:'attached'});
+  await page.evaluate(()=>location.hash='providers');assert.equal(await page.locator('#screen-models #provider-config').count(),0);
+  const supplierShots=path.join(process.cwd(),'docs/design/provider-management');await mkdir(supplierShots,{recursive:true});await page.setViewportSize({width:390,height:844});await page.screenshot({path:path.join(supplierShots,'providers-mobile.png')});
+  const before=await fixture.service.get(personal.id);
+  assert.equal((await fixture.service.get(second.id)).conversation.selection?.provider,'openrouter');
+  await page.evaluate(()=>location.hash='conversations');await page.waitForSelector('body.chat-mode',{state:'attached'});await page.fill('#conversation-prompt','Brouillon conservé');await page.click('#choose-brain');await page.waitForSelector('#model-preferences-dialog[open]');
+  await page.click('label:has(input[value="chatgpt"])');await page.waitForFunction(()=>document.querySelectorAll('#model-options option').length===2);await chooseSetting('model-options','gpt-test-sol');await chooseSetting('reasoning-effort','high');
+  for(const width of [320,390,820,1440]){await page.setViewportSize({width,height:900});const box=await page.locator('#model-preferences-dialog').boundingBox();assert(box&&box.x>=0&&box.x+box.width<=width+1);assert.equal(await page.locator('#model-preferences-dialog #connect-chatgpt,#model-preferences-dialog [data-configure-provider]').count(),0);}
+  await page.setViewportSize({width:390,height:844});await page.screenshot({path:path.join(supplierShots,'conversation-model-mobile.png')});await page.click('#conversation-model-save');await page.waitForSelector('#model-preferences-dialog',{state:'hidden'});
+  assert.equal((await fixture.service.get(personal.id)).conversation.selection?.reasoningEffort,'high');assert.equal((await fixture.service.get(personal.id)).events.length,before.events.length);assert.equal(await page.inputValue('#conversation-prompt'),'Brouillon conservé');
+  await page.reload();await page.waitForSelector('body.chat-mode',{state:'attached'});await page.click('#choose-brain');await page.waitForSelector('#model-preferences-dialog[open]');await page.waitForFunction(()=>(document.getElementById('reasoning-effort') as HTMLSelectElement)?.value==='high');
+  await page.click('label:has(input[value="demo"])');await page.locator('[data-close-model-preferences]').click();await page.waitForFunction(()=>(document.querySelector('input[name="provider"]:checked') as HTMLInputElement)?.value==='chatgpt');assert.equal((await fixture.service.get(personal.id)).conversation.selection?.provider,'chatgpt');
+  const baseline=await assistant.defaults();await assistant.saveDefaults({version:baseline.version,defaults:{...baseline.defaults,selection:{provider:'demo',modelId:'demo',contextWindow:32768,capacitySource:'configured'}}});
+  await page.click('#choose-brain');await page.waitForSelector('#model-preferences-dialog[open]');await page.click('#conversation-model-default');await page.waitForSelector('#model-preferences-dialog',{state:'hidden'});assert.equal((await fixture.service.get(personal.id)).conversation.selection?.provider,'demo');assert.equal((await fixture.service.get(second.id)).conversation.selection?.provider,'openrouter');
+  await page.evaluate(()=>location.hash='providers');const selectedBefore=await page.locator('input[name="provider"]:checked').inputValue();await page.click('[data-configure-provider="openai"]');await page.fill('#api-key','fake-connection-independent');await page.click('#save-api-key');await page.waitForSelector('#api-key-dialog',{state:'hidden'});assert.equal(await page.locator('input[name="provider"]:checked').inputValue(),selectedBefore);assert.equal((await fixture.service.get(personal.id)).conversation.selection?.provider,'demo');
+  await page.evaluate(()=>location.hash='consumption');await page.waitForSelector('.consumption-card');assert.equal(await page.locator('.consumption-card').count(),3);
+  assert.match(await page.locator('#consumption-providers').innerText(),/ChatGPT[\s\S]*72 %[\s\S]*OpenRouter[\s\S]*2[,.]5/);
+  const toolbar=await page.locator('.consumption-toolbar').boundingBox(),cards=await page.locator('#consumption-providers').boundingBox();assert(toolbar&&cards&&cards.y-toolbar.y-toolbar.height>=15);
+  await page.setViewportSize({width:390,height:844});const prefsShots=path.join(process.cwd(),'docs/design/preferences');await mkdir(prefsShots,{recursive:true});await page.screenshot({path:path.join(prefsShots,'consumption-mobile.png')});
+  await page.evaluate(()=>location.hash='settings-conversations');await page.click('#edit-conversation-defaults');await page.waitForSelector('#defaults-dialog[open]');
+  await chooseSetting('defaults-provider','chatgpt');await page.waitForFunction(()=>document.querySelectorAll('#defaults-model option').length===2);
+  await chooseSetting('defaults-model','gpt-test-sol');await chooseSetting('defaults-effort','high');await chooseSetting('defaults-access','yolo');
+  assert(await page.locator('#defaults-network').isChecked());assert(await page.locator('#defaults-network').isDisabled());
+  // An independent theme edit must merge; saving cannot depend on another state GET.
+  await assistant.patch({version:(await assistant.get()).version,base:{theme:'light'},patch:{theme:'sage'}});
+  await page.route('**/api/state',route=>route.fulfill({status:503,json:{error:'State read unavailable'}}));
+  await page.click('#save-defaults');await page.waitForSelector('#defaults-dialog',{state:'hidden'});assert.equal((await assistant.defaults()).defaults.fileAccess,'yolo');
+  await page.unroute('**/api/state');assert.equal((await assistant.get()).settings.theme,'sage');
+  assert.equal((await fixture.service.get(personal.id)).conversation.selection?.provider,'demo');
+  await page.click('#edit-conversation-defaults');await page.waitForSelector('#defaults-dialog[open]');await page.waitForFunction(()=>document.getElementById('defaults-model-status')?.textContent==='');
+  assert.equal(await page.inputValue('#defaults-effort'),'high');
+  assert.equal(await page.locator('#defaults-form h3,#defaults-form section').count(),0);
+  await chooseSetting('defaults-provider','openrouter');await page.waitForFunction(()=>document.querySelectorAll('#defaults-model option').length===2);await chooseSetting('defaults-model','vendor/reasoner');await chooseSetting('defaults-effort','low');
+  await page.click('#save-defaults');await page.waitForSelector('#defaults-dialog',{state:'hidden'});assert.equal((await assistant.defaults()).defaults.selection?.reasoningEffort,'low');
+  await page.click('#edit-conversation-defaults');await page.waitForFunction(()=>document.getElementById('defaults-model-status')?.textContent==='');assert.equal(await page.inputValue('#defaults-effort'),'low');
+  await chooseSetting('defaults-provider','openai');await page.fill('#defaults-model-id','gpt-test-api');await page.waitForFunction(()=>!document.getElementById('defaults-effort')?.hidden);await chooseSetting('defaults-effort','medium');
+  await page.click('#save-defaults');await page.waitForSelector('#defaults-dialog',{state:'hidden'});assert.equal((await assistant.defaults()).defaults.selection?.provider,'openai');assert.equal((await assistant.defaults()).defaults.selection?.reasoningEffort,'medium');
+  await page.click('#edit-conversation-defaults');await page.waitForFunction(()=>!document.getElementById('defaults-effort')?.hidden);assert.equal(await page.inputValue('#defaults-effort'),'medium');
+  await chooseSetting('defaults-provider','chatgpt');await page.waitForFunction(()=>document.querySelectorAll('#defaults-model option').length===2);await chooseSetting('defaults-model','gpt-test-sol');await chooseSetting('defaults-effort','high');
+  await chooseSetting('defaults-access','develop');await page.locator('#defaults-network').uncheck();
+  for(const width of [320,390,820,1440]){await page.setViewportSize({width,height:900});const box=await page.locator('#defaults-dialog').boundingBox();assert(box&&box.x>=0&&box.x+box.width<=width+1);const toggle=await page.locator('#defaults-network').boundingBox();assert(toggle&&toggle.width===42&&toggle.height===26);}
+  // A competing edit of the same defaults must not close the form or lose its draft.
+  const competing=await assistant.defaults();await assistant.saveDefaults({version:competing.version,defaults:{...competing.defaults,fileAccess:'write'}});
+  await page.click('#save-defaults');await page.waitForFunction(()=>document.getElementById('defaults-model-status')?.textContent?.includes('ailleurs'));
+  assert(await page.locator('#defaults-dialog').isVisible());assert.equal(await page.inputValue('#defaults-effort'),'high');assert.equal(await page.inputValue('#defaults-access'),'develop');
+  await page.click('#close-defaults');await page.click('#edit-conversation-defaults');await page.waitForFunction(()=>!(document.getElementById('save-defaults') as HTMLButtonElement).disabled);
+  assert.equal(await page.inputValue('#defaults-access'),'write');await chooseSetting('defaults-provider','chatgpt');await page.waitForFunction(()=>document.querySelectorAll('#defaults-model option').length===2);await chooseSetting('defaults-model','gpt-test-sol');await chooseSetting('defaults-effort','high');await chooseSetting('defaults-access','develop');await page.locator('#defaults-network').uncheck();
+  await page.setViewportSize({width:390,height:844});await page.screenshot({path:path.join(prefsShots,'defaults-mobile.png')});
+  await page.click('#save-defaults');await page.waitForSelector('#defaults-dialog',{state:'hidden'});
+  await page.evaluate(()=>location.hash='conversations');await page.locator('.chat-heading [data-open-navigation]').click();await page.click('#navigation-dialog [data-nav="conversations"]');
+  await page.click('#new-conversation');await page.fill('#conversation-title','Avec mes valeurs par défaut');await page.locator('#conversation-create button[type=submit]').click();await page.waitForFunction(()=>document.getElementById('chat-title')?.textContent==='Avec mes valeurs par défaut');
+  const created=(await fixture.service.list()).conversations.find(item=>item.title==='Avec mes valeurs par défaut')!;assert.equal(created.selection?.reasoningEffort,'high');assert.equal(created.fileAccess,'develop');assert.equal(created.networkAccess,false);
+  await page.reload();await page.waitForSelector('body.chat-mode',{state:'attached'});assert.equal(await page.inputValue('#workspace-access'),'develop');
+  assert.equal(await page.locator('#navigation-dialog [data-nav="lab"]').count(),0);
+  assert.equal(await page.locator('#memory-scope option').count(),4);
+  assert.deepEqual(errors,[]);
+ }finally{await browser.close();server.closeAllConnections();await new Promise<void>(r=>server.close(()=>r()));await fixture.storage.close();await lab.close();await rm(directory,{recursive:true,force:true});}
+});

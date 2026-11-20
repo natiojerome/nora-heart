@@ -1,0 +1,12 @@
+{
+  "model": "bytedance/seedance-2.0",
+  "prompt": "Prisme, the friendly gender-neutral robot with expressive cyan eyes. Waiting for the user to answer: look directly toward viewer, gently tilt head with curious raised eyebrows, blink once and hold a patient questioning expression, then return. Curious and attentive, never confused or worried. Locked static camera, square close-up head-and-shoulders portrait. Preserve exact supplied character identity, hair, face, clothing, materials and framing. No full body, hands, props, keyboard, text, icons or symbols. Keep head within original margins, background uniformly pure chroma green, no camera move, no cuts, no zoom, no morphing. High-quality subtle fluid character animation, coordinated eyes, eyebrows and neck, not a rigid puppet. Start and end precisely at supplied pose for a seamless loop. No audio.",
+  "duration": 4,
+  "resolution": "480p",
+  "aspect_ratio": "1:1",
+  "generate_audio": false,
+  "seed": 2026111512,
+  "keyframe": "prisme-keyframe.png",
+  "keyframeSha256": "ccd0dcb74da2ba8685b95f91f7d5c4ee362497c956a69dc8035fce5de8650c8b",
+  "estimatedUSD": 0.2688
+}

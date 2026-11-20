@@ -1,0 +1,71 @@
+.skills-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.skills-heading h2 {
+  margin: 0;
+}
+.skills-heading .field-help {
+  margin: 4px 0 0;
+}
+#skills-list {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+}
+#skills-list .settings-row-copy small {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+#skills-status:empty,
+#skill-status:empty {
+  display: none;
+}
+#skill-dialog .editor-scroll {
+  padding: 16px;
+  display: grid;
+  gap: 14px;
+}
+#skill-source {
+  font-size: 13px;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+#skill-dialog details {
+  min-width: 0;
+}
+#skill-resource-list {
+  font-size: 13px;
+  overflow-wrap: anywhere;
+  padding-left: 18px;
+}
+.skill-invocation {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
+}
+.skill-invocation code {
+  overflow-wrap: anywhere;
+}
+
+#skill-dialog .setting-switch {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+#skill-dialog .setting-switch > span {
+  min-width: 0;
+  flex: 1;
+}
+#skill-dialog .setting-switch input {
+  flex: none;
+  margin: 0;
+}

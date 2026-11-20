@@ -1,0 +1,22 @@
+# Copy outside the repository; replace the placeholder with a generated secret.
+use_default_settings:
+  engines:
+    keep_only: [brave, duckduckgo, bing, google, wikipedia, qwant]
+general:
+  debug: false
+  instance_name: Heart Search
+server:
+  secret_key: REPLACE_WITH_RANDOM_SECRET_OUTSIDE_REPOSITORY
+  limiter: false # Private loopback instance, no commercial quota or public endpoint.
+  image_proxy: false
+search:
+  formats: [html, json]
+  safe_search: 0
+outgoing:
+  request_timeout: 6.0 # Operator-configurable upstream timeout, not a volume quota.
+
+engines:
+  - name: bing
+    disabled: false
+  - name: duckduckgo
+    disabled: true

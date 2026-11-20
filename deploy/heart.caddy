@@ -1,0 +1,23 @@
+heart.natio.re {
+    import public_common
+
+    header {
+        Referrer-Policy no-referrer
+        Strict-Transport-Security "max-age=31536000"
+        X-Robots-Tag "noindex, nofollow"
+        X-Content-Type-Options nosniff
+        X-Frame-Options DENY
+    }
+
+    # Revalidate the public shell/assets. API responses keep the backend
+    # private no-store policy; the deferred header avoids duplicate directives.
+    @public_assets not path /api/*
+    header @public_assets >Cache-Control "public, max-age=0, must-revalidate"
+
+    respond /healthz 404
+    reverse_proxy http://host.docker.internal:4215 {
+        health_uri /healthz
+        health_interval 10s
+        health_timeout 3s
+    }
+}

@@ -1,0 +1,11 @@
+[Unit]
+Description=Retry the daily encrypted Heart backup while idle
+
+[Timer]
+OnCalendar=hourly
+RandomizedDelaySec=120
+Persistent=true
+Unit=personal-harness-full-backup.service
+
+[Install]
+WantedBy=timers.target

@@ -1,0 +1,23 @@
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import {randomUUID} from 'node:crypto';
+import {ConversationView} from '../src/app/conversation-view.ts';
+import {eventPage} from '../src/contracts/history.ts';
+import type {Event,SessionStore} from '../src/contracts/storage.ts';
+test('incremental owner projection scans only additions and keeps metadata independent of displayed pages',async()=>{
+ const events:Event[]=[],id=randomUUID();let reads=0,returned=0;
+ const store:SessionStore={async read(){reads++;throw new Error('Full read forbidden');},async append(){},async page(_id,input){const page=eventPage(events,input);returned+=page.events.length;return page;}};
+ const view=new ConversationView(store,id);
+ const add=(type:Event['type'],data:any)=>{events.push({id:randomUUID(),at:new Date().toISOString(),runId:'run',type,data});};
+ add('run.started',{tools:['files.list']});add('message',{role:'user',content:'first'});
+ add('context.usage',{estimatedTokens:42});add('context.checkpoint',{summary:'short'});
+ await view.update();assert.equal(view.messageCount,1);assert.equal(view.segments,2);assert.equal(reads,0);assert.equal(returned,4);
+ await view.update();assert.equal(returned,4);
+ const request=randomUUID();add('interaction.requested',{callId:'call',toolName:'interactions.request',request:{title:'Pick',questions:[]}});events.at(-1)!.id=request;
+ add('interaction.resolved',{requestId:request,response:{status:'answered',answers:{}}});
+ add('message',{role:'assistant',content:'done',toolCalls:[]});add('run.completed',{});
+ await Promise.all([view.update(),view.update()]);assert.equal(returned,8);assert.equal(view.messageCount,2);assert.equal(view.revision,8);
+ assert.equal(view.interactions.get(request)?.status,'answered');assert.equal(view.recovery.plan().pendingInput,false);assert.deepEqual(view.recovery.plan().runs,[]);
+ const page=await view.page({limit:2});assert.equal(page.events.length,2);assert.equal(view.messageCount,2);
+ const rebuilt=new ConversationView(store,id);await rebuilt.update();assert.equal(rebuilt.messageCount,view.messageCount);assert.deepEqual(rebuilt.recovery.plan(),view.recovery.plan());
+});

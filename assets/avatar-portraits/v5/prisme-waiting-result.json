@@ -1,0 +1,13 @@
+{
+  "id": "prisme-waiting",
+  "model": "bytedance/seedance-2.0",
+  "status": "completed",
+  "jobId": "gen-vid-1794619339-3UamaZdo7R5qpfcsNg8l",
+  "generationId": "gen-vid-1794619339-3UamaZdo7R5qpfcsNg8l",
+  "usage": {
+    "cost": 0.2716,
+    "is_byok": false
+  },
+  "bytes": 915604,
+  "sha256": "bbeffdfc22e92c4b638a2a510c9282e5ad778e6e5df8f5795c087210028630bf"
+}

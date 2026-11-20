@@ -1,0 +1,23 @@
+[Unit]
+Description=Heart local web search MCP (SearXNG)
+After=network-online.target docker.service
+Wants=network-online.target
+
+[Service]
+DynamicUser=yes
+WorkingDirectory=/projects/nora-heart
+Environment=HARNESS_SEARCH_ENGINE_URL=http://127.0.0.1:4216
+Environment=HARNESS_SEARCH_PORT=4217
+Environment=HARNESS_SEARCH_TIMEOUT_MS=60000
+ExecStart=/projects/nora-heart/.tools/node-v24.22.3-linux-x64/bin/node /projects/nora-heart/node_modules/tsx/dist/cli.mjs /projects/nora-heart/src/interfaces/search.ts
+Restart=on-failure
+RestartSec=3
+TimeoutStopSec=15
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectHome=yes
+ProtectSystem=strict
+InaccessiblePaths=-/etc/personal-harness/web.env -/var/lib/personal-harness -/var/lib/personal-harness-host
+
+[Install]
+WantedBy=multi-user.target

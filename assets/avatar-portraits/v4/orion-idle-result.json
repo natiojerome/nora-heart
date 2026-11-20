@@ -1,0 +1,13 @@
+{
+  "id": "orion-idle",
+  "model": "bytedance/seedance-2.0",
+  "status": "completed",
+  "jobId": "gen-vid-1794616957-9C35FFUZ7g1K77gbetLc",
+  "generationId": "gen-vid-1794616957-9C35FFUZ7g1K77gbetLc",
+  "usage": {
+    "cost": 0.2716,
+    "is_byok": false
+  },
+  "bytes": 897200,
+  "sha256": "742a0dbd6babfdb5332e87ec26c96fbc24c8b95089c0e5bff7e11d2a41f10509"
+}

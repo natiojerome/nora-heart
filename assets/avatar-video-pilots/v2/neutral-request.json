@@ -1,0 +1,12 @@
+{
+  "model": "bytedance/seedance-2.0",
+  "prompt": "Prisme, a friendly compact gender-neutral white robot, performs one playful thoughtful work cycle while seated. Its three-finger hands type lightly and independently on the cyan holographic keyboard; wrists, elbows and shoulders move naturally. The large expressive cyan eyes follow the work, blink once, then the head tilts with curious delight toward the viewer and the little mouth smiles. Its rounded body makes a small coordinated enthusiastic bounce, then it gently settles back to the exact original attentive typing pose. Fluid appealing animation with anticipation, follow-through and subtle squash in expression, while preserving the hard shell geometry and all body proportions. Never a rigid puppet rocking as one flat piece. Locked static camera. Entire character, chair and both feet remain fully visible in exactly the original framing. Uniform pure chroma green background throughout. One fluid continuous animation, no cuts, no dissolves, no camera motion, no zoom. Preserve the exact face, hair or head shell, armor, materials, colors, chair and proportions from the supplied frame. Natural articulated hands, wrists, elbows, shoulders, neck and torso must move together, not stiff flat cutout pieces. No extra or missing fingers, no detached limbs, no objects popping in or out, no new characters or text. Begin completely at rest and end in precisely the supplied original pose and composition for looping. No audio.",
+  "duration": 4,
+  "resolution": "720p",
+  "aspect_ratio": "1:1",
+  "generate_audio": false,
+  "seed": 2026111402,
+  "keyframe": "neutral-keyframe.png",
+  "keyframeSha256": "55b447b5744bfffeff9335604ad57c160f84266f8effe061506f591d0c9b3808",
+  "estimatedUSD": 0.6048
+}

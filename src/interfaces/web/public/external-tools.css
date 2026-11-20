@@ -1,0 +1,242 @@
+.mcp-panel {
+  margin-top: 16px;
+}
+.mcp-panel-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.mcp-panel-heading h2 {
+  font-size: 1rem;
+  margin: 0;
+}
+.mcp-panel-actions {
+  display: flex;
+  gap: 6px;
+}
+.mcp-connections {
+  display: grid;
+  gap: 8px;
+}
+.mcp-connection {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 10px;
+}
+.mcp-connection-icon {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  color: var(--accent);
+}
+.mcp-connection-icon svg {
+  width: 20px;
+  height: 20px;
+}
+.mcp-connection-copy {
+  display: grid;
+  gap: 3px;
+  flex: 1;
+  min-width: 0;
+}
+.mcp-connection-copy strong {
+  font-size: 0.86rem;
+  overflow-wrap: anywhere;
+}
+.mcp-connection-copy small,
+.mcp-connection-state {
+  font-size: 0.74rem;
+  color: var(--muted);
+}
+.mcp-connection-copy small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.mcp-tool-choice {
+  display: flex !important;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 0.85rem;
+}
+.mcp-tool-choice > input {
+  flex-shrink: 0;
+  margin-top: 3px;
+}
+.mcp-tool-choice > span {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+.mcp-tool-choice small {
+  font-size: 0.73rem;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+.mcp-tool-choice > span > span {
+  font-size: 0.78rem;
+  font-weight: 400;
+  white-space: pre-line;
+  line-height: 1.45;
+}
+.mcp-tool-choice:last-child {
+  border: 0;
+}
+.mcp-inline-fields {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 12px;
+}
+.mcp-inline-fields > div {
+  min-width: 0;
+}
+#mcp-auth-fields[hidden],
+#mcp-header-box[hidden],
+#mcp-catalogue[hidden],
+#mcp-empty[hidden],
+#mcp-exa[hidden] {
+  display: none;
+}
+#mcp-status,
+#mcp-list-status {
+  font-size: 0.8rem;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+#mcp-dialog .editor-fields {
+  gap: 10px;
+}
+#mcp-list-status:empty,
+#mcp-status:empty {
+  display: none;
+}
+@media (max-width: 380px) {
+  .mcp-inline-fields {
+    grid-template-columns: 1fr;
+  }
+  .mcp-panel {
+    padding: 12px;
+  }
+}
+
+.mcp-panel {
+  grid-column: 1/-1;
+}
+#mcp-exa {
+  margin-top: 12px;
+}
+.module-symbol svg {
+  width: 20px;
+  height: 20px;
+}
+
+.mcp-tool-item {
+  padding: 6px 0;
+  border-bottom: 1px solid var(--line);
+}
+.mcp-tool-choice {
+  border: 0;
+}
+.mcp-tool-description {
+  padding: 0 0 8px 28px;
+  font-size: 0.75rem;
+}
+.mcp-tool-description summary {
+  color: var(--muted);
+  cursor: pointer;
+}
+.mcp-tool-description p {
+  white-space: pre-line;
+}
+.mcp-tool-description pre {
+  font-size: 0.73rem;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.mcp-tool-choice > span > span {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.mcp-tool-inventory {
+  display: grid;
+  gap: 8px;
+}
+.mcp-inventory-tool {
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+.mcp-inventory-tool > summary {
+  padding: 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.mcp-inventory-tool > summary::after {
+  content: "+";
+  margin-left: auto;
+  flex: none;
+  color: var(--ink-muted);
+}
+.mcp-inventory-tool[open] > summary::after {
+  content: "−";
+}
+.mcp-tool-heading {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+.mcp-tool-heading strong {
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+.mcp-tool-heading small {
+  font-size: 12px;
+  color: var(--ink-muted);
+  white-space: normal;
+}
+.mcp-tool-body {
+  border-top: 1px solid var(--line);
+  padding: 10px;
+  min-width: 0;
+}
+.mcp-tool-body p,
+.mcp-tool-body code,
+.mcp-tool-body button {
+  font-size: 12px;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+.mcp-tool-body button {
+  text-align: left;
+}
+.mcp-connection-tools {
+  font-size: 12px;
+  margin-top: 6px;
+}
+.mcp-connection-tools > summary {
+  cursor: pointer;
+  color: var(--green);
+  padding: 4px 0;
+}
+.mcp-connection-tools .mcp-inventory-tool {
+  margin-top: 8px;
+}
+#mcp-tools-status {
+  font-size: 12px;
+}
+#mcp-tools-status:empty {
+  display: none;
+}

@@ -1,0 +1,12 @@
+{
+  "model": "bytedance/seedance-2.0",
+  "prompt": "Orion, the human-faced masculine android with natural expressive blue eyes and silver hair. Relaxed and available at rest: soft smile, slow natural breath visible in shoulders, one gentle blink, tiny relaxed head movement and return. Calm, awake, welcoming, no nodding off or typing. Locked static camera, square close-up head-and-shoulders portrait. Preserve exact supplied character identity, hair, face, clothing, materials and framing. No full body, hands, props, keyboard, text, icons or symbols. Keep head within original margins, background uniformly pure chroma green, no camera move, no cuts, no zoom, no morphing. High-quality subtle fluid character animation, coordinated eyes, eyebrows and neck, not a rigid puppet. Start and end precisely at supplied pose for a seamless loop. No audio.",
+  "duration": 4,
+  "resolution": "480p",
+  "aspect_ratio": "1:1",
+  "generate_audio": false,
+  "seed": 2026111501,
+  "keyframe": "orion-keyframe.png",
+  "keyframeSha256": "cfeb41e14bad7ad92dfa1f3f1a5d168f79b1347733d55d7bffb60f7eb758da6b",
+  "estimatedUSD": 0.2688
+}
