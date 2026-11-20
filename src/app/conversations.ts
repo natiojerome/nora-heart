@@ -245,6 +245,8 @@ export class Conversations {
   }
   private async instructions(workspace:string,conversation:Conversation,blocks:InstructionOverrides,policies:RuntimePolicies,identity:string){
     let instructions=identity+"\n"+instructionValue(blocks,"work");
+    const selected=conversation.selection;
+    if(selected)instructions+="\nCerveau actuel : "+selected.provider+"/"+selected.modelId+(selected.reasoningEffort?" ; effort="+selected.reasoningEffort:"")+".";
     const access=conversation.fileAccess??'read';
     instructions+="\nDate actuelle du serveur (UTC) : "+new Date().toISOString().slice(0,10)+". Utilise cette date pour les calculs d’âge et les dates relatives, sauf précision de l’utilisateur.";
     instructions+="\n"+instructionValue(blocks,"memory")+"\n"+instructionValue(blocks,"memoryPolicy");
@@ -341,7 +343,7 @@ export class Conversations {
       if(!resume)await this.options.chatAssets?.claim(id,references.map(file=>file.id));
       runSignal.throwIfAborted();
       await engine.run({ sessionId: id, runId:executionId, resume, prompt: typeof body.prompt==='string'?body.prompt.trim() || "Analyse les pièces jointes.":"", attachments:references, provider: model, modelIdentity:{provider,modelId},
-        displayName: this.options.displayName, instructions: await this.instructions(workspace,conversation,blocks,policies,identity)+(configuration?.skills?.instructions(rawModel.supportsTools!==false)??''), workspace, maxSteps: conversation.maxSteps ?? 0, maxCallsPerBatch:policies.tools.maxCallsPerBatch, contextWindow,
+        displayName: this.options.displayName, instructions: await this.instructions(workspace,{...conversation,selection},blocks,policies,identity)+(configuration?.skills?.instructions(rawModel.supportsTools!==false)??''), workspace, maxSteps: conversation.maxSteps ?? 0, maxCallsPerBatch:policies.tools.maxCallsPerBatch, contextWindow,
         reserveTokens: Math.min(4096, Math.floor(contextWindow / 4)),
         permissions: new Set([...(configuration?.skills?.entries.length?["skills.read" as const]:[]),...(conversation.fileAccess === "none" ? [] : ["files.read" as const]), ...(["write","develop","yolo"].includes(conversation.fileAccess ?? "read") ? ["files.write" as const] : []), ...(["develop","yolo"].includes(conversation.fileAccess??"read") ? ["process.execute" as const] : []), "memory.read", "memory.write", "tasks.read", "tasks.write", "user.input", ...(conversation.networkAccess||conversation.fileAccess==='yolo'?["external.read" as const,"external.write" as const]:[])]), signal:runSignal,
         onProgress:progress=>{const active=this.active.get(id);if(active?.controller===controller)active.commentary=progress.text;},

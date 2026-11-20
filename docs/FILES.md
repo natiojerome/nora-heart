@@ -124,6 +124,7 @@ du propriétaire utilisent directement le contrat `WorkspaceFiles`.
 | `files.delete` | files.write | Revision courante ; suppression non récursive. |
 | `files.mkdir` | files.write | Création d’un dossier, parent existant. |
 
+Les outils présentent pagination et référence de lecture avant le contenu volumineux.
 Les outils read/info donnent une référence de lecture courte, liée au chemin et
 à cette instance des outils. L’adaptateur la résout vers le SHA-256 complet avant
 la mutation : le modèle n’a plus à recopier 64 caractères. Une référence expirée

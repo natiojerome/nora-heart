@@ -10,5 +10,5 @@ export const personalityTemplates:readonly PersonalityTemplate[]=[
 ];
 export function initialPersonality(value:{personality:string;length:string;initiative:string}){
  const template=personalityTemplates.find(item=>item.id===value.personality)??personalityTemplates[1];
- return template.instructions+'\nRéponses '+(({short:'courtes',balanced:'équilibrées',detailed:'détaillées'} as Record<string,string>)[value.length]??'équilibrées')+'.\n'+(value.initiative==='proactive'?'Avance sur les prochaines étapes utiles de la demande dans les permissions accordées.':'Reste discret et réponds à la demande.');
+ return template.instructions+'\nRéponses '+(({short:'courtes',balanced:'équilibrées',detailed:'détaillées'} as Record<string,string>)[value.length]??'équilibrées')+'.\n'+(value.initiative==='proactive'?'Avance sur les prochaines étapes utiles de la demande dans les permissions accordées.':'Exécute ce qui est nécessaire à la demande, sans proposer de travail annexe.');
 }

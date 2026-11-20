@@ -422,3 +422,15 @@ reprise primaire bornée par le budget existant, aucun rejeu moteur des effets.
 Diagnostics typés et sûrs dans le journal pour distinguer protocole, citation,
 preuve, version, portée, taille et indisponibilité. Tests avec fautes injectées
 et modèle réel ; pas de promesse d’infaillibilité sémantique du modèle.
+
+## Confiance, provenance et inspection
+
+Les faits établis se présentent directement. Réserver les incertitudes aux limites
+concrètes qui affectent la réponse, sans audit ou préambule défensif de routine.
+L’économie de tokens conduit à choisir des lectures utiles et ne remplace pas
+l’inspection nécessaire. Une explication de code s’appuie sur les fonctions exécutées.
+
+Les faits du runtime sont fournis par app à partir de l’assemblage et de la sélection
+validée du tour. Exemples et autres processus ne font pas autorité pour ce fil.
+Les sorties partielles proposent une continuation explicite ; pas de lecture forcée
+de toute la sortie, pas de plafond arbitraire et pas de permission supplémentaire.

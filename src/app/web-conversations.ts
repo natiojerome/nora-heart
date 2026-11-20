@@ -89,7 +89,7 @@ export async function openWebConversations(
     displayName: lab.displayName,
     configuration: async () => {
       const profile=await assistant.get();
-      return {instructions:profile.presentationInstructions,overrides:profile.settings.instructionOverrides??{},policies:profile.effectivePolicies,skills:await skills.capture(profile.settings.skillOverrides)};
+      return {instructions:profile.presentationInstructions+"\nRuntime de CE fil fourni par Heart : instance="+storage.instanceId+" ; conversations locales="+config.driver+" ; mémoire="+(memoryConnectionId?"MCP":config.driver)+" ; projets="+(projectConnectionId?"MCP":projectRepository?"repository injecté":"non configurés")+" ; code="+path.resolve(import.meta.dirname,"../..")+". Prime sur exemples et autres processus.",overrides:profile.settings.instructionOverrides??{},policies:profile.effectivePolicies,skills:await skills.capture(profile.settings.skillOverrides)};
     },
     model: (selection) => lab.model({ ...selection }),
     capabilities: (provider, id) => lab.capabilities(provider, id),

@@ -109,3 +109,18 @@ lecture des IDs/versions, absence de doublons, informations de planning manquant
 et distinction mise en file/résultat réel. Il est injecté aux appels principaux,
 comme les autres surcharges, sans écrire dans le profil tant que le propriétaire
 ne l’édite pas. [Outils et preuves](qualification/task-tools/README.md).
+
+## Confiance et inspection
+
+Exécution et autonomie guide la qualité : faits établis formulés directement,
+inspection des fonctions exécutées, fichiers pour lecture/édition, terminal pour
+recherche/exécution, lectures ciblées puis élargies autant que nécessaire. Une
+sortie partielle demande la suite utile ; aucun drainage ni audit générique imposé.
+
+L’app ajoute aussi des faits de runtime, issus de l’assemblage et non de la
+personnalité : instance, stockage, backends sélectionnés, chemin du code, puis
+fournisseur/modèle/effort du tour. Les fichiers d’exemple et autres processus ne
+remplacent pas ces faits. Ils ne constituent pas un test de disponibilité distante.
+Les overrides et personnalités personnalisées restent conservés ; les défauts sont
+modifiables/réinitialisables comme auparavant. Une explication de la mémoire ne
+constitue pas une affirmation de sauvegarde à faire corriger par la revue.

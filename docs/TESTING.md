@@ -462,3 +462,27 @@ Après déploiement : contrôle réel sous l’identité personal-harness, fichi
 hors workspace et illisible directement, lecture/édition via socket, référence courte
 et commande root avec sortie inline. Données QA retirées. Web/worker actifs, HTTPS
 200 et healthz interne sain après sauvegarde chiffrée et redémarrage coordonné.
+
+## Confiance, inspection et sorties partielles — 20 novembre 2026
+
+238 tests, démo locale et trois parcours Chromium passent : instructions, revue
+mémoire, assemblage SQLite à 8 192 tokens. Le changement de cerveau vérifie aussi
+les métadonnées fournies au modèle courant après réouverture. La pagination réelle
+de 150 Ko est reconstruite par les curseurs sans perdre le verdict final. Skill
+code-review validé avec quick_validate ; déclencheur précisé pour éviter les
+explications simples et commandes ordinaires. Aucun droit de skill supplémentaire.
+
+GPT‑6 Luna medium : 22 appels en deux parcours, données et SQLite temporaires,
+profil créatif/proactif. Ancien déni d’accès dans l’historique, puis inspection
+réelle du moteur et de l’assemblage avec files.read ; réponse complète fondée sur
+le code. Réponse exacte sur SQLite et le cerveau actif. Second parcours : sortie
+au-delà de 64 Ko, terminal.read au bon offset, verdict final reçu ; modification
+de calc.mjs via fichiers et test.mjs exécuté (exit 0, tests-ok), sans formulaire.
+
+Premiers essais non réussis : lecture seulement documentaire, confusion de runtime,
+réponse fournisseur incompatible et curseur de suite ignoré après un long corps.
+Métadonnées placées avant le contenu et portée du skill corrigées ; dernier parcours
+pagination/correction passe. Le contrôle QA du nom de modèle exigeait initialement
+son identifiant technique alors que la réponse utilisait le bon nom affiché :
+normalisation corrigée. Rapports opérateur privés, aucune écriture métier ni repli
+API. Cette qualification ne représente pas tous les modèles ou toutes les pannes.

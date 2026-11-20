@@ -394,6 +394,9 @@ export function terminalTools(
   });
   const string = { type: "string" },
     integer = { type: "integer", minimum: 0 };
+  const continuation = (output:Awaited<ReturnType<ExecutionService["read"]>>) => output.more
+    ? {notice:"Sortie partielle : continuation permet de lire la suite utile.",continuation:{tool:"terminal.read",arguments:{id:output.command.id,offset:output.nextOffset}}}
+    : {};
   return [
     tool(
       "terminal.exec",
@@ -418,7 +421,7 @@ export function terminalTools(
           await wait(Math.min(25,Math.max(0,deadline-performance.now())),undefined,{signal});
           output=await execution.read(workspace,command.id);
         }
-        return {...output.command,output:output.output,offset:output.offset,nextOffset:output.nextOffset,more:output.more};
+        return {...output.command,offset:output.offset,nextOffset:output.nextOffset,more:output.more,...continuation(output),output:output.output};
       },
     ),
     tool(
@@ -426,13 +429,10 @@ export function terminalTools(
       "Lire stdout/stderr et l’état d’une commande ; continuer avec nextOffset. offset/length sont configurables, aucune sortie totale supprimée.",
       { id: string, offset: integer, length: { type: "integer", minimum: 1 } },
       ["id"],
-      (args, workspace) =>
-        execution.read(
-          workspace,
-          args.id as string,
-          args.offset as number | undefined,
-          args.length as number | undefined,
-        ),
+      async (args, workspace) => {
+        const output=await execution.read(workspace,args.id as string,args.offset as number|undefined,args.length as number|undefined);
+        return {command:output.command,offset:output.offset,nextOffset:output.nextOffset,more:output.more,...continuation(output),output:output.output};
+      },
     ),
     tool(
       "terminal.write",

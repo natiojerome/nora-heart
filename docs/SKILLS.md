@@ -150,3 +150,9 @@ le choix d’une variable d’environnement ne les inclut pas automatiquement.
 une référence, lit un fichier du workspace avec les permissions de lecture et affiche
 la réponse dans le chat ; fournisseurs simulés, aucun jugement sémantique réel revendiqué.
 [Preuves, captures et limites](qualification/skills/README.md).
+
+Le skill code-review se déclenche pour une revue visant bugs/régressions. Une simple
+explication, commande à exécuter ou correction déjà identifiée ne justifie pas son
+chargement. Il reste automatiquement découvrable et explicitement invocable ;
+aucune désactivation ni permission ajoutée. Les bilans citent seulement les
+vérifications manquantes qui affectent la conclusion.

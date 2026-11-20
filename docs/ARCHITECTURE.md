@@ -945,3 +945,15 @@ Le moteur ne journalise jamais les erreurs brutes. Une panne de contrôle décle
 la même reprise primaire que sa demande de correction, avec statut failed explicite
 et résultats d’outils précédents conservés. Aucun reset, rejeu moteur ni permission
 ajoutée. Le budget d’appels et le signal d’annulation restent applicables.
+
+## Provenance du runtime et inspection
+
+La configuration du run ajoute des faits de l’assemblage : UUID de stockage, driver
+des conversations, backends mémoire/projets et chemin du code. Conversations ajoute
+la sélection validée du tour (fournisseur/modèle/effort), pas celle du tour précédent.
+Ces faits distinguent l’instance du fil des exemples du dépôt et autres processus.
+Pas de secret, de test réseau supplémentaire ni de couplage du core aux modules.
+
+Le module terminal joint un curseur de continuation aux sorties partielles de ses
+outils ; ExecutionService et le terminal manuel restent inchangés. Le modèle choisit
+les pages utiles, les permissions du core restent vérifiées pour chaque appel.

@@ -120,7 +120,7 @@ export class SkillRun {
     return (
       "\nSkills actuellement activés (remplacent les anciens catalogues ; aucun droit supplémentaire). " +
       (supportsTools
-        ? "Quand une tâche correspond, appeler skills.load avant de suivre le skill ; références via skills.read."
+        ? "Seulement si le besoin correspond à sa description, appeler skills.load avant de suivre le skill ; références via skills.read. Un sujet voisin ne suffit pas."
         : "Ce modèle ne possède pas d’outils : demander une invocation explicite $nom si le skill nécessaire n’est pas chargé.") +
       " Les anciens skills désactivés ne sont plus des consignes actives.\n" +
       JSON.stringify(

@@ -471,7 +471,8 @@ export function fileTools(factory: WorkspaceFilesFactory = workspace=>new LocalF
       if((name==='files.read'||name==='files.info')&&result&&typeof result==='object'&&'revision' in result&&typeof result.revision==='string'){
         const receipt=`r-${prefix}-${++serial}`;
         receipts.set(receipt,{path:key,revision:result.revision});
-        return JSON.stringify({...result,revision:receipt});
+        const {content,...metadata}=result as Record<string,unknown>;
+        return JSON.stringify({...metadata,revision:receipt,...(name==='files.read'?{content}:{})});
       }
       return JSON.stringify(result??{ok:true});
     },

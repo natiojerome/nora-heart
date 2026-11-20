@@ -1,6 +1,6 @@
 ---
 name: code-review
-description: Examiner un changement de code ou un dépôt pour identifier des bugs reproductibles, régressions et défauts de logique, avec vérifications adaptées. Utiliser quand une revue de code est demandée.
+description: Rechercher bugs et régressions quand une revue de code est demandée. Ne pas charger pour une simple explication, une commande à exécuter ou un bug déjà identifié à corriger.
 metadata:
   display-name: Revue de code
 ---

@@ -1,186 +1,106 @@
 # État et reprise
 
-Point du 20 novembre 2026. Socle livré avec correctifs d’exécution ci-dessous ;
-la parité complète avec Codex CLI et la qualification de tous les fournisseurs
-restent partielles. Lire PLAN.md,
-ARCHITECTURE.md et DECISIONS.md avant une reprise.
+Point du 20 novembre 2026. Lire aussi ARCHITECTURE.md, DECISIONS.md et PLAN.md.
+Socle livré ; la parité complète avec Codex CLI et la qualification de tous les
+fournisseurs restent partielles. Les preuves détaillées sont dans TESTING.md et
+les rapports opérateur privés, pas dans le contexte permanent de l’assistant.
+
+## Confiance et inspection
+
+Les instructions de travail demandent des réponses directes sur les faits établis,
+une inspection du code exécuté pour expliquer un logiciel accessible, des lectures
+ciblées élargies selon le besoin et le suivi des parties manquantes utiles. Pas
+d’audit de sécurité ni de liste de réserves hors demande. Les modèles de personnalité
+préservent l’initiative choisie ; discret ne signifie plus ne pas exécuter la demande.
+Les skills sont sélectionnés pour leur description, pas un simple sujet voisin.
+
+L’app fournit la provenance du runtime : UUID réel de l’instance, stockage local des
+conversations, backends mémoire/projets sélectionnés, chemin du code. Les exemples
+et autres processus du serveur ne décrivent pas ce fil. Le fournisseur/modèle/effort
+injecté est celui du tour courant, y compris juste après un changement de cerveau.
+Ces faits ne prétendent pas contrôler la disponibilité des services distants.
+
+Une sortie terminal partielle porte un avis et une continuation explicite avec id
+et offset, placés avant le contenu volumineux. Les outils fichiers présentent aussi
+la pagination et la référence de lecture avant le contenu.
+Aucun drainage automatique ni nouveau plafond ; le modèle récupère la suite utile.
+Une description du mécanisme mémoire n’est pas une affirmation de sauvegarde et ne
+justifie pas une réserve générale. Les confirmations d’écriture restent vérifiées.
 
 ## Autorisations et exécution
 
-Le terminal YOLO était root sur le serveur, alors que les fichiers et l’explorateur
-restaient confinés au fil. Ils passent désormais par le même worker Unix privé,
-sélectionné uniquement en YOLO. Chemins absolus et liens utilisables, révisions
-conservées, propriétaire/groupe/mode Unix préservés à l’édition. Aucun repli local
-si le worker est indisponible. Sortir de YOLO retire l’accès hôte, arrête ses
-commandes et réinitialise les vues de fichiers sans fermer les réglages.
+En YOLO, fichiers, explorateur et terminal utilisent le même worker Unix root.
+Le dossier UUID du fil est le départ ; chemins absolus et liens sont utilisables.
+Mode protégé : confinement conservé. Aucun repli local si le worker est absent.
+Sortir de YOLO retire l’accès hôte, arrête les commandes actives et réinitialise les
+vues fichiers sans fermer les réglages.
 
-terminal.exec renvoie statut et première sortie après une courte attente réglable
-(500 ms par défaut, 0 immédiat). Les commandes longues continuent ; terminal.read
-sert aux commandes actives/pages restantes. Aucun timeout de commande ajouté.
-Le bloc « Exécution et autonomie », visible/modifiable dans Instructions, demande
-d’accomplir et vérifier le travail autorisé. Le template proactif évite d’inciter
-le modèle à seulement proposer. Les personnalisations existantes sont conservées.
+Les outils fichiers exposent des références de lecture courtes, liées au chemin et
+au tour ; l’adaptateur conserve le SHA-256 canonique pour contrôler les conflits.
+Une référence expirée exige une relecture. L’édition conserve propriétaire, groupe
+et mode Unix ; détails et contraintes natives dans FILES.md. Le format persistant
+et l’interface propriétaire gardent leurs révisions canoniques.
 
-237 tests, démo locale et trois parcours navigateur passent, dont le contexte
-8 192 tokens, les instructions et l’explorateur mobile. Worker root réel vérifié
-sur nora-tests : fichiers hors fil, binaire, liens, révisions, commandes, stdin,
-réseau, arrêt des descendants et annulation. Le transport teste aussi un import
-annulé sans publier le contenu partiel. Les vrais essais ont révélé un checksum
-recopié avec un suffixe doublé par le modèle : les outils exposent désormais des
-références courtes, liées au chemin et au tour, tout en conservant le SHA-256 et
-le contrôle de conflit dans WorkspaceFiles. Expiration et chemins croisés testés. GPT‑6 Luna medium réel : 11 appels dans l’assemblage web, édition protégée puis
-édition absolue YOLO, vérification terminale, édition propriétaire via explorateur
-et révocation fichiers/terminal réussies. Aucun formulaire de permission, aucun
-terminal.read pour les commandes courtes, aucun repli API. Un essai antérieur a
-été interrompu en attente fournisseur ; un autre a révélé la mauvaise copie du
-checksum, corrigée par les références courtes. Cela ne garantit pas les décisions
-ou la disponibilité de tous les modèles. Aucun changement des conversations ou permissions du propriétaire.
+terminal.exec retourne état/première sortie après une attente réglable (500 ms par
+défaut, 0 immédiat). Les commandes longues continuent avec un identifiant et une
+sortie paginée. Aucun timeout de commande ajouté. Les droits restent par fil.
 
-Déployé après sauvegarde locale chiffrée : web et worker root redémarrés sous
-maintenance, sans commande propriétaire active. Contrôle sous l’identité Unix du
-web : lecture/édition d’un fichier QA inaccessible directement, référence courte,
-commande root et sortie inline réussies. Données QA retirées ; HTTPS 200 et santé
-interne vérifiés. Aucun changement demandé aux réglages des conversations.
+## Données et autorités
 
-## Reprise après échec du contrôle mémoire
+Projets : source unique MCP pour création/catalogue/modification/archivage, dans
+l’interface et les outils. UUID distant canonique ; pas de catalogue SQL miroir
+ni de repli sans binding. La mémoire de projet utilise nora-projects et cet UUID.
+Les anciennes références ne sont pas converties implicitement.
 
-Le nouvel échange de Test reconnaît les outils, puis la demande de description
-reçoit uniquement le message d’échec de revue. L’ancien mode replace supprimait
-la réponse principale lorsque ce contrôle auxiliaire échouait. La cause précise
-de l’échec n’était pas journalisée : l’audit ne contenait que failed.
+Mémoire : MCP actif, sans double écriture ni repli local ; anciens souvenirs locaux
+conservés hors mémoire active suivant le choix de démarrer vide. Confirmation known
+fondée sur une version active relue. Reçus anciens historiques ; journal conservé.
+La revue mémoire cite une affirmation contestée, sans remplacer directement toute
+la réponse. Une demande de correction ou un échec rend la main au modèle principal
+avec ses outils et résultats. Une seule revue par run ; pas de rejeu des effets.
+Diagnostics typés et sûrs ; la détection sémantique des affirmations reste au modèle.
 
-La revue mémoire utilise désormais le mode revise aussi en cas d’erreur : un
-nouvel appel principal reçoit ses outils, les résultats courants et l’état du
-contrôle indisponible. Il répond à la demande sans affirmer une vérification
-réussie. Une seule revue, aucune boucle de contrôles ; droits, budget, annulation
-et historique conservés. Un code sûr indique désormais le type d’échec sans
-message fournisseur ni données privées. Les actions déjà réussies ne sont pas
-rejouées par le moteur ; leurs résultats restent disponibles pour la réponse.
+Coffre : arguments/résultats transitoires exclus du journal et de la revue ; valeurs
+visibles au modèle pendant le tour. Conversations, historique et exécutions restent
+locaux à Heart. Centralisation des conversations différée sur demande explicite.
+Les artefacts physiques restent sur l’hôte, aucun déplacement implicite.
 
-233 tests et trois parcours navigateur ciblés passent, dont l’explication visible
-malgré une revue invalide et une écriture mémoire conservée sans duplication.
-GPT‑6 Luna medium réel dans l’assemblage web : dix appels, quatre scénarios réussis
-(description après INVALID_QUOTE forcé, vraie lecture de fichier après panne de
-revue forcée, inventaire avec vraie revue, même question après un ancien message
-d’échec de revue). SQLite/fichiers jetables, aucune
-écriture métier propriétaire et aucun repli API. Un premier essai du protocole
-réel avait échoué à une assertion ; le rejeu instrumenté est passé. Cette preuve
-ciblée ne qualifie pas tous les modèles ni toutes les causes de panne fournisseur.
-Déployé après sauvegarde chiffrée ; service redémarré et santé vérifiée. Aucun
-message propriétaire réécrit, aucun changement des droits ou du modèle du fil.
+PostgreSQL 015 / SQLite 003 : migrations conservées, retrait des seules clés
+étrangères vers l’ancien catalogue local de projets. Aucun import ou effacement
+métier implicite. Les modules SQL restent utilisables pour les fixtures.
 
-## Correctif — conscience des outils
+## Vérifications
 
-Conversation Test : les outils fichiers et terminal étaient présents dans le vrai
-inventaire. La revue mémoire, limitée à memory.assess, a pourtant réécrit une réponse
-pour nier les outils fichiers (audit answerCorrected). Ce défaut du contrôle final
-est distinct de la disponibilité des connexions ou des permissions du fil.
+Dernière passe : 238 tests et parcours navigateur ciblés (instructions, revue mémoire,
+assemblage web à 8 192 tokens). Les premiers ajouts de consignes dépassaient cette
+petite fenêtre ; texte condensé, sans augmenter le budget ni retirer d’outils.
+GPT‑6 Luna medium réel : 22 appels répartis en deux parcours. Inspection du moteur
+et de l’assemblage via fichiers, reprise des plages nécessaires, description fondée
+sur le code et métadonnées du bon runtime ; verdict récupéré en seconde page puis
+bug corrigé et test exécuté avec succès. Aucun formulaire ni repli API. Un premier
+contrôle QA exigeait à tort le nom technique plutôt que le nom affiché du modèle ;
+le test accepte maintenant les deux. Les premiers essais docs seules, mauvais
+runtime et arrêt sur sortie partielle ont servi aux correctifs, pas à la validation.
 
-La revue ne peut plus publier un remplacement complet. Elle cite une affirmation
-mémoire et son défaut de preuve ; le modèle principal régénère avec son inventaire
-complet et les résultats actuels. L’inventaire primaire est aussi fourni à la revue.
-Pas de nouvelle revue en boucle, appel primaire supplémentaire seulement sur demande
-de révision. Le brouillon non retenu ne rejoint pas le journal conversationnel.
+Preuves précédentes conservées : worker root sur nora-tests (fichiers hors fil,
+propriétaire/mode Unix, binaire, stdin/réseau, annulation et arrêt des descendants) ;
+GPT‑6 Luna medium, 11 appels pour édition protégée/YOLO, vérification terminale,
+édition propriétaire et révocation. Import interrompu sans fichier partiel, références
+expirées, autres chemins et conflits réels couverts par les tests automatisés.
 
-231 tests, démo et trois parcours navigateur ciblés passent. GPT‑6 Luna medium :
-23 appels réels, 21 outils MCP exposés, 45 contrôles. Fichier de preuve découvert
-par un vrai files.list après un historique niant cet outil ; même résultat après
-injection volontaire d’une revue erronée. Le modèle principal répare aussi une
-fausse assurance de sauvegarde après contrôle mémoire. Identités et données QA
-retirées, aucune écriture métier propriétaire. Un premier essai avait échoué sur
-la conservation de la note QA ; le rejeu instrumenté est passé, cause initiale non
-établie. La preuve ne vaut pas garantie universelle de décision mémoire par le LLM.
-Ce parcours couvrait la substitution de réponse, pas encore l’échec du contrôle
-pendant une demande générale, corrigé dans la reprise ci-dessus.
-Correctif déployé après sauvegarde chiffrée, service redémarré et santé vérifiée.
-Aucun changement des messages de la conversation Test, de ses droits ou de son modèle.
+Projets/mémoire/coffre : vrais MCP, PostgreSQL/OpenBao et HTTPS qualifiés sur comptes
+QA retirés. Création idempotente, rappel/versions et refus après oubli, pas de ligne
+projet SQL miroir. Tests SQL et anciens parcours complets datés dans TESTING.md ;
+ils ne sont pas présentés comme tous relancés à chaque changement de consigne.
 
-## Projets : source unique MCP
+## Déploiement et suite
 
-L’assemblage web sélectionne `McpProjectsRepository` via
-`HARNESS_PROJECTS_MCP_CONNECTION_ID`. Création et catalogue de l’interface,
-validation des rattachements et outils du chat utilisent le même service distant.
-L’identifiant renvoyé par le MCP est canonique ; celui de la demande sert à
-l’idempotence de création. Objectif éditable dans le formulaire ; réessai identique
-sans doublon. Modification/archivage disponibles via les outils MCP approuvés.
-Une nouvelle conversation ne rejoint pas un projet archivé.
-Parcours Chromium supplémentaire sur les vrais MCP, à 320/390/820/1440 px :
-création depuis le formulaire et présence après rechargement, sans débordement
-ni erreur JS ; 36 contrôles, données synthétiques retirées.
+Dernier déploiement vérifié : accès YOLO unifié après sauvegarde chiffrée, redémarrage
+web/worker sous maintenance, contrôle sous l’identité Unix du web sur fichier QA
+root hors fil, édition et commande avec sortie inline. Données QA retirées, HTTPS
+200 et santé interne vérifiés. Aucun changement des droits des fils propriétaires.
 
-PostgreSQL 015 / SQLite 003 retirent les seules clés étrangères vers le catalogue
-local des projets. Données existantes conservées, aucun import automatique ni
-réécriture des références anciennes. En production, contrôle préalable : zéro
-projet local, zéro conversation liée, zéro souvenir local de portée projet.
-Pas de ligne miroir créée pour satisfaire une clé étrangère. Les modules SQL
-restent utilisables pour les fixtures des adaptateurs. Sans binding Projects, la
-création applicative demande sa configuration ; aucun catalogue SQL n’est exposé
-ni utilisé par défaut. Aucun repli si la connexion sélectionnée échoue.
-
-Mémoire de projet : contexte distant `nora-projects` avec UUID canonique. Anciennes
-références `nora-heart.project` non converties implicitement. Les souvenirs personnels
-restent communs au compte. Les conversations/historique et l’exécution restent dans
-Heart ; centralisation ou sauvegarde distante des conversations différée sur demande
-du propriétaire. Les artefacts restent sur le serveur Heart, sans déplacement.
-
-## Vérifications et optimisation
-
-229 tests de `pnpm check`, démo locale et deux tests de bundle chiffré passent.
-23 parcours Chromium complets passent, puis les parcours petit contexte/revue
-mémoire ont été revérifiés après condensation des consignes. Première passe :
-course dans un contrôle explorateur et surcharge à 8 192 tokens trouvées et corrigées,
-sans augmenter la fenêtre ni retirer d’outils/permissions.
-
-Serveur nora-tests : 220 tests hors terminal passent dans un conteneur limité,
-plus 42 tests PostgreSQL sur base jetable, incluant la migration 14→15. La première tentative distante avait omis les assets
-et le catalogue de skills ; protocole corrigé. Bubblewrap absent de l’image minimale :
-les tests terminal restent exécutés sur l’hôte configuré, sans prétendre les qualifier
-sur ce conteneur.
-
-GPT‑6 Luna medium réel : onze appels, 21 outils MCP exposés et 38 contrôles réussis.
-Création projet par le chat, parcours applicatif via le MCP, réémission sans doublon,
-renommage, archivage, conversation et mémoire par UUID distant ; zéro ligne projet
-SQL locale. Mémoire : écriture/rappel, relecture de version active, rejet après oubli
-et correction d’une ancienne assurance. Vrais PostgreSQL/OpenBao et HTTPS. Identités,
-clés et données QA retirées ; aucun souvenir propriétaire modifié.
-
-Un test supplémentaire sème un ancien projet SQL puis vérifie qu’une instance sans
-binding ne l’expose pas, ne peut pas s’y rattacher et ne crée aucune ligne locale.
-Les données historiques restent intactes.
-
-Optimisations : lectures mémoire/projets en parallèle ; catalogue distant mutualisé
-uniquement pendant une lecture simultanée, sans cache périmé ; une seule lecture de
-projet à la création d’une conversation. Pas de retry automatique des mutations.
-Consignes par défaut condensées, overrides utilisateur conservés. Contrôle UI : deux
-lectures simultanées identiques = une requête HTTP, dix réconciliations d’icônes =
-zéro mutation DOM, aucune erreur JS. Pas de promesse de vitesse universelle.
-
-## Mémoire et coffre
-
-Mémoire active via MCP, sans double écriture ni repli local ; anciens souvenirs locaux
-conservés hors mémoire active, conformément au choix de démarrer vide. Confirmation
-known : id/version relus, révision active exigée. Reçus antérieurs projetés comme
-historiques ; journal inchangé. Échec de revue : brouillon retenu puis réponse primaire régénérée, effets réussis
-non annulés. La détection des affirmations textuelles dépend encore du modèle.
-Coffre : arguments/résultats exclus du journal et de la revue ; valeurs visibles au
-modèle pendant le tour. Aucune promesse de secret vis-à-vis du fournisseur LLM.
-
-## Déploiement
-
-Sauvegarde locale chiffrée réalisée avant migration, service drainé et arrêté,
-PostgreSQL 015 appliquée puis redémarrage sain. Binding Projects explicite activé.
-Les empreintes des onze tables métier comparées avant/après sont identiques ;
-aucune réécriture de conversation, souvenir, réglage ou tâche. Contrôle HTTPS
-propriétaire en lecture seule : catalogue distant lisible, quatre souvenirs actifs,
-quatre largeurs sans débordement ni erreur JS ; aucune inférence ou écriture métier.
-
-## Publication et suite
-
-Publication publique autorisée le 20 novembre : code, modules, migrations, tests,
-documentation et avis de licence. Historique opérateur, état privé et preuves de
-déploiement exclus du premier historique public ; historique local conservé.
-Voir PUBLICATION.md. Aucun secret dans les contenus publiés.
-
-Suite : usages quotidiens et défauts mesurés, avec amélioration ciblée. La gestion
-distante de l’historique des conversations reste différée ; aucune migration de
-conversations ni nouveau mécanisme de synchronisation dans ce lot.
+Publication publique autorisée : main, petits commits vérifiés et push ; secrets,
+état privé et rapports opérateur exclus. Historique privé conservé localement.
+Suite : déployer l’inspection/confiance validée, puis suivre les usages réels et
+qualifier les autres fournisseurs sur les mêmes tâches.

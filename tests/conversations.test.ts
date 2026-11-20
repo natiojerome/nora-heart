@@ -10,6 +10,7 @@ test("conversations isolate histories, survive service restart and switch provid
   let requests = 0;
   const f = await conversationFixture(directory, selection => ({ id: `${selection.provider}:${selection.modelId}`, async generate(request) {
     requests++;
+    assert(request.instructions.includes(`${selection.provider}/${selection.modelId}`), "The current selection must replace the previous brain in runtime facts");
     if (selection.provider === "openai") {
       assert(request.messages.some(message => message.content === "Décision : PostgreSQL"));
       assert(!request.messages.some(message => message.content === "Autre sujet"));

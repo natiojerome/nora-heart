@@ -48,7 +48,12 @@ hôte en root. Le dossier du fil reste seulement le point de départ. Aucun dép
 | Projet partagé entre plusieurs fils, worktrees gérés | Pas de gestion dédiée. Le dossier du fil reste distinct ; YOLO peut travailler dans un répertoire hôte explicite via fichiers ou terminal. |
 
 Le terminal permet d’utiliser des bibliothèques pour traiter des formats que
-l’éditeur UTF-8 ne sait pas interpréter. Les commandes courtes rendent leur sortie directement ; `terminal.read` sert aux
+l’éditeur UTF-8 ne sait pas interpréter. Les métadonnées de pagination sont placées avant le corps de sortie.
+Quand more=true, la réponse fournit un avis et continuation avec terminal.read, id et offset
+pour la page suivante. Ce curseur ne relance pas la commande et n’est pas exécuté
+automatiquement ; récupérer les parties nécessaires à la conclusion.
+
+Les commandes courtes rendent leur sortie directement ; `terminal.read` sert aux
 commandes encore actives ou aux pages restantes (`more`). Le terminal manuel
 reste asynchrone sans attente supplémentaire.
 

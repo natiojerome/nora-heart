@@ -328,3 +328,17 @@ test('terminal tools return output for short commands and keep long commands rea
   await assert.rejects(run.execute({command:'true',yieldTimeMs:-1},{workspace}),/invalide/);
  });
 });
+
+test('terminal pagination provides executable continuation cursors without losing the final result',async()=>{
+ await fixture(async(_root,workspace,execution)=>{
+  const tools=new Map(terminalTools(execution,false).map(tool=>[tool.name,tool]));
+  const first=JSON.parse(await tools.get('terminal.exec')!.execute({command:"node -e \"process.stdout.write('x'.repeat(150000)+'RESULT:ok')\"",yieldTimeMs:1000},{workspace}));
+  assert.equal(first.status,'completed');assert.equal(first.exitCode,0);assert.equal(first.more,true);
+  let result=first,text=result.output,pages=1;
+  while(result.more){
+   assert.equal(result.continuation.tool,'terminal.read');assert.equal(result.continuation.arguments.offset,result.nextOffset);
+   result=JSON.parse(await tools.get(result.continuation.tool)!.execute(result.continuation.arguments,{workspace}));text+=result.output;pages++;
+  }
+  assert(pages>1);assert.equal(text,'x'.repeat(150000)+'RESULT:ok');assert.equal(result.continuation,undefined);
+ });
+});
