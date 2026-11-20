@@ -4,6 +4,31 @@ Point du 20 novembre 2026. Socle opérationnel ; la parité complète avec Codex
 et la qualification de tous les fournisseurs restent partielles. Lire PLAN.md,
 ARCHITECTURE.md et DECISIONS.md avant une reprise.
 
+## Reprise après échec du contrôle mémoire
+
+Le nouvel échange de Test reconnaît les outils, puis la demande de description
+reçoit uniquement le message d’échec de revue. L’ancien mode replace supprimait
+la réponse principale lorsque ce contrôle auxiliaire échouait. La cause précise
+de l’échec n’était pas journalisée : l’audit ne contenait que failed.
+
+La revue mémoire utilise désormais le mode revise aussi en cas d’erreur : un
+nouvel appel principal reçoit ses outils, les résultats courants et l’état du
+contrôle indisponible. Il répond à la demande sans affirmer une vérification
+réussie. Une seule revue, aucune boucle de contrôles ; droits, budget, annulation
+et historique conservés. Un code sûr indique désormais le type d’échec sans
+message fournisseur ni données privées. Les actions déjà réussies ne sont pas
+rejouées par le moteur ; leurs résultats restent disponibles pour la réponse.
+
+233 tests et trois parcours navigateur ciblés passent, dont l’explication visible
+malgré une revue invalide et une écriture mémoire conservée sans duplication.
+GPT‑6 Luna medium réel dans l’assemblage web : dix appels, quatre scénarios réussis
+(description après INVALID_QUOTE forcé, vraie lecture de fichier après panne de
+revue forcée, inventaire avec vraie revue, même question après un ancien message
+d’échec de revue). SQLite/fichiers jetables, aucune
+écriture métier propriétaire et aucun repli API. Un premier essai du protocole
+réel avait échoué à une assertion ; le rejeu instrumenté est passé. Cette preuve
+ciblée ne qualifie pas tous les modèles ni toutes les causes de panne fournisseur.
+
 ## Correctif — conscience des outils
 
 Conversation Test : les outils fichiers et terminal étaient présents dans le vrai
@@ -25,7 +50,8 @@ fausse assurance de sauvegarde après contrôle mémoire. Identités et données
 retirées, aucune écriture métier propriétaire. Un premier essai avait échoué sur
 la conservation de la note QA ; le rejeu instrumenté est passé, cause initiale non
 établie. La preuve ne vaut pas garantie universelle de décision mémoire par le LLM.
-L’ancien parcours ne couvrait pas l’erreur du contrôleur final.
+Ce parcours couvrait la substitution de réponse, pas encore l’échec du contrôle
+pendant une demande générale, corrigé dans la reprise ci-dessus.
 Correctif déployé après sauvegarde chiffrée, service redémarré et santé vérifiée.
 Aucun changement des messages de la conversation Test, de ses droits ou de son modèle.
 
@@ -94,7 +120,7 @@ zéro mutation DOM, aucune erreur JS. Pas de promesse de vitesse universelle.
 Mémoire active via MCP, sans double écriture ni repli local ; anciens souvenirs locaux
 conservés hors mémoire active, conformément au choix de démarrer vide. Confirmation
 known : id/version relus, révision active exigée. Reçus antérieurs projetés comme
-historiques ; journal inchangé. Échec de revue : brouillon retenu, effets réussis
+historiques ; journal inchangé. Échec de revue : brouillon retenu puis réponse primaire régénérée, effets réussis
 non annulés. La détection des affirmations textuelles dépend encore du modèle.
 Coffre : arguments/résultats exclus du journal et de la revue ; valeurs visibles au
 modèle pendant le tour. Aucune promesse de secret vis-à-vis du fournisseur LLM.

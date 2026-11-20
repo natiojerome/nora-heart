@@ -253,8 +253,16 @@ contenu ni statut actif ; la source du journal demeure intacte. La revue exige
 id/version pour known et relit chaque référence distincte via le service courant.
 Une référence absente, oubliée ou obsolète invalide la revue ; son échec retient
 le brouillon au lieu d’en publier les affirmations avec un avertissement. Un état
-explicite remplace la réponse ; aucune action déjà réussie n’est annulée. Coût :
+explicite est transmis au modèle principal pour reprendre la réponse normale ;
+aucune action déjà réussie n’est annulée. Coût :
 une lecture par référence distincte confirmée, aucun appel LLM pour cette relecture de référence. Une correction de réponse
 ajoute en revanche un appel primaire. La sélection
 sémantique des affirmations reste effectuée par le modèle, les contrôles de version
 et d’échec par le code. Les règles s’appliquent aussi aux stockages locaux.
+
+Une revue indisponible ne devient plus à elle seule la réponse utilisateur : le
+mode revise conserve le brouillon hors journal puis fait reprendre le modèle
+principal avec son inventaire, les reçus et le défaut de vérification. Il ne peut
+pas annoncer une sauvegarde sans résultat vérifié. Ce chemin ajoute un appel
+primaire, pas une seconde revue. L’audit contient un code sûr, jamais la réponse
+brute du fournisseur ni les valeurs des souvenirs.

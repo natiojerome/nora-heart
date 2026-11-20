@@ -1,6 +1,9 @@
 import { randomUUID } from "node:crypto";
 import { Ajv } from "ajv";
-import type { CompletionReview } from "../../../contracts/completion-review.ts";
+import {
+  CompletionReviewError,
+  type CompletionReview,
+} from "../../../contracts/completion-review.ts";
 import type { Json } from "../../../contracts/json.ts";
 import type { ModelRequest, ModelResponse } from "../../../contracts/models.ts";
 import type {
@@ -25,7 +28,7 @@ La note est une justification publique courte, pas un raisonnement détaillé. P
 /** A separate, small decision pass; no SQL, tool execution, or provider implementation. */
 export class MemoryReview implements CompletionReview {
   readonly name = "memory";
-  readonly failureMode = "replace" as const;
+  readonly failureMode = "revise" as const;
   readonly failureMessage =
     "La vérification de mémoire n’a pas abouti ; je ne peux pas confirmer l’état actuel des souvenirs. Les actions déjà réussies ne sont pas annulées.";
   constructor(
@@ -176,7 +179,10 @@ export class MemoryReview implements CompletionReview {
         256 >=
         contextWindow - (reserveTokens ?? 4096)
     )
-      throw new Error("Memory review input too large");
+      throw new CompletionReviewError(
+        "INPUT_TOO_LARGE",
+        "Memory review input too large",
+      );
     request.onActivity?.("waiting");
     const assessment = await provider.generate(reviewRequest);
     request.signal?.throwIfAborted();
@@ -184,10 +190,16 @@ export class MemoryReview implements CompletionReview {
       assessment.toolCalls.length !== 1 ||
       assessment.toolCalls[0].name !== decisionTool
     )
-      throw new Error("Missing memory decision");
+      throw new CompletionReviewError(
+        "MISSING_DECISION",
+        "Missing memory decision",
+      );
     const value = assessment.toolCalls[0].arguments;
     if (!new Ajv({ strict: false, logger: false }).validate(schema, value))
-      throw new Error("Invalid memory decision");
+      throw new CompletionReviewError(
+        "INVALID_DECISION",
+        "Invalid memory decision",
+      );
     const assessed = value as unknown as {
       decisions: Decision[];
       memoryCorrection?: { claim: string; issue: string };
@@ -197,7 +209,10 @@ export class MemoryReview implements CompletionReview {
       assessed.memoryCorrection &&
       !response.content.includes(assessed.memoryCorrection.claim)
     )
-      throw new Error("Memory correction does not cite the draft");
+      throw new CompletionReviewError(
+        "INVALID_QUOTE",
+        "Memory correction does not cite the draft",
+      );
     const revision = assessed.memoryCorrection
       ? JSON.stringify(assessed.memoryCorrection)
       : undefined;
@@ -209,7 +224,10 @@ export class MemoryReview implements CompletionReview {
         decision.action !== "known" &&
         (!decision.evidence.trim() || !user.content.includes(decision.evidence))
       )
-        throw new Error("Memory evidence not present in human message");
+        throw new CompletionReviewError(
+          "UNSOURCED_FACT",
+          "Memory evidence not present in human message",
+        );
       if (decision.action === "known") {
         const id = String(decision.arguments!.id);
         let current = checked.get(id);
@@ -221,7 +239,8 @@ export class MemoryReview implements CompletionReview {
           current.status !== "active" ||
           current.version !== decision.arguments!.version
         )
-          throw new Error(
+          throw new CompletionReviewError(
+            "STALE_REVISION",
             "Memory confirmation is not backed by a current active revision",
           );
         verifiedMemories.push({ id: current.id, version: current.version });
@@ -231,7 +250,10 @@ export class MemoryReview implements CompletionReview {
           (record) => record.id === decision.arguments?.id,
         );
         if (!record || record.version !== decision.arguments?.version)
-          throw new Error("Unknown memory revision");
+          throw new CompletionReviewError(
+            "UNKNOWN_REVISION",
+            "Unknown memory revision",
+          );
       }
       if (decision.action === "remember" || decision.action === "update") {
         const args = decision.arguments!;
@@ -239,7 +261,10 @@ export class MemoryReview implements CompletionReview {
           args.scope === "project" &&
           (!this.projectId || args.projectId !== this.projectId)
         )
-          throw new Error("Memory outside current project");
+          throw new CompletionReviewError(
+            "INVALID_SCOPE",
+            "Memory outside current project",
+          );
       }
     }
     const audit = {

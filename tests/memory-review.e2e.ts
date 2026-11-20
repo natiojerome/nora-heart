@@ -192,6 +192,17 @@ test(
       await page.reload();
       await page.waitForSelector(".memory-chat-event.created");
       assert.equal(await page.locator(".memory-chat-event").count(), 1);
+      // Reproduce the reported normal question with a broken auxiliary review.
+      let recoveredPrimary=0,failedReview=0;
+      lab.model=()=>({id:'fake-recovery',async generate(request){
+        if(request.tools.some(t=>t.name==='memory.assess')){failedReview++;return {content:'',toolCalls:[]};}
+        recoveredPrimary++;return {content:'Le Harness assemble le contexte, transmet les outils au modèle et conserve les résultats vérifiés.',toolCalls:[]};
+      }});
+      await page.fill('#conversation-prompt','Du coup description du fonctionnement ?');await page.click('#conversation-submit');
+      await page.waitForFunction(()=>document.getElementById('conversation-history')?.textContent?.includes('Le Harness assemble le contexte'));
+      assert.equal(recoveredPrimary,2);assert.equal(failedReview,1);
+      assert(!(await page.locator('#conversation-history').innerText()).includes('La vérification de mémoire n’a pas abouti'));
+      assert((await app.conversations.get(conversation.id)).events.some(e=>e.type==='run.progress'&&(e.data as any).audit?.code==='MISSING_DECISION'));
       assert.deepEqual(errors, []);
       await writeFile(
         "docs/qualification/memory-state/browser.json",
@@ -201,6 +212,7 @@ test(
             scope:
               "Real Chromium + HTTP + Heart composition + disposable SQLite; intentionally forgetful simulated primary, structured simulated review",
             reviewRecoveredOmittedFact: true,
+            brokenReviewDoesNotHideHarnessExplanation:true,
             canonicalToolPersisted: true,
             cardVisible: true,
             opensLatestMemory: true,

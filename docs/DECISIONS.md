@@ -411,3 +411,14 @@ principal avec ses outils, droits et résultats réels. Fournir l’inventaire p
 au contrôle. Coût supplémentaire seulement lorsqu’une révision est demandée ; une
 seule revue par run. Tester aussi une revue volontairement erronée, sans confondre
 ce test de faute avec une intégration fournisseur simulée.
+
+## Un contrôle auxiliaire ne doit pas avaler une réponse normale
+
+Le mode replace de la revue mémoire effaçait une explication du Harness après
+échec du contrôle. Passer à revise : reprendre le modèle principal plutôt que
+publier l’avertissement comme réponse unique. Le brouillon non vérifié reste
+retenu ; ne pas confirmer un stockage sans reçu actuel. Une revue par run,
+reprise primaire bornée par le budget existant, aucun rejeu moteur des effets.
+Diagnostics typés et sûrs dans le journal pour distinguer protocole, citation,
+preuve, version, portée, taille et indisponibilité. Tests avec fautes injectées
+et modèle réel ; pas de promesse d’infaillibilité sémantique du modèle.

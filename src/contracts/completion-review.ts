@@ -5,8 +5,8 @@ import type { ModelProvider, ModelRequest, ModelResponse } from "./models.ts";
 export interface CompletionReview {
   readonly name: string;
   readonly failureMessage: string;
-  /** Replace an unverified draft rather than publish it with a warning. */
-  readonly failureMode?: "append" | "replace";
+  /** Recover a failed check: append a note, replace the draft, or resume the primary model once. */
+  readonly failureMode?: "append" | "replace" | "revise";
   /** A scoped observation for the primary model; never publish it as the final answer. */
   review(input: {
     provider: ModelProvider;
@@ -15,4 +15,22 @@ export interface CompletionReview {
     contextWindow?: number;
     reserveTokens?: number;
   }): Promise<{ response: ModelResponse; audit: Json; revision?: string }>;
+}
+
+/** Safe diagnostic categories only; never include provider payloads or user data. */
+export class CompletionReviewError extends Error {
+  constructor(
+    readonly code:
+      | "INPUT_TOO_LARGE"
+      | "MISSING_DECISION"
+      | "INVALID_DECISION"
+      | "INVALID_QUOTE"
+      | "UNSOURCED_FACT"
+      | "STALE_REVISION"
+      | "UNKNOWN_REVISION"
+      | "INVALID_SCOPE",
+    message: string,
+  ) {
+    super(message);
+  }
 }

@@ -302,6 +302,13 @@ for (const failure of [false, true])
               toolCalls: [],
             };
           }
+          if (failure && primary === 2)
+            return {
+              content:
+                draft.content +
+                " La vérification de mémoire n’a pas abouti ; je ne peux pas confirmer un enregistrement.",
+              toolCalls: [],
+            };
           return draft;
         },
       });
@@ -326,7 +333,7 @@ for (const failure of [false, true])
           prompt: phrase,
         });
         assert.equal(reviews, 1);
-        assert.equal(primary, failure ? 1 : 2);
+        assert.equal(primary, 2);
         const events = result.events;
         assert.equal(
           events.filter(
@@ -634,7 +641,12 @@ test("failed memory verification cannot publish the unchecked answer as a confir
               },
             },
           ]);
-        return { content: "Tout est déjà sauvegardé.", toolCalls: [] };
+        return {
+          content: r.instructions.includes("Reprise après contrôle")
+            ? "Je ne peux pas confirmer l’enregistrement sans résultat vérifié."
+            : "Tout est déjà sauvegardé.",
+          toolCalls: [],
+        };
       },
     },
   });
@@ -702,7 +714,7 @@ test("a restricted memory review cannot publish a replacement or erase the prima
         assert(request.tools.some((t) => t.name === "files.list"));
         assert.match(request.instructions, /Inventaire effectif/);
         if (primary === 1) return { content: draft, toolCalls: [] };
-        assert.match(request.instructions, /revue memory/);
+        assert.match(request.instructions, /contrôle auxiliaire memory/);
         return {
           content:
             "Oui, files.list, files.read et files.info sont disponibles.",
@@ -756,4 +768,158 @@ test("memory corrections must quote the actual draft and reject legacy full-answ
         },
       }),
     );
+});
+
+test("an invalid auxiliary memory review cannot swallow a normal harness explanation", async () => {
+  const { Engine } = await import("../src/core/engine.ts"),
+    { fileTools } = await import("../src/modules/tools/files/index.ts");
+  const f = await fixture(),
+    events: any[] = [];
+  let main = 0,
+    review = 0;
+  const engine = new Engine(
+    {
+      async read() {
+        return [...events];
+      },
+      async append(_id: string, e: any) {
+        events.push(e);
+      },
+    },
+    [...f.tools, ...fileTools()],
+    undefined,
+    f.review,
+  );
+  const explanation =
+    "Le Harness transmet le contexte au modèle, exécute les outils autorisés et conserve le journal.";
+  const result = await engine.run({
+    sessionId: "harness-description",
+    prompt: "Du coup description du fonctionnement ?",
+    displayName: "QA",
+    workspace: ".",
+    permissions: new Set(["files.read", "memory.read", "memory.write"]),
+    provider: {
+      id: "review-fault",
+      async generate(request) {
+        if (request.tools.some((t) => t.name === "memory.assess")) {
+          review++;
+          return {
+            content: "",
+            toolCalls: [
+              {
+                id: "assessment",
+                name: "memory.assess",
+                arguments: {
+                  decisions: [{ action: "none", evidence: "", note: "QA" }],
+                  memoryCorrection: {
+                    claim: "A nonexistent quote with private diagnostic",
+                    issue: "QA",
+                  },
+                },
+              },
+            ],
+          };
+        }
+        main++;
+        assert(request.tools.some((t) => t.name === "files.list"));
+        if (main === 2) {
+          assert.match(request.instructions, /Le contrôle a échoué/);
+          assert.match(
+            request.instructions,
+            /ne doit pas empêcher la réponse normale/,
+          );
+        }
+        return { content: explanation, toolCalls: [] };
+      },
+    },
+  });
+  assert.equal(result.text, explanation);
+  assert.equal(main, 2);
+  assert.equal(review, 1);
+  const audit = events.find(
+    (e) => e.type === "run.progress" && e.data.kind === "review",
+  ).data.audit;
+  assert.deepEqual(audit, {
+    status: "failed",
+    code: "INVALID_QUOTE",
+    recovery: "primary-revision",
+  });
+  assert(!JSON.stringify(events).includes("private diagnostic"));
+  assert.equal(
+    events.filter((e) => e.type === "message" && e.data.role === "assistant")
+      .length,
+    1,
+  );
+  assert.equal((await f.memory.list()).length, 0);
+});
+
+test("recovery from an unavailable review preserves a successful memory write without replay", async () => {
+  const { Engine } = await import("../src/core/engine.ts"),
+    f = await fixture(),
+    events: any[] = [];
+  let calls = 0,
+    reviews = 0;
+  const engine = new Engine(
+    {
+      async read() {
+        return [...events];
+      },
+      async append(_id: string, e: any) {
+        events.push(e);
+      },
+    },
+    f.tools,
+    undefined,
+    f.review,
+  );
+  const result = await engine.run({
+    sessionId: "write-review-recovery",
+    prompt: phrase,
+    displayName: "QA",
+    workspace: ".",
+    permissions: new Set(["memory.read", "memory.write"]),
+    provider: {
+      id: "one-effect",
+      async generate(request) {
+        if (request.tools.some((t) => t.name === "memory.assess")) {
+          reviews++;
+          throw new Error("private upstream detail");
+        }
+        calls++;
+        if (calls === 1)
+          return {
+            content: "",
+            toolCalls: [
+              { id: "save-once", name: "memory.remember", arguments: args },
+            ],
+          };
+        const receipts = request.messages.filter(
+          (m) => m.role === "tool" && m.name === "memory.remember",
+        );
+        assert.equal(receipts.length, 1);
+        assert.equal((receipts[0] as any).error, false);
+        if (calls === 3)
+          assert.match(
+            request.instructions,
+            /Ne rejoue pas les opérations déjà réussies/,
+          );
+        return {
+          content:
+            "Le souvenir est enregistré, comme le confirme le résultat de l’outil.",
+          toolCalls: [],
+        };
+      },
+    },
+  });
+  assert.equal(calls, 3);
+  assert.equal(reviews, 1);
+  assert.equal((await f.memory.list()).length, 1);
+  assert.equal(
+    events.filter(
+      (e) => e.type === "tool.started" && e.data.name === "memory.remember",
+    ).length,
+    1,
+  );
+  assert(!JSON.stringify(events).includes("private upstream detail"));
+  assert.match(result.text, /résultat de l’outil/);
 });

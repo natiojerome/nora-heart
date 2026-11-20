@@ -911,8 +911,9 @@ restent disponibles. Une décision known dans MemoryReview transporte id/version
 MemoryService.get relit l’état courant et exige une révision active identique,
 avec un cache limité à cette revue. Aucune dépendance au backend concret.
 CompletionReview déclare une politique failureMode optionnelle ; la revue mémoire
-choisit replace pour retenir le brouillon si la vérification échoue. Les autres
-revues conservent leur comportement. Pas de nouvelle passe LLM.
+choisit revise : le brouillon reste retenu, puis le modèle principal reprend si
+la vérification échoue. Les autres revues conservent leur comportement. Aucune
+seconde revue, un appel primaire supplémentaire sur révision ou échec.
 
 L’absence de binding Projects désactive la création et ne lit pas le catalogue SQL.
 Une injection de repository explicite sert aux fixtures de qualification ; elle
@@ -925,3 +926,10 @@ memoryCorrection contient claim/issue, vérifiée comme citation du brouillon pu
 transmise par le contrat neutre revision. Une seule revue par run ; un nouvel appel
 primaire uniquement si correction demandée, avec budget/contexte/permissions inchangés.
 Aucun brouillon rejeté ni feedback de contrôle ajouté à l’historique conversationnel.
+
+CompletionReviewError porte un code sûr et statique (validation, citation, preuve,
+version, portée ou budget) ; les autres erreurs sont UNAVAILABLE dans l’audit.
+Le moteur ne journalise jamais les erreurs brutes. Une panne de contrôle déclenche
+la même reprise primaire que sa demande de correction, avec statut failed explicite
+et résultats d’outils précédents conservés. Aucun reset, rejeu moteur ni permission
+ajoutée. Le budget d’appels et le signal d’annulation restent applicables.
