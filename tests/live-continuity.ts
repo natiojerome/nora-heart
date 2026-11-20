@@ -381,12 +381,12 @@ async function main() {
     };
   };
   await migrateSqlite(file);
+  const storage = await openSqliteStorage(file);
   let app = await openWebConversations(
     { driver: "sqlite", file },
     root + "/state",
-    lab,
+    lab, undefined, undefined, storage.projects,
   );
-  const storage = await openSqliteStorage(file);
   let id = "";
   const hash = (value: Uint8Array) =>
     createHash("sha256").update(value).digest("hex");
@@ -595,7 +595,7 @@ async function main() {
     app = await openWebConversations(
       { driver: "sqlite", file },
       root + "/state",
-      lab,
+      lab, undefined, undefined, storage.projects,
     );
     const restored = await app.conversations.get(id);
     assert.equal(restored.conversation.selection?.provider, "openrouter");

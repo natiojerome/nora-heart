@@ -32,3 +32,9 @@ les fichiers de main (sans rapports privés, état ni historique opérateur). Le
 dépendances installées ont été réutilisées ; ce contrôle ne prétend pas être une
 nouvelle installation depuis le registre. Arbre de travail propre et HEAD distant
 comparé au HEAD local après push.
+
+Relecture finale : suppression de la sélection SQL implicite lorsque Projects
+n’est pas configuré. Catalogue local historique masqué, création refusée avec une
+consigne de configuration. 229 tests et démo passent ; parcours explorateur et chat
+SQLite revérifiés. Une injection explicite demeure réservée aux fixtures des
+qualifications de contrats, sans repli applicatif.

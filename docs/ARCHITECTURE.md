@@ -910,3 +910,8 @@ avec un cache limité à cette revue. Aucune dépendance au backend concret.
 CompletionReview déclare une politique failureMode optionnelle ; la revue mémoire
 choisit replace pour retenir le brouillon si la vérification échoue. Les autres
 revues conservent leur comportement. Pas de nouvelle passe LLM.
+
+L’absence de binding Projects désactive la création et ne lit pas le catalogue SQL.
+Une injection de repository explicite sert aux fixtures de qualification ; elle
+ne constitue pas un réglage de repli en production. Les anciens modules SQL sont
+conservés pour leurs données et leurs tests, sans être sélectionnés implicitement.

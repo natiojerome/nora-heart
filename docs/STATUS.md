@@ -22,8 +22,9 @@ local des projets. Données existantes conservées, aucun import automatique ni
 réécriture des références anciennes. En production, contrôle préalable : zéro
 projet local, zéro conversation liée, zéro souvenir local de portée projet.
 Pas de ligne miroir créée pour satisfaire une clé étrangère. Les modules SQL
-restent utilisables pour les fixtures/installations sans binding MCP explicite ;
-aucun repli local en cas d’échec d’une connexion sélectionnée.
+restent utilisables pour les fixtures des adaptateurs. Sans binding Projects, la
+création applicative demande sa configuration ; aucun catalogue SQL n’est exposé
+ni utilisé par défaut. Aucun repli si la connexion sélectionnée échoue.
 
 Mémoire de projet : contexte distant `nora-projects` avec UUID canonique. Anciennes
 références `nora-heart.project` non converties implicitement. Les souvenirs personnels
@@ -33,7 +34,7 @@ du propriétaire. Les artefacts restent sur le serveur Heart, sans déplacement.
 
 ## Vérifications et optimisation
 
-228 tests de `pnpm check`, démo locale et deux tests de bundle chiffré passent.
+229 tests de `pnpm check`, démo locale et deux tests de bundle chiffré passent.
 23 parcours Chromium complets passent, puis les parcours petit contexte/revue
 mémoire ont été revérifiés après condensation des consignes. Première passe :
 course dans un contrôle explorateur et surcharge à 8 192 tokens trouvées et corrigées,
@@ -51,6 +52,10 @@ renommage, archivage, conversation et mémoire par UUID distant ; zéro ligne pr
 SQL locale. Mémoire : écriture/rappel, relecture de version active, rejet après oubli
 et correction d’une ancienne assurance. Vrais PostgreSQL/OpenBao et HTTPS. Identités,
 clés et données QA retirées ; aucun souvenir propriétaire modifié.
+
+Un test supplémentaire sème un ancien projet SQL puis vérifie qu’une instance sans
+binding ne l’expose pas, ne peut pas s’y rattacher et ne crée aucune ligne locale.
+Les données historiques restent intactes.
 
 Optimisations : lectures mémoire/projets en parallèle ; catalogue distant mutualisé
 uniquement pendant une lecture simultanée, sans cache périmé ; une seule lecture de

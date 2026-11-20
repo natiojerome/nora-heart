@@ -34,7 +34,8 @@ belong outside the repository. Shared production URLs are not demo accounts.
 
 MCP-backed project management is selected with `HARNESS_PROJECTS_MCP_CONNECTION_ID`;
 remote memory with `HARNESS_MEMORY_MCP_CONNECTION_ID`. These are approved connection
-IDs, not keys. Once selected, unavailable remote services do not fall back to local
+IDs, not keys. Project creation requires a configured Projects connection; there
+is no default local project catalog. Once selected, unavailable remote services do not fall back to local
 business data. Files remain on the Heart host. Remote conversation storage is deferred.
 The separate Nora MCP services are not bundled in this repository.
 

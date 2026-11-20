@@ -1,3 +1,4 @@
+import type {ProjectRepository} from "../contracts/projects.ts";
 import {McpProjectsRepository} from "../modules/storage/mcp-projects/index.ts";
 import {McpMemoryRepository} from "../modules/storage/mcp-memory/index.ts";
 import {ProjectsWorkspace} from "./projects-workspace.ts";
@@ -6,7 +7,7 @@ import {Skills} from "./skills.ts";
 import {skillTools} from "../modules/tools/skills/index.ts";
 import {instructionValue} from "./instruction-defaults.ts";
 import { MemoryReview } from "../modules/memory/review/index.ts";
-import { ExternalTools } from "./external-tools.ts";
+import { ExternalToolError, ExternalTools } from "./external-tools.ts";
 import { connectMcp } from "../modules/tools/mcp/index.ts";
 import { interactionTools } from "../modules/tools/interactions/index.ts";
 import { existsSync,readFileSync } from "node:fs";
@@ -35,6 +36,7 @@ export async function openWebConversations(
   lab: TestLab,
   skillsManifest?: string,
   projectsDirectory = path.join(directory,"projects"),
+  projectRepository?: ProjectRepository,
 ) {
   const storage = await openSqlStorage(config);
   const externalTools = new ExternalTools(
@@ -42,7 +44,11 @@ export async function openWebConversations(
     (connection, signal) => connectMcp(connection, { signal }),
   );
   const projectConnectionId=process.env.HARNESS_PROJECTS_MCP_CONNECTION_ID;
-  const projects=projectConnectionId?new McpProjectsRepository((name,args)=>externalTools.callApproved(projectConnectionId,name,args)):storage.projects;
+  const projects:ProjectRepository=projectConnectionId?new McpProjectsRepository((name,args)=>externalTools.callApproved(projectConnectionId,name,args)):projectRepository??{
+    async create(){throw new ExternalToolError("MCP Projects : configure la connexion avant de créer un projet.");},
+    async get(){return null;},
+    async list(){return [];},
+  };
   const assistant = new Assistant(storage.assistant);
   const skills=new Skills(openSkillCatalog(skillsManifest),assistant);
   const memoryConnectionId=process.env.HARNESS_MEMORY_MCP_CONNECTION_ID;

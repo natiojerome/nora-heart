@@ -36,3 +36,20 @@ test('project remote errors do not fall back and malformed pagination stops',asy
  const cycle=new McpProjectsRepository(async()=>({items:[],nextCursor:'same'}));await assert.rejects(cycle.list(),/pagination incohérente/);
  await assert.rejects(new McpProjectsRepository(async()=>({items:[],nextCursor:5})).list(),/pagination incompatible/);
 });
+
+test('web without a Projects connection never creates or exposes the legacy local catalog',async()=>{
+ const {mkdtemp,rm}=await import('node:fs/promises'),{tmpdir}=await import('node:os'),path=await import('node:path');
+ const {migrateSqlite,openSqliteStorage}=await import('../src/modules/storage/sqlite/index.ts');
+ const {openWebConversations}=await import('../src/app/web-conversations.ts');const {TestLab}=await import('../src/app/test-lab.ts');
+ const root=await mkdtemp(path.join(tmpdir(),'heart-no-project-fallback-')),file=path.join(root,'s.sqlite'),previous=process.env.HARNESS_PROJECTS_MCP_CONNECTION_ID;
+ delete process.env.HARNESS_PROJECTS_MCP_CONNECTION_ID;
+ const lab=new TestLab({directory:path.join(root,'lab'),authDirectory:path.join(root,'auth')});let app:Awaited<ReturnType<typeof openWebConversations>>|undefined;
+ try{
+  await lab.prepare();await migrateSqlite(file);const seed=await openSqliteStorage(file),legacy={id:randomUUID(),title:'Legacy hidden'};await seed.projects.create(legacy);await seed.close();
+  app=await openWebConversations({driver:'sqlite',file},path.join(root,'app'),lab);
+  assert.deepEqual((await app.memories.list()).projects,[]);
+  await assert.rejects(app.memories.createProject({title:'Must not be local'}),/configure la connexion/);
+  await assert.rejects(app.conversations.create({projectId:legacy.id}),/Projet introuvable/);
+  await app.close();app=undefined;const inspect=await openSqliteStorage(file);try{assert.deepEqual(await inspect.projects.list(),[legacy]);}finally{await inspect.close();}
+ }finally{await app?.close();await lab.close();if(previous===undefined)delete process.env.HARNESS_PROJECTS_MCP_CONNECTION_ID;else process.env.HARNESS_PROJECTS_MCP_CONNECTION_ID=previous;await rm(root,{recursive:true,force:true});}
+});
