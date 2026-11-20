@@ -486,3 +486,10 @@ pagination/correction passe. Le contrôle QA du nom de modèle exigeait initiale
 son identifiant technique alors que la réponse utilisait le bon nom affiché :
 normalisation corrigée. Rapports opérateur privés, aucune écriture métier ni repli
 API. Cette qualification ne représente pas tous les modèles ou toutes les pannes.
+
+Déploiement du correctif de confiance après sauvegarde chiffrée et redémarrage web.
+Vérification HTTPS authentifiée : catalogue de treize blocs, nouveau défaut work
+et déclencheur du skill visibles, sans changer les overrides du propriétaire.
+Santé interne saine. Le transport diagnostic provisoire de qualification a été
+retiré du driver de test ; aucun changement du transport produit, aucun log brut
+de réponse fournisseur ajouté au runtime.

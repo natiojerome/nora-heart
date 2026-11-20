@@ -95,12 +95,14 @@ ils ne sont pas présentés comme tous relancés à chaque changement de consign
 
 ## Déploiement et suite
 
-Dernier déploiement vérifié : accès YOLO unifié après sauvegarde chiffrée, redémarrage
-web/worker sous maintenance, contrôle sous l’identité Unix du web sur fichier QA
-root hors fil, édition et commande avec sortie inline. Données QA retirées, HTTPS
-200 et santé interne vérifiés. Aucun changement des droits des fils propriétaires.
+Dernier déploiement vérifié : inspection/confiance après sauvegarde locale chiffrée
+et redémarrage web coordonné. Contrôle authentifié HTTPS : treize blocs visibles,
+nouveau défaut de travail et déclencheur code-review chargés. Santé interne saine,
+aucune modification des personnalités/overrides ni des droits des fils propriétaires.
+Le worker existant reste compatible ; les changements portent sur l’assemblage et
+les adaptateurs d’outils, pas le lancement des processus.
 
 Publication publique autorisée : main, petits commits vérifiés et push ; secrets,
 état privé et rapports opérateur exclus. Historique privé conservé localement.
-Suite : déployer l’inspection/confiance validée, puis suivre les usages réels et
-qualifier les autres fournisseurs sur les mêmes tâches.
+Suite : suivre les usages réels et qualifier les autres fournisseurs sur les mêmes
+tâches complètes, sans réintroduire de prudence générique ni de limites arbitraires.
