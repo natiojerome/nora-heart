@@ -1,5 +1,26 @@
 # Tester les modules
 
+## Wallets locaux — 21 novembre 2026
+
+`pnpm test:wallets` : clés synthétiques et dossiers temporaires, signatures EVM
+et Ed25519 vérifiées cryptographiquement, quantités exactes, refus des wallets
+en lecture seule/réseaux incompatibles, inventaire et droits du modèle,
+arguments/résultats de signature transitoires, cache/coalescence/panne RPC,
+lecteurs EVM/Solana/XRPL/XPR, intégrité et restauration, clients JS/Python sur
+vraie socket Unix. La boucle moteur utilise un fournisseur simulé, sans coût.
+
+`pnpm demo:wallets` mesure le chemin réel SDK → socket → signature, sur clés
+synthétiques supprimées après la démo. `pnpm qualify:wallets` est un essai live
+opt-in avec token Vault configuré : sauvegarde distante, rejeu idempotent,
+restauration isolée et signature vérifiée depuis le clone. Son entrée de test
+reste dans le Vault ; aucune diffusion de transaction ni inférence LLM.
+
+Qualification opérateur effectuée aussi sur le coffre déployé : inventaire
+existant importé sans modifier ses sources, challenge EVM vérifié, actifs Base
+lus réellement, sauvegarde réelle restaurée en tmpfs, clés/adresses/challenges
+revalidés puis clone supprimé. 260 tests et démo SDK, aucune transaction diffusée.
+Les détails de couverture et mesures sont dans [WALLETS.md](WALLETS.md).
+
 Un module doit pouvoir être testé via son entrée publique, sans lancer toute
 l’application ni dépendre d’un modèle payant. Pas de framework de test maison :
 `node:test`, fournisseurs simulés, dépendances injectées et répertoires temporaires.

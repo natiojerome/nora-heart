@@ -5,6 +5,28 @@ assemble les implémentations au démarrage. La mémoire est un module, pas un
 composant imposé du core. Voir [STATUS.md](STATUS.md) pour les limites livrées et
 [PLAN.md](PLAN.md) pour la suite.
 
+## Wallets : service local, stockage de reprise distant
+
+`contracts/wallets.ts` sépare WalletService et WalletBackupStore.
+`modules/wallets/local` implémente coffre AES-GCM, comptes préparés, cache d’actifs
+et transport JSON-RPC HTTP sur socket Unix. `modules/wallets/unix` est le client
+Node autonome ; Python utilise le même contrat avec sa bibliothèque standard.
+`modules/tools/wallets` expose les outils du modèle via WalletService ;
+`modules/storage/wallet-vault` adapte WalletBackupStore au MCP Vault officiel.
+`app/wallets.ts` relie ces implémentations aux commandes et au daemon ;
+`app/web-conversations.ts` raccorde le client aux droits courants des fils.
+Le core et la base de conversations ne connaissent aucune implémentation wallet.
+
+La signature opère en mémoire sans RPC/fichier/MCP ; inventaire et cache sont
+locaux, actualisations explicites avec fraîcheur/portée. Le processus de sauvegarde
+dispose seul du token Vault et vérifie la copie distante. Le Vault est une
+autorité de confiance : archive chiffrée et clé de reprise y sont conservées.
+Pas de service de signature distant ni nouveau MCP pour le chemin rapide.
+Identifiants persistants UUID et CAIP-2 EVM, indépendants des libellés.
+Le transport n’exporte aucune clé et le socket est réservé à ses comptes autorisés.
+Il n’est pas un service multi-utilisateur ni un dispositif empêchant root d’accéder
+aux secrets. Détails et limites dans [WALLETS.md](WALLETS.md).
+
 ## Fournisseur Venice AI
 
 Venice est une sélection explicite du module models/ai-sdk existant, avec un

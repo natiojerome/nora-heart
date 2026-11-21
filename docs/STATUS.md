@@ -5,6 +5,30 @@ Socle livré ; la parité complète avec Codex CLI et la qualification de tous l
 fournisseurs restent partielles. Les preuves détaillées sont dans TESTING.md et
 les rapports opérateur privés, pas dans le contexte permanent de l’assistant.
 
+## Wallets locaux et reprise distante
+
+Service Unix séparé livré : inventaire multi-réseaux, cache des actifs, signatures
+EVM (message/typed data/transaction) et Ed25519 Solana hors ligne. Clients persistants
+JavaScript natif et Python standard, outils Heart sous les droits du fil ; signature
+déclarée en YOLO avec activation propriétaire. Aucun SQL, LLM ou MCP sur le chemin
+de signature. XRPL et XPR restent en lecture seule dans ce nouveau module ;
+les contrats ERC-20 à lire sont configurés, sans découverte universelle.
+
+Déployé avec un coffre local AES-GCM et credential systemd ; inventaire existant
+importé explicitement, sources/ancien signataire conservés. Sauvegarde dans le
+MCP Vault du propriétaire et vérification quotidienne séparées du daemon.
+Le Vault conserve aussi la clé de récupération : il est une autorité de confiance.
+Sauvegarde réelle relue et restaurée dans un clone tmpfs, toutes les clés/adresses
+et signatures de contrôle vérifiées puis clone supprimé. Challenge EVM et actifs
+Base vérifiés en production ; aucune transaction diffusée ni crédit LLM consommé.
+
+260 tests et démo SDK ; parcours Unix JS/Python et boucle moteur à fournisseur
+simulé. Médiane observée : signature EVM JS 0,483 ms, Python 1,109 ms ;
+Solana JS 0,153 ms, connexions chaudes, sans réseau. Ni SLA ni promesse de délai
+nul. Contrats, utilisation, restauration, limites et mesures : [WALLETS.md](WALLETS.md).
+Suite : utiliser ce socle sur un flux réel de code ; ajouter des adaptateurs
+de signature/répertoire ERC-20 selon un besoin concret, sans refaire le transport.
+
 ## Reprise après appel d’outil invalide
 
 L’arrêt du fil First try révélait qu’une erreur de validation SDK interrompait

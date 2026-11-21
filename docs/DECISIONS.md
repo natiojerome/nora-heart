@@ -7,6 +7,8 @@ sont dans [PLAN.md](PLAN.md).
 
 | Sujet | Choix | Raison |
 | --- | --- | --- |
+| Wallets et signature | Daemon local indépendant, socket Unix JSON-RPC, clients JS/Python persistants ; EVM via viem et Ed25519 via Node crypto. Solde en cache, RPC explicite ; pas de diffusion automatique. | Signer depuis le code sans inférence, SQL, lecture disque ou délai du serveur MCP. Aucun plafond financier arbitraire ajouté ; accès local par groupe et signature Heart sous YOLO explicitement activé. |
+| Reprise des wallets | Coffre AES-256-GCM local, credential systemd ; sauvegarde par processus séparé dans le MCP Vault existant, archive et clé de récupération, relecture et restauration isolée vérifiées. | Restaurer après perte de la machine sans manipulation de seed par l’utilisateur. Le Vault et ses lecteurs autorisés sont des dépositaires de confiance, sans prétention de chiffrement inaccessible au serveur. Sources et ancien signataire non modifiés. |
 | Langage | TypeScript strict. | Contrats lisibles, écosystème d’agents et contributions accessibles. |
 | Runtime | Node.js 24 LTS, version qualifiée dans `.node-version`. | Dépendances et démos validées sans changer les runtimes des autres applications. |
 | Dépendances | pnpm avec verrou versionné. | Installation reproductible. |

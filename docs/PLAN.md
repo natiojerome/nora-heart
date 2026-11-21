@@ -5,6 +5,18 @@ assistante quotidienne dont le propriétaire contrôle moteur, données, outils 
 permissions, avec des cerveaux interchangeables selon besoin et coût.
 [STATUS.md](STATUS.md) décrit le livré ; les lots 1 et 2 sont livrés ; le lot 3 est qualifié sur un scénario réel ciblé. [REVIEW.md](REVIEW.md) donne les écarts constatés.
 
+## Complément livré — Wallet local et sauvegarde MCP
+
+Inventaire, actifs et signatures locales accessibles au code JS/Python et aux
+outils Heart. Sauvegarde réelle sur Vault, clone restauré vérifié puis supprimé ;
+ancien signataire préservé, aucune diffusion. Les signatures EVM/Solana sont
+qualifiées, XPR/XRPL restent en lecture seule. Voir [WALLETS.md](WALLETS.md).
+La suite utile est un premier flux métier utilisant le SDK : préparer/simuler une
+transaction, gérer son nonce et sa diffusion dans le code appelant, puis mesurer
+la latence sur ce flux. Aucune automatisation de dépense n’est activée par ce lot.
+Ajouter un adaptateur de réseau ou un indexeur ERC-20 seulement pour un besoin
+identifié ; ne pas retransformer le chemin rapide en MCP distant.
+
 ## Principes conservés
 
 - TypeScript strict, Node.js 24, pnpm ; PostgreSQL en production, SQLite optionnel via contrat commun.
