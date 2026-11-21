@@ -38,6 +38,12 @@ les capacités réellement disponibles, jamais une promesse de signature pour to
 les réseaux. Les chaînes EVM avec format de transaction spécifique demandent leur
 adaptateur/serializer : le format spécial Tempo n’est pas implémenté ici.
 
+Un réseau EVM peut déclarer `native: null` : seuls ses contrats de tokens sont
+alors interrogés, sans appeler `eth_getBalance` ni inventer un actif ETH. C’est
+notamment le cas de [Tempo](https://www.quicknode.com/docs/tempo/eth_getBalance).
+Le décodeur reconnaît aussi le champ natif vide du premier import privé v1 ;
+les octets de l’archive, sa révision et les UUID ne sont pas réécrits.
+
 Les clés publiques ne révèlent pas universellement tous les ERC-20 détenus.
 Sans indexeur, les contrats EVM à lire doivent être configurés. Le champ `coverage`
 indique cette portée ; NFTs, prix fiat, valorisation, historique et découverte
@@ -280,6 +286,9 @@ Il ne diffuse aucune transaction et ne consomme aucun crédit LLM.
 supprime les fichiers. Mesures du 21 novembre 2026, Node 24.22.3, 1 000 appels
 séquentiels par opération après 30 appels de chauffe, machine hôte courante :
 
+Dans cette démo synthétique, le serveur et le client JavaScript sont dans le même
+processus Node, reliés par la vraie socket Unix ; Python est un processus séparé.
+
 | Client / opération | Médiane | p95 | p99 |
 | --- | ---: | ---: | ---: |
 | JavaScript / liste | 0,156 ms | 0,281 ms | 0,385 ms |
@@ -287,6 +296,16 @@ séquentiels par opération après 30 appels de chauffe, machine hôte courante 
 | JavaScript / bytes Solana | 0,153 ms | 0,202 ms | 0,272 ms |
 | JavaScript / transaction EVM | 0,761 ms | 1,152 ms | 2,350 ms |
 | Python / message EVM | 1,109 ms | 1,608 ms | 1,877 ms |
+
+Mesure supplémentaire sur le daemon systemd effectivement déployé, clients
+**dans des processus séparés**, même protocole et 1 000 appels après chauffe :
+
+| Client / message EVM | Médiane | p95 | p99 |
+| --- | ---: | ---: | ---: |
+| JavaScript | 1,213 ms | 2,241 ms | 2,945 ms |
+| Python | 0,821 ms | 1,618 ms | 1,972 ms |
+
+Seuls des messages neutres de qualification ont été signés, aucune transaction.
 
 Ces chiffres incluent IPC et signature, excluent démarrage du client/processus,
 RPC et diffusion, et ne constituent pas un SLA ni une garantie de « zéro délai ».
@@ -297,7 +316,9 @@ n’empêche pas une signature hors ligne de se terminer.
 Qualification de déploiement : inventaire réel importé explicitement dans un
 nouveau coffre, challenge réel EVM vérifié, lecture Base réussie et sauvegarde
 réelle restaurée dans un dossier tmpfs séparé avec vérification de toutes les
-clés signataires. Aucun transfert, aucune diffusion ni modification de l’ancien
+clés signataires. Lectures réelles réussies aussi sur les dix réseaux configurés,
+avec un wallet représentatif par réseau ; accès liste/signature sous l’identité
+système de Heart et HTTPS authentifié vérifiés. Aucun transfert, aucune diffusion ni modification de l’ancien
 signataire. La boucle LLM est qualifiée par simulation ; aucune inférence payante
 n’est nécessaire pour ces contrôles cryptographiques et de transport.
 

@@ -92,7 +92,7 @@ export async function importWalletCatalog(
         family,
         rpc: v.rpc.replace(/\/$/, ""),
         ...(family === "evm" ? { chainId: v.chainId } : {}),
-        native: { symbol: v.native, decimals: v.decimals },
+        native: v.native ? { symbol: v.native, decimals: v.decimals } : null,
         tokens: tokens
           .filter(
             ([symbol, address]: [string, string]) =>

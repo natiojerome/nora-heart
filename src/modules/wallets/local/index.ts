@@ -95,15 +95,33 @@ export async function unsealWalletState(
   )
     throw Error("Duplicate identifiers");
   for (const n of state.networks) {
+    // The first v1 importer encoded absent EVM natives as {} or {symbol:null}.
+    // Hydrate as null
+    // without rewriting the archive, its revision, or any wallet identity.
+    if (
+      n.family === "evm" &&
+      n.native &&
+      typeof n.native === "object" &&
+      !Array.isArray(n.native) &&
+      n.native.symbol == null &&
+      n.native.decimals === undefined &&
+      Object.keys(n.native).every((k) => k === "symbol")
+    )
+      n.native = null;
     const url = new URL(n.rpc);
     if (
       !["http:", "https:"].includes(url.protocol) ||
       !["evm", "solana", "xrpl", "xpr"].includes(n.family) ||
       (n.family === "evm" &&
         (!Number.isSafeInteger(n.chainId) || Number(n.chainId) <= 0)) ||
-      !Number.isSafeInteger(n.native.decimals) ||
-      n.native.decimals < 0 ||
-      n.native.decimals > 255
+      (n.native === null
+        ? n.family !== "evm"
+        : !n.native ||
+          typeof n.native.symbol !== "string" ||
+          !n.native.symbol ||
+          !Number.isSafeInteger(n.native.decimals) ||
+          n.native.decimals < 0 ||
+          n.native.decimals > 255)
     )
       throw Error("Invalid network");
   }

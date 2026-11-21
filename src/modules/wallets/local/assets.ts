@@ -12,6 +12,7 @@ export async function collectAssets(
   transport: typeof fetch,
   rpcTimeoutMs: number,
 ): Promise<WalletAssets> {
+  const native = n.native;
   const assets: WalletAsset[] = [];
   let id = 0;
   const rpc = async (method: string, params: unknown) => {
@@ -49,12 +50,13 @@ export async function collectAssets(
     if (BigInt(await rpc("eth_chainId", [])) !== BigInt(n.chainId!))
       throw Error("RPC network mismatch");
     const block = await rpc("eth_blockNumber", []);
-    add(
-      "native",
-      n.native.symbol,
-      await rpc("eth_getBalance", [address, block]),
-      n.native.decimals,
-    );
+    if (native)
+      add(
+        "native",
+        native.symbol,
+        await rpc("eth_getBalance", [address, block]),
+        native.decimals,
+      );
     await Promise.all(
       (n.tokens ?? []).map(async (t) => {
         const decimals =
@@ -83,14 +85,16 @@ export async function collectAssets(
       }),
     );
     coverage =
-      "Native asset and explicitly configured ERC-20 contracts; no universal token discovery without an indexer";
+      (native ? "Native asset and " : "") +
+      "explicitly configured ERC-20 contracts; no universal token discovery without an indexer";
   } else if (n.family === "solana") {
+    if (!native) throw Error("Solana native asset required");
     const lamports = (
       await rpc("getBalance", [address, { commitment: "confirmed" }])
     ).value;
     if (!Number.isSafeInteger(lamports) || lamports < 0)
       throw Error("Unsafe RPC lamport number");
-    add("native", n.native.symbol, String(lamports), n.native.decimals);
+    add("native", native.symbol, String(lamports), native.decimals);
     const totals = new Map<string, { raw: bigint; decimals: number }>();
     await Promise.all(
       [
@@ -117,15 +121,11 @@ export async function collectAssets(
     coverage =
       "SOL and all token accounts returned by Token and Token-2022 programs";
   } else if (n.family === "xrpl") {
+    if (!native) throw Error("XRPL native asset required");
     const info = await rpc("account_info", [
       { account: address, ledger_index: "validated" },
     ]);
-    add(
-      "native",
-      n.native.symbol,
-      info.account_data.Balance,
-      n.native.decimals,
-    );
+    add("native", native.symbol, info.account_data.Balance, native.decimals);
     let marker: unknown;
     do {
       const lines = await rpc("account_lines", [
@@ -154,6 +154,7 @@ export async function collectAssets(
     } while (marker);
     coverage = "Validated XRP balance and issued-currency trust lines";
   } else {
+    if (!native) throw Error("XPR native asset required");
     const post = async (path: string, body: unknown) => {
       const r = await transport(n.rpc + path, {
         method: "POST",
@@ -168,8 +169,8 @@ export async function collectAssets(
     for (const token of [
       {
         address: "eosio.token",
-        symbol: n.native.symbol,
-        decimals: n.native.decimals,
+        symbol: native.symbol,
+        decimals: native.decimals,
       },
       ...(n.tokens ?? []),
     ]) {

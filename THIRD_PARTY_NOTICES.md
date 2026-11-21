@@ -1,4 +1,4 @@
-# Browser rendering dependencies
+# Third-party notices
 
 ## Local wallet cryptography
 

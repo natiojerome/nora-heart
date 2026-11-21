@@ -126,6 +126,61 @@ async function fixture(
   };
 }
 const context = { workspace: "/tmp" };
+test("EVM networks without native assets load, restore and read configured tokens without inventing native balances", async (t) => {
+  const f = await fixture(t),
+    state = structuredClone(f.state);
+  const network = {
+    ...state.networks[0],
+    id: "eip155:4217",
+    label: "EVM without native",
+    chainId: 4217,
+    native: null,
+  };
+  state.networks.push(network);
+  state.wallets[0].info.addresses.push({
+    networkId: network.id,
+    address: state.wallets[0].info.addresses[0].address,
+  });
+  const dir = path.join(f.root, "no-native");
+  await initializeWalletState(dir, state, f.key);
+  const service = await LocalWallets.open(dir, f.key);
+  t.after(() => service.close());
+  assert.equal(
+    (await service.list()).networks.find((n) => n.id === network.id)!.native,
+    null,
+  );
+  // Read compatibility for the initial private v1 archive: no rewrite or ID change.
+  const original = structuredClone(state);
+  original.networks.at(-1)!.native = { symbol: null } as any;
+  const legacy = path.join(f.root, "legacy-empty-native");
+  await initializeWalletState(legacy, original, f.key);
+  const loaded = await LocalWallets.open(legacy, f.key);
+  assert.deepEqual(await loaded.list(), await service.list());
+  loaded.close();
+  const calls: string[] = [];
+  const transport = (async (_url: unknown, init: any) => {
+    const q = JSON.parse(init.body);
+    calls.push(q.method);
+    return Response.json({
+      result:
+        q.method === "eth_chainId"
+          ? "0x1079"
+          : q.method === "eth_blockNumber"
+            ? "0x123"
+            : "0x123456",
+    });
+  }) as typeof fetch;
+  const result = await collectAssets(
+    f.id,
+    state.wallets[0].info.addresses[0].address,
+    network,
+    transport,
+    1000,
+  );
+  assert.equal(result.assets.length, 1);
+  assert(!result.assets.some((a) => a.id === "native"));
+  assert(!calls.includes("eth_getBalance"));
+});
 test("Heart engine declares actual wallet tools and can sign through IPC without persisting signing payload/results", async (t) => {
   const f = await fixture(t),
     socket = path.join(f.root, "engine.sock"),

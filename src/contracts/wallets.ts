@@ -6,7 +6,7 @@ export interface WalletNetwork {
   family: "evm" | "solana" | "xrpl" | "xpr";
   rpc: string;
   chainId?: number;
-  native: { symbol: string; decimals: number };
+  native: { symbol: string; decimals: number } | null;
   tokens?: { address: string; symbol: string; decimals?: number }[];
 }
 export interface WalletInfo {

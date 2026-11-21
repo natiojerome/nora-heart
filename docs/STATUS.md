@@ -20,11 +20,14 @@ MCP Vault du propriétaire et vérification quotidienne séparées du daemon.
 Le Vault conserve aussi la clé de récupération : il est une autorité de confiance.
 Sauvegarde réelle relue et restaurée dans un clone tmpfs, toutes les clés/adresses
 et signatures de contrôle vérifiées puis clone supprimé. Challenge EVM et actifs
-Base vérifiés en production ; aucune transaction diffusée ni crédit LLM consommé.
+Base vérifiés en production, puis lectures réelles réussies sur les dix réseaux
+avec un wallet représentatif par réseau ; aucune transaction diffusée ni crédit
+LLM consommé. Réseau EVM sans actif natif (Tempo) traité explicitement, sans
+solde natif fictif ; compatibilité de lecture du premier coffre v1 conservée.
 
-260 tests et démo SDK ; parcours Unix JS/Python et boucle moteur à fournisseur
-simulé. Médiane observée : signature EVM JS 0,483 ms, Python 1,109 ms ;
-Solana JS 0,153 ms, connexions chaudes, sans réseau. Ni SLA ni promesse de délai
+261 tests et démo SDK ; parcours Unix JS/Python et boucle moteur à fournisseur
+simulé. Médiane sur le daemon déployé : signature EVM JS 1,213 ms, Python 0,821 ms,
+clients dans des processus séparés et connexions chaudes, sans RPC. Ni SLA ni promesse de délai
 nul. Contrats, utilisation, restauration, limites et mesures : [WALLETS.md](WALLETS.md).
 Suite : utiliser ce socle sur un flux réel de code ; ajouter des adaptateurs
 de signature/répertoire ERC-20 selon un besoin concret, sans refaire le transport.

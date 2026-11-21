@@ -17,8 +17,11 @@ reste dans le Vault ; aucune diffusion de transaction ni inférence LLM.
 
 Qualification opérateur effectuée aussi sur le coffre déployé : inventaire
 existant importé sans modifier ses sources, challenge EVM vérifié, actifs Base
-lus réellement, sauvegarde réelle restaurée en tmpfs, clés/adresses/challenges
-revalidés puis clone supprimé. 260 tests et démo SDK, aucune transaction diffusée.
+lus réellement puis lectures des dix réseaux réussies sur un wallet représentatif
+par réseau ; accès liste/signature sous l’identité système Heart vérifié.
+Réseau EVM sans actif natif testé, sans lecture `eth_getBalance` ni solde fictif.
+Sauvegarde réelle restaurée en tmpfs, clés/adresses/challenges
+revalidés puis clone supprimé. 261 tests et démo SDK, aucune transaction diffusée.
 Les détails de couverture et mesures sont dans [WALLETS.md](WALLETS.md).
 
 Un module doit pouvoir être testé via son entrée publique, sans lancer toute
