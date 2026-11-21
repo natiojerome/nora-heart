@@ -10,7 +10,7 @@ import type { ModelProvider } from "../contracts/models.ts";
 import type { Event } from "../contracts/storage.ts";
 import { Engine } from "../core/engine.ts";
 import { ChatGptAuth, ChatGptProvider, readAccountQuotaSnapshot } from "../modules/models/chatgpt/index.ts";
-import { createAiSdkProvider, openRouterModels, veniceModels, readOpenRouterUsage } from "../modules/models/ai-sdk/index.ts";
+import { createAiSdkProvider, openRouterModels, veniceModels, readOpenRouterUsage, readVeniceUsage } from "../modules/models/ai-sdk/index.ts";
 import { DemoProvider } from "../modules/models/demo/index.ts";
 import { BasicMemory } from "../modules/memory/basic/index.ts";
 import { openJsonStorage } from "../modules/storage/json/index.ts";
@@ -164,12 +164,12 @@ export class TestLab {
       }catch{return missing;}
     }
     const key=this.keys[provider as keyof typeof this.keys];if(!key)return {...base,status:'unconfigured',message:'Configurer la clé de ce fournisseur.'};
-    if(provider==='venice')return {...base,message:'Lecture du solde Venice non raccordée dans Heart ; aucun montant estimé.'};
-    if(provider!=='openrouter')return {...base,message:'Cette clé d’inférence ne fournit pas de solde ou de reset de facturation.'};
-    const cached=this.usageCache.get(modelId);
+    if(provider!=='openrouter'&&provider!=='venice')return {...base,message:'Cette clé d’inférence ne fournit pas de solde ou de reset de facturation.'};
+    const cacheId=provider+':'+modelId;
+    const cached=this.usageCache.get(cacheId);
     if(cached?.key===key&&(cached.pending||(!refresh&&Date.now()-cached.at<60000)))return cached.value;
-    const entry={key,at:Date.now(),pending:true,value:readOpenRouterUsage(key,modelId)};
-    this.usageCache.set(modelId,entry);void entry.value.finally(()=>{entry.pending=false;entry.at=Date.now();});return entry.value;
+    const entry={key,at:Date.now(),pending:true,value:provider==='venice'?readVeniceUsage(key,modelId):readOpenRouterUsage(key,modelId)};
+    this.usageCache.set(cacheId,entry);void entry.value.finally(()=>{entry.pending=false;entry.at=Date.now();});return entry.value;
   }
   model(body: Record<string, unknown>): ModelProvider {
     const provider = body.provider as Provider;

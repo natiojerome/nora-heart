@@ -45,6 +45,14 @@ un autre modèle. Cela ne qualifie pas les autres modèles, mémoire ou compress
 `pnpm check` relancé : 246 tests réussis ; `pnpm demo:sdk` relancé et réussi
 (cette démo reste simulée, distincte de l’essai Venice réel).
 
+Consommation Venice : 250 tests après ajout des cas solde nul/négatif/inconnu,
+renouvellement DIEM distinct, limites par modèle, erreurs privées et cache isolé.
+Parcours navigateur Venice relancé : Consommation aux quatre largeurs, erreur et
+reprise d’actualisation, crédits/limites du chat ; lectures simulées, aucun appel
+Venice d’inférence. Qualification réelle limitée aux GET de métadonnées avec la
+clé actuelle : soldes/limites HTTP 200, endpoints Billing HTTP 401 exigeant une clé
+administrateur. Aucune dépense LLM supplémentaire pour cette modification.
+
 ## Qualification personnalité et rétention — 21 novembre 2026
 
 242 tests locaux couvrent notamment résumés supérieurs à 6000 caractères, plafond

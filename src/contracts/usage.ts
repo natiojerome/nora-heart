@@ -11,7 +11,9 @@ export interface AccountQuotaSnapshot {
 export interface ProviderUsage {
   provider:ModelSelection['provider'];modelId:string;status:'available'|'unavailable'|'not_applicable'|'unconfigured';observedAt:string;
   spend?:{scope:'key';currency:'USD';total?:number;daily?:number;weekly?:number;monthly?:number};
-  balance?:{remaining:number;currency:'USD';scope:'account'|'budget'|'key'};
+  balance?:{remaining:number;currency:'USD';scope:'account'|'budget'|'key';label?:string};
+  balanceDetails?:{label:string;remaining:number;unit:string;resetsAt?:string}[];
+  rateLimits?:{requestsPerMinute?:number;tokensPerMinute?:number};
   reset?:{at?:string;interval?:string|null;scope:'budget'|'key'};
   dailyRequests?:{remaining:number;limit:number};
   quota?:{scope:'account';windows:QuotaWindow[];appLimitAvailable:false};

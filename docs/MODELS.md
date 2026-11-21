@@ -179,8 +179,21 @@ catalogue. Les modèles sans outils restent sélectionnables pour le texte.
 Le core garde l’exécution et les permissions. Pas de retry, de modèle de repli,
 de recherche web intégrée ni de prompt système Venice ajouté : les instructions
 et les outils viennent de Heart. Les résultats/erreurs sont adaptés aux mêmes
-contrats neutres ; les détails HTTP privés ne sont pas journalisés. Le solde Venice
-n’est pas encore lu : Consommation indique cette absence, sans inventer de crédit.
+contrats neutres ; les détails HTTP privés ne sont pas journalisés.
+
+`readVeniceUsage` lit uniquement `GET /api_keys/rate_limits`, disponible avec une
+clé d’inférence : solde USD du compte, autres soldes distincts et limites RPM/TPM
+du modèle sélectionné. Consommation et le détail des crédits du chat les affichent.
+Les autres soldes conservent leurs unités API, sans conversion ni addition au USD.
+L’échéance DIEM ne devient jamais le reset du solde USD. Cache applicatif une minute,
+par fournisseur/modèle/clé ; actualisation manuelle et requêtes en cours regroupées.
+Aucun appel d’inférence ni essai de recharge pour lire ces données.
+
+Les endpoints Billing (`balance`, `usage-analytics`, `usage-history`) refusent
+réellement la clé d’inférence : « Admin API key required ». Ils ne sont pas appelés
+à chaque actualisation, aucune clé administrateur n’est imposée et aucun historique
+de dépense n’est reconstruit à partir du solde. Les erreurs restent sans détails
+privés et un compteur inconnu ne devient pas zéro.
 Aucune migration SQL ni modification des connexions existantes.
 
 Sources officielles consultées le 21 novembre 2026 :

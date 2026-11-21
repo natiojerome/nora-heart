@@ -14,6 +14,10 @@ choix du fil ; le core conserve son ModelProvider neutre. Effort, prix, outils e
 contexte sont traduits à la frontière ; UUID des conversations inchangés.
 Le catalogue public est actualisable, cache de capacités cinq minutes côté app.
 Le web expose la connexion, le choix par fil et les défauts des nouveaux fils.
+Le même module traduit les métadonnées Venice vers ProviderUsage : solde principal,
+soldes détaillés et limites de débit. app/test-lab conserve un cache d’une minute
+isolé par fournisseur/modèle/clé et regroupe les lectures simultanées. Le core
+n’importe ni facturation ni client Venice. Aucun stockage SQL ajouté.
 Voir MODELS.md pour le contrat HTTP et la portée de qualification.
 
 ## Personnalité et rétention du contexte

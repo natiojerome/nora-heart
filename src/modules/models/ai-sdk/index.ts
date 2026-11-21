@@ -228,4 +228,4 @@ export {readOpenRouterUsage} from './usage.ts';
 
 export {apiModelCapabilities} from "./capabilities.ts";
 
-export {veniceModels} from "./venice.ts";
+export {veniceModels, readVeniceUsage} from "./venice.ts";

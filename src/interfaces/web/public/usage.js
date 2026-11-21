@@ -36,9 +36,9 @@
     get('status-context').textContent=ctx?'~'+Math.round(ctx.inputTokens/ctx.contextWindow*100)+' %':'—';
     get('status-credits').closest('.chat-status-bar').dataset.accountQuota=String(selection.provider==='chatgpt');
     get('status-reset').previousElementSibling.textContent=selection.provider==='chatgpt'?'Renouv.':'Reset';
-    get('status-balance-label').textContent=selection.provider==='chatgpt'?'Quota compte':balance&&balance.scope!=='account'?'Budget':'Crédits';
+    get('status-balance-label').textContent=selection.provider==='chatgpt'?'Quota compte':balance?.label||(balance&&balance.scope!=='account'?'Budget':'Crédits');
     get('status-credits').textContent=loading?'…':quota?percent(quota.remainingPercent)+' · '+duration(quota.windowDurationMins):balance?new Intl.NumberFormat('fr-FR',{style:'currency',currency:'USD',maximumFractionDigits:2}).format(balance.remaining):'—';
-    get('status-credits').title=quota?`${quota.limitName} · ${duration(quota.windowDurationMins)} : ${percent(quota.remainingPercent)} restants`:'Compteur non communiqué';
+    get('status-credits').title=quota?`${quota.limitName} · ${duration(quota.windowDurationMins)} : ${percent(quota.remainingPercent)} restants`:balance?.label||'Compteur non communiqué';
     const resetAt=quota?.resetsAt||reset?.at;
     get('status-reset').textContent=loading?'…':resetAt?new Date(resetAt).toLocaleDateString('fr-FR',{day:'numeric',month:'short'}):interval(reset?.interval);
     get('status-reset').title=resetAt?fullDate(resetAt):'Date non communiquée par le fournisseur';
@@ -56,7 +56,10 @@
       }
       row('Plafond propre à Heart','Non communiqué');
     }else{
-      row(balance?.scope==='account'?'Crédits du compte':balance?.scope==='key'?'Budget de la clé':'Budget',balance?new Intl.NumberFormat('fr-FR',{style:'currency',currency:'USD',maximumFractionDigits:4}).format(balance.remaining):'Non communiqué');
+      row(balance?.label||(balance?.scope==='account'?'Crédits du compte':balance?.scope==='key'?'Budget de la clé':'Budget'),balance?new Intl.NumberFormat('fr-FR',{style:'currency',currency:'USD',maximumFractionDigits:4}).format(balance.remaining):'Non communiqué');
+      for(const item of usage?.balanceDetails||[]){row(item.label,integer(item.remaining)+' '+item.unit);if(item.resetsAt)row('Renouvellement DIEM',fullDate(item.resetsAt));}
+      if(usage?.rateLimits?.requestsPerMinute!==undefined)row('Limite du modèle · requêtes/min',integer(usage.rateLimits.requestsPerMinute));
+      if(usage?.rateLimits?.tokensPerMinute!==undefined)row('Limite du modèle · tokens/min',integer(usage.rateLimits.tokensPerMinute));
       row('Reset du '+(reset?.scope==='key'?'budget de clé':'budget'),reset?.at?fullDate(reset.at):reset?.interval?interval(reset.interval)+' · date non communiquée':'Non communiqué');
       if(usage?.dailyRequests)row('Modèles gratuits · aujourd’hui',integer(usage.dailyRequests.remaining)+' / '+integer(usage.dailyRequests.limit)+' requêtes restantes');
     }

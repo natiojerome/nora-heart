@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import {test} from 'node:test';
-import {readOpenRouterUsage} from '../src/modules/models/ai-sdk/index.ts';
+import {readOpenRouterUsage,readVeniceUsage} from '../src/modules/models/ai-sdk/index.ts';
 const response=(data:unknown)=>new Response(JSON.stringify({data}),{status:200});
 test('OpenRouter separates key budget, real reset, free request counters and private identity',async()=>{
  const calls:string[]=[];
@@ -35,4 +35,50 @@ test('usage cache coalesces pending refreshes and direct ChatGPT does not borrow
   await lab.usage('openrouter','model',true);assert.equal(calls,2);
   const chatgpt=await lab.usage('chatgpt','model');assert.equal(chatgpt.balance,undefined);assert.equal(chatgpt.reset,undefined);assert.equal(calls,2);
  }finally{globalThis.fetch=original;}
+});
+
+test('Venice inference key reads account balances and model capacity without billing or inference calls',async()=>{
+ const calls:string[]=[];
+ const usage=await readVeniceUsage('fake-private-key','deepseek-qa',async(url,options)=>{
+  calls.push(String(url));assert.equal(options?.method,'GET');assert.equal(options?.redirect,'error');
+  return response({balances:{USD:4.99946144,DIEM:0,BUNDLED_CREDITS:0},nextEpochBegins:'2026-11-22T00:00:00Z',keyExpiration:'2030-01-01',private:'fake-private-key',rateLimits:[{apiModelId:'other',rateLimits:[{type:'RPM',amount:1}]},{apiModelId:'deepseek-qa',rateLimits:[{type:'RPM',amount:1000},{type:'TPM',amount:30000000}]}]});
+ });
+ assert.equal(usage.status,'available');assert.equal(usage.balance?.remaining,4.99946144);assert.equal(usage.balance?.scope,'account');
+ assert.deepEqual(usage.balanceDetails,[{label:'DIEM disponibles',remaining:0,unit:'DIEM'},{label:'Crédits inclus · solde API',remaining:0,unit:'unités'}]);
+ assert.deepEqual(usage.rateLimits,{requestsPerMinute:1000,tokensPerMinute:30000000});
+ assert.equal(usage.spend,undefined);assert.equal(usage.reset,undefined);assert(!JSON.stringify(usage).includes('fake-private-key'));
+ assert.deepEqual(calls,['https://api.venice.ai/api/v1/api_keys/rate_limits']);
+});
+
+test('Venice preserves zero, debt and unknown values and renews only an actual DIEM balance',async()=>{
+ const empty=await readVeniceUsage('fake','',async()=>response({balances:{USD:0,DIEM:null,BUNDLED_CREDITS:'10'}}));
+ assert.equal(empty.balance?.remaining,0);assert.equal(empty.balanceDetails,undefined);assert.equal(empty.rateLimits,undefined);
+ const owed=await readVeniceUsage('fake','',async()=>response({accessPermitted:false,balances:{USD:-0.1,DIEM:2.3},nextEpochBegins:'2026-11-22T00:00:00Z'}));
+ assert.equal(owed.balance?.remaining,-0.1);assert.equal(owed.balanceDetails?.[0]?.resetsAt,'2026-11-22T00:00:00.000Z');assert.match(owed.message,/refusé/);assert.equal(owed.reset,undefined);
+ for(const data of [{balances:{}},{balances:{USD:'5',DIEM:null}},{balances:{USD:Infinity}},null]){
+  const usage=await readVeniceUsage('fake','',async()=>response(data));assert.equal(usage.status,'unavailable');assert.equal(usage.balance,undefined);
+ }
+ const badDate=await readVeniceUsage('fake','qa',async()=>response({balances:{DIEM:1},nextEpochBegins:'bad',rateLimits:[{apiModelId:'qa',rateLimits:[{type:'RPM',amount:-1},{type:'TPM',amount:'50'}]}]}));
+ assert.equal(badDate.balanceDetails?.[0].resetsAt,undefined);assert.equal(badDate.rateLimits,undefined);
+});
+
+test('Venice metadata failures remain safe and do not trigger paid or admin fallbacks',async()=>{
+ for(const transport of [async()=>new Response('secret',{status:401}),async()=>new Response('secret',{status:429}),async()=>{throw Error('secret');},async()=>new Response('malformed')]){
+  const usage=await readVeniceUsage('fake','qa',transport);assert.equal(usage.status,'unavailable');assert.equal(usage.balance,undefined);assert(!JSON.stringify(usage).includes('secret'));
+ }
+});
+
+test('Venice usage cache isolates providers sharing a model ID and coalesces manual refreshes',async()=>{
+ const {TestLab}=await import('../src/app/test-lab.ts');
+ const lab=new TestLab({directory:'/unused',authDirectory:'/unused',apiKeys:{openrouter:'fake-router',venice:'fake-venice'}});
+ const original=globalThis.fetch;let calls=0,release!:()=>void;
+ const waiting=new Promise<void>(resolve=>{release=resolve;});
+ globalThis.fetch=async(url)=>{calls++;await waiting;return response(String(url).includes('venice.ai')?{balances:{USD:5}}:{limit_remaining:2});};
+ try{
+  const first=lab.usage('venice','shared');const second=lab.usage('venice','shared',true);assert.equal(calls,1);
+  const router=lab.usage('openrouter','shared');assert.equal(calls,2);
+  release();const [venice,,openrouter]=await Promise.all([first,second,router]);assert.equal(venice.balance?.remaining,5);assert.equal(openrouter.balance?.remaining,2);
+  await lab.usage('venice','shared');assert.equal(calls,2);
+  await lab.usage('venice','shared',true);assert.equal(calls,3);
+ }finally{globalThis.fetch=original;await lab.close();}
 });

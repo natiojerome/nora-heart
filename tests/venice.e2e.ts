@@ -11,7 +11,7 @@ import { createWebServer } from "../src/interfaces/web/server.ts";
 import { openWebConversations } from "../src/app/web-conversations.ts";
 import { defaultAssistant } from "../src/app/assistant.ts";
 import { migrateSqlite } from "../src/modules/storage/sqlite/index.ts";
-import { createAiSdkProvider } from "../src/modules/models/ai-sdk/index.ts";
+import { createAiSdkProvider, readVeniceUsage } from "../src/modules/models/ai-sdk/index.ts";
 
 test(
   "Venice UI connects privately, chooses live catalogue/effort defaults and overrides, persists chat and handles catalogue failure",
@@ -28,6 +28,17 @@ test(
     let failed = false,
       catalogCalls = 0,
       modelCalls = 0;
+    let usageFailed = false;
+    lab.usage = async (provider, modelId) => {
+      assert.equal(provider, "venice");
+      return readVeniceUsage("fake-venice-key", modelId, async () => usageFailed
+        ? new Response("private failure", { status: 401 })
+        : Response.json({ data: {
+          balances: { USD: 4.99946144, DIEM: 2.5, BUNDLED_CREDITS: 0 },
+          nextEpochBegins: "2026-11-22T00:00:00Z",
+          rateLimits: [{ apiModelId: "venice-qa", rateLimits: [{ type: "RPM", amount: 1000 }, { type: "TPM", amount: 30000000 }] }],
+        } }));
+    };
     const models = [
       {
         id: "venice-qa",
@@ -159,6 +170,23 @@ test(
         "Clé configurée",
       );
       assert.equal(await page.inputValue("#api-key"), "");
+      await page.evaluate(() => (location.hash = "consumption"));
+      await page.waitForSelector(".consumption-card .consumption-primary");
+      assert.match(await page.locator("#consumption-providers").innerText(), /Solde USD[\s\S]*4,9995[\s\S]*DIEM disponibles[\s\S]*2,5 DIEM/);
+      const beforeUsage = modelCalls;
+      for (const width of [320, 390, 820, 1440]) {
+        await page.setViewportSize({ width, height: 900 });
+        assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
+      }
+      usageFailed = true;
+      await page.click("#consumption-refresh");
+      await page.waitForSelector(".consumption-card .consumption-primary", { state: "hidden" });
+      assert(!((await page.locator("#consumption-providers").innerText()).includes("private failure")));
+      usageFailed = false;
+      await page.click("#consumption-refresh");
+      await page.waitForSelector(".consumption-card .consumption-primary");
+      assert.equal(modelCalls, beforeUsage);
+      await page.setViewportSize({ width: 390, height: 844 });
       await page.evaluate(() => (location.hash = "settings-conversations"));
       await page.click("#edit-conversation-defaults");
       await page.waitForSelector("#defaults-dialog[open]");
@@ -193,6 +221,12 @@ test(
         origin + "/?conversation=" + conversation.id + "#conversations",
       );
       await page.waitForSelector("body.chat-mode", { state: "attached" });
+      await page.waitForFunction(() => document.getElementById("status-balance-label")?.textContent === "Solde USD");
+      await page.click('[data-usage-detail="credits"]');
+      await page.waitForSelector("#usage-dialog[open]");
+      assert.match(await page.locator("#usage-details").innerText(), /Solde USD[\s\S]*DIEM disponibles[\s\S]*requêtes\/min[\s\S]*1\s*000/);
+      assert.equal(await page.textContent("#status-reset"), "—");
+      await page.click("#close-usage");
       await page.fill(
         "#conversation-prompt",
         "Test technique sans information à mémoriser.",

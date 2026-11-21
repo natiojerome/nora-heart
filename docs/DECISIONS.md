@@ -466,3 +466,14 @@ détails ordinaires ne nécessitent pas d’approbation. Soumettre les restricti
 supplémentaires avant de les imposer. Les CGU/CGV et analyses juridiques relèvent
 de l’utilisateur et de son équipe : aucun travail de ce type hors demande explicite.
 Le bloc work reste visible/modifiable, sans nouveau module ni changement des droits.
+
+
+## Consommation Venice avec la clé d’inférence
+
+Lire les soldes et limites via le GET authentifié `api_keys/rate_limits`, sans
+inférence ni navigateur. Séparer les unités de solde et le renouvellement DIEM du
+solde USD ; ne déduire ni dépenses ni resets depuis une recharge ou un abonnement.
+Les endpoints Billing exigent effectivement une clé administrateur, refusée par
+le choix actuel d’une clé normale : afficher cette portée, sans demander davantage
+de droits ni appeler ces endpoints en boucle. Réutiliser ProviderUsage et le cache
+applicatif d’une minute, avec isolation des fournisseurs partageant un modèle ID.

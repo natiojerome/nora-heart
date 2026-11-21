@@ -11,7 +11,7 @@ Fournisseur ajouté aux connexions, modèles du fil et défauts des nouvelles
 conversations. Catalogue public réel actualisable : 148 modèles texte observés,
 capacités outils/vision/effort et tarifs adaptés. Clé privée via UI ou environnement,
 indépendante des autres connexions. Contexte/effort vérifiés sur le catalogue ;
-prompt, outils et permissions restent ceux de Heart. Solde Venice non raccordé.
+prompt, outils et permissions restent ceux de Heart.
 246 tests locaux et quatre parcours navigateur ciblés validés ; parcours Venice
 avec transport simulé, sauvegarde
 et rechargement des défauts, chat, erreur/reprise de catalogue et quatre largeurs.
@@ -20,7 +20,14 @@ Clé Venice reconnue et compte rechargé le 21 novembre. Catalogue réel :
 avec le véritable adaptateur et moteur Heart : deux appels fournisseur, une lecture
 réelle par l’outil fichiers et restitution d’un marqueur inconnu du prompt.
 Fixture temporaire supprimée ; aucune conversation ni mémoire propriétaire modifiée.
-Le solde reste non raccordé à la vue Consommation.
+Solde et limites désormais raccordés à Consommation et à la barre du chat via un
+seul GET authentifié, sans inférence. Cache une minute et requêtes simultanées
+regroupées. USD, DIEM et crédits inclus séparés ; pas de reset inventé du solde USD.
+L’historique détaillé requiert une clé administrateur chez Venice et reste absent
+avec la clé d’inférence choisie. Déployé après sauvegarde locale chiffrée :
+HTTPS authentifié et vue Consommation vérifiés aux quatre largeurs. Lecture réelle
+qualifiée, sans coût LLM ; 250 tests,
+parcours navigateur Venice (quatre largeurs, erreur/reprise) et démo SDK réussis.
 
 ## Personnalité et continuité des informations
 
@@ -161,6 +168,6 @@ profil personnalisé ni historique propriétaire écrasé ; aucun changement du 
 
 Publication publique autorisée : main, petits commits vérifiés et push ; secrets,
 état privé et rapports opérateur exclus. Historique privé conservé localement.
-Suite : raccorder le solde et les limites Venice à la vue Consommation ;
-poursuivre les qualifications ciblées des fournisseurs,
+Suite : poursuivre les qualifications ciblées des fournisseurs et des boucles
+mémoire/contexte sur les modèles utilisés,
 sans réintroduire de prudence générique ni de limites arbitraires.
