@@ -8,6 +8,7 @@ import { Ajv2020 } from "ajv/dist/2020.js";
 import formats from "ajv-formats";
 import type { Json } from "../../../contracts/json.ts";
 import type { ModelProvider, ModelRequest, ModelResponse } from "../../../contracts/models.ts";
+import { ModelToolCallError } from "../../../contracts/models.ts";
 
 const addFormats = formats.default;
 
@@ -98,15 +99,27 @@ export class AiSdkProvider implements ModelProvider {
         maxOutputTokens: this.maxOutputTokens, maxRetries: 0,
         abortSignal: request.signal, stopWhen: stepCountIs(1),
         telemetry: { isEnabled: false },
+        // A model may echo a Heart name from a description instead of its wire alias.
+        // Repair only an exact currently offered name; the SDK validates arguments again.
+        repairToolCall: async ({toolCall}) => request.tools.some(tool => tool.name === toolCall.toolName)
+          ? {...toolCall,toolName:alias(toolCall.toolName)} : null,
         providerOptions: { openai: { store: false,...(this.reasoning?.provider==='openai'?{reasoningEffort:this.reasoning.effort}:{}) },...(this.reasoning?.provider==='anthropic'?{anthropic:{effort:this.reasoning.effort}}:{}) },
       });
       request.signal?.throwIfAborted();
       if (result.finishReason === "length") throw new AiSdkResponseError("output-limit");
       if (!["stop", "tool-calls"].includes(result.finishReason)) throw new AiSdkResponseError("incomplete-response");
+      if (result.toolCalls.some(call => call.providerExecuted)) throw new AiSdkResponseError("invalid-tool-call");
+      const nameOf = (name:string) => names.get(name) ?? request.tools.find(tool=>tool.name===name)?.name;
+      const issues: ConstructorParameters<typeof ModelToolCallError>[0][number][] = [];
+      for (const call of result.toolCalls) {
+        const name = nameOf(call.toolName);
+        if (!name) issues.push({code:"unknown-tool"});
+        else if (call.invalid) issues.push({code:"invalid-arguments",tool:name});
+      }
+      if (issues.length) throw new ModelToolCallError(issues);
       const toolCalls = result.toolCalls.map(call => {
-        const name = names.get(call.toolName);
-        if (!name || call.invalid || call.providerExecuted) throw new AiSdkResponseError("invalid-tool-call");
-        return { id: call.toolCallId, name, arguments: call.input as Json };
+        const name = nameOf(call.toolName);
+        return { id: call.toolCallId, name: name!, arguments: call.input as Json };
       });
       if (!result.text && !toolCalls.length) throw new AiSdkResponseError("empty-response");
       return { content: result.text, toolCalls };
@@ -114,7 +127,7 @@ export class AiSdkProvider implements ModelProvider {
       // Raw SDK/API errors can contain headers, prompts or credentials. The
       // engine persists error messages, so expose only this bounded message.
       request.signal?.throwIfAborted();
-      if (error instanceof AiSdkResponseError) throw error;
+      if (error instanceof AiSdkResponseError || error instanceof ModelToolCallError) throw error;
       if (APICallError.isInstance(error)) {
         const status = error.statusCode;
         throw new AiSdkResponseError(status === 401 || status === 403 ? "authentication"

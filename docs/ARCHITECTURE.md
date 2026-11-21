@@ -33,6 +33,15 @@ L’app relie `modules/tools/history/index.ts` au SessionStore et à l’UUID du
 l’adaptateur, sans accès inter-fil et sans duplication persistante des résultats.
 Le core connaît seulement la permission et le caractère transitoire du contrat.
 
+## Erreurs d’appels de modèle récupérables
+
+Le contrat ModelToolCallError transporte uniquement des codes et noms d’outils
+approuvés. Le module AI SDK rejette le lot entier avant exécution et traduit
+localement les noms Heart exacts vers leurs alias. Le core conserve les résultats
+valides, journalise le diagnostic sûr et prépare un tour de correction du même
+modèle selon les budgets existants. Aucun type SDK, argument invalide ou repli
+fournisseur dans le core ; aucun changement de permissions ou de stockage.
+
 ## Organisation en place
 
 ```text

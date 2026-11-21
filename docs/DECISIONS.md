@@ -477,3 +477,15 @@ Les endpoints Billing exigent effectivement une clé administrateur, refusée pa
 le choix actuel d’une clé normale : afficher cette portée, sans demander davantage
 de droits ni appeler ces endpoints en boucle. Réutiliser ProviderUsage et le cache
 applicatif d’une minute, avec isolation des fournisseurs partageant un modèle ID.
+
+
+## Un appel invalide ne doit pas interrompre une tâche corrigeable
+
+Les erreurs de nom/arguments détectées avant tout effet rejettent leur lot et
+rendent la main au modèle principal via le contrat neutre ModelToolCallError.
+Les résultats déjà exécutés restent dans le contexte et ne sont jamais rejoués
+par le moteur. Réutiliser le budget d’étapes et l’annulation du propriétaire,
+sans retry HTTP, modèle de repli ni assouplissement des schémas. Traduire un nom
+Heart exact actuellement autorisé vers son alias est une réparation locale ;
+les noms voisins et outils non proposés restent refusés. Diagnostic journalisé
+sans valeurs d’arguments ni erreurs SDK brutes.

@@ -19,6 +19,15 @@ export interface ModelResponse {
   toolCalls: ToolCall[];
 }
 
+/** Safe validation feedback only: no provider response, arguments, or credentials. */
+export class ModelToolCallError extends Error {
+  readonly code = "invalid-tool-call";
+  constructor(readonly issues: readonly {code: "unknown-tool" | "invalid-arguments"; tool?: string}[]) {
+    super("Échec du modèle : appel d’outil invalide. Aucun outil de cette réponse exécuté.");
+    this.name = "ModelToolCallError";
+  }
+}
+
 // An adapter translates the provider protocol; it never executes tools.
 export interface ModelProvider {
   id: string;

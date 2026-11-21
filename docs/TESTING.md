@@ -21,6 +21,20 @@ Les tests locaux ne lisent pas de clés et n’appellent pas une API LLM. Les te
 PostgreSQL créent leur propre service temporaire. Une démo avec le module `demo`
 prouve la boucle ; elle ne qualifie pas un fournisseur commercial réel.
 
+## Reprise des appels invalides — 21 novembre 2026
+
+253 tests, dont tests d’alias exact sans appel supplémentaire, JSON/arguments
+invalides, lot mixte intégralement retenu, écritures antérieures non répétées,
+absence de secrets dans le diagnostic et respect des permissions/budgets.
+Démo SDK réussie. Essai réel isolé sur le modèle Venice du fil First try :
+`e2ee-deepseek-v4-1-flash-1017-abliterated`, une réponse altérée volontairement
+avant validation pour vérifier la reprise. Trois appels réels, un outil exécuté,
+marqueur lu/restitué et diagnostic présent ; données temporaires supprimées.
+2 300 tokens d’entrée / 483 de sortie. La faute injectée ne prétend pas reproduire
+le champ exact de l’incident historique, absent du journal. Un premier essai QA
+avait une assertion trop stricte sur le nombre de lectures et n’est pas compté
+comme validation. Aucun tour utilisateur relancé automatiquement.
+
 ## Qualification Venice AI — 21 novembre 2026
 
 `tests/venice.test.ts` vérifie catalogue, unités de prix, capacités/efforts, boucle

@@ -5,6 +5,23 @@ Socle livré ; la parité complète avec Codex CLI et la qualification de tous l
 fournisseurs restent partielles. Les preuves détaillées sont dans TESTING.md et
 les rapports opérateur privés, pas dans le contexte permanent de l’assistant.
 
+## Reprise après appel d’outil invalide
+
+L’arrêt du fil First try révélait qu’une erreur de validation SDK interrompait
+le tour au lieu de rendre la main au modèle. Correction à la frontière modèle :
+traduction locale d’un nom Heart exact autorisé, puis validation stricte inchangée.
+Le contrat ModelToolCallError permet au moteur de demander une correction au même
+modèle, dans le budget d’étapes existant ; tout le lot invalide reste sans effet et
+les opérations précédentes ne sont pas rejouées. Diagnostic sûr conservé, sans
+arguments ni erreur fournisseur brute. L’ancien journal ne permet pas d’identifier
+le champ exact invalide : aucune cause plus précise n’est prétendue rétrospectivement.
+
+253 tests et démo SDK réussis. Essai réel sur
+`e2ee-deepseek-v4-1-flash-1017-abliterated` : après injection volontaire d’arguments
+invalides dans une réponse, trois requêtes fournisseur, une lecture fichiers valide
+et restitution du marqueur. 2 300 tokens d’entrée et 483 de sortie. Aucun rejeu
+du tour propriétaire ni effet métier. Déployé après sauvegarde locale chiffrée.
+
 ## Venice AI
 
 Fournisseur ajouté aux connexions, modèles du fil et défauts des nouvelles

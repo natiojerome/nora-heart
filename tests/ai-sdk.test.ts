@@ -5,6 +5,7 @@ import path from "node:path";
 import { test } from "node:test";
 import { MockLanguageModelV4 } from "ai/test";
 import type { ModelRequest } from "../src/contracts/models.ts";
+import { ModelToolCallError } from "../src/contracts/models.ts";
 import { Engine } from "../src/core/engine.ts";
 import { AiSdkProvider, createAiSdkProvider } from "../src/modules/models/ai-sdk/index.ts";
 import { openJsonStorage } from "../src/modules/storage/json/index.ts";
@@ -207,7 +208,7 @@ test("AI SDK diagnoses empty and invalid tool responses without exposing provide
   ] as const) {
     const model = new MockLanguageModelV4({ doGenerate: response as ReturnType<typeof answer> });
     await assert.rejects(new AiSdkProvider(model).generate(request), error => {
-      assert(error instanceof AiSdkResponseError);
+      assert(error instanceof AiSdkResponseError || error instanceof ModelToolCallError);
       assert.equal(error.code, code);
       assert.equal(error.message, code === "empty-response" ? "Échec du modèle : réponse vide du fournisseur." : "Échec du modèle : appel d’outil invalide. Aucun outil de cette réponse exécuté.");
       return true;

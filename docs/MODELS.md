@@ -77,9 +77,17 @@ qualification. La CLI actuelle n’autorise que les outils de lecture.
   avec leurs restrictions. L’historique conserve les noms du harness, par
   exemple `memory.search`. Les anciens appels restent traduisibles même si
   l’outil n’est plus autorisé dans le run courant.
-- Une réponse tronquée, filtrée, vide ou un appel invalide fait échouer l’étape.
-  Les erreurs SDK sont remplacées par un message générique avant journalisation
-  pour éviter de stocker des détails sensibles d’une requête.
+- Une réponse tronquée, filtrée ou vide fait échouer l’étape. Un appel au nom
+  Heart exact d’un outil actuellement proposé est traduit localement vers son
+  alias fournisseur puis revalidé, sans requête modèle supplémentaire. Pas de
+  rapprochement approximatif ni de correction des arguments.
+- Un outil inconnu ou des arguments invalides rejettent tout le lot avant effet.
+  L’adaptateur transmet ModelToolCallError (code et nom approuvé uniquement) ; le
+  moteur garde les résultats précédents et demande au même modèle de corriger
+  sa réponse dans le budget d’étapes existant. Aucun appel invalide brut, argument
+  ou détail SDK privé n’est journalisé ; événement tool-validation sûr seulement.
+  Pas de retry HTTP, de repli ou de rejeu des opérations réussies. Un appel marqué
+  exécuté par le fournisseur reste une erreur fatale.
 - Le signal d’annulation est transmis au SDK. Cela n’assure pas l’arrêt d’un
   calcul déjà lancé chez le fournisseur ni l’absence de facturation.
 - `maxSteps` et `maxOutputTokens` bornent les étapes et la sortie par requête.
