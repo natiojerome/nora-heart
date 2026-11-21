@@ -84,6 +84,29 @@ test(
       await page.click("#settings-tab-appearance");
       await page.click("#settings-tab-policies");
       assert.equal(reads, n);
+      await page.locator("[data-policy-section=context]").click();
+      assert.equal(await page.inputValue("#policy-recentTurns"), "4");
+      assert.equal(await page.inputValue("#policy-maxSummaryCharacters"), "0");
+      await page.fill("#policy-recentTurns", "6");
+      await page.fill("#policy-maxSummaryCharacters", "12000");
+      await page.click("#policy-save");
+      await page.waitForSelector("#policy-dialog:not([open])", {
+        state: "attached",
+      });
+      await page.reload();
+      await page.waitForSelector("[data-policy-section=context]");
+      await page.locator("[data-policy-section=context]").click();
+      assert.equal(await page.inputValue("#policy-recentTurns"), "6");
+      assert.equal(
+        await page.inputValue("#policy-maxSummaryCharacters"),
+        "12000",
+      );
+      await page.click("#policy-reset");
+      await page.click("#policy-save");
+      await page.waitForSelector("#policy-dialog:not([open])", {
+        state: "attached",
+      });
+      assert.equal((await app.assistant.policies()).context.recentTurns, 4);
       await page.locator("[data-policy-section=messages]").click();
       await page.fill("#policy-maxCharacters", "20000");
       let release!: () => void;
@@ -120,7 +143,7 @@ test(
       await page.locator("[data-policy-section=messages]").click();
       assert.equal(await page.inputValue("#policy-maxCharacters"), "20000");
       await page.click("#policy-reset");
-      assert.equal(await page.inputValue("#policy-maxCharacters"), "8000");
+      assert.equal(await page.inputValue("#policy-maxCharacters"), "0");
       assert.equal(
         (await app.assistant.policies()).messages.maxCharacters,
         20000,

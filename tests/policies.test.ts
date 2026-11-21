@@ -37,6 +37,7 @@ test("policy defaults are derived, strict, and store only deviations", async () 
     { memory: { terms: 1.5 } },
     { context: { compressionPercent: 0 } },
     { context: { compressionPercent: 101 } },
+    { context: { recentTurns: 0 } },
     { messages: { maxCharacters: Number.MAX_SAFE_INTEGER + 1 } },
   ])
     assert.throws(() => validatePolicyOverrides(bad), /invalides/);
@@ -49,12 +50,12 @@ test("policy defaults are derived, strict, and store only deviations", async () 
     version: 0,
     section: "messages",
     baseValue: c.policies.messages,
-    value: { maxCharacters: 0 },
+    value: { maxCharacters: 12000 },
   });
   assert.deepEqual(saved.profile.settings.runtimePolicies, {
-    messages: { maxCharacters: 0 },
+    messages: { maxCharacters: 12000 },
   });
-  assert.equal(saved.profile.effectivePolicies?.messages.maxCharacters, 0);
+  assert.equal(saved.profile.effectivePolicies?.messages.maxCharacters, 12000);
 });
 
 test("targeted policies merge independent edits, reject conflicts, preserve old clients and reset just one section", async () => {
@@ -64,7 +65,7 @@ test("targeted policies merge independent edits, reject conflicts, preserve old 
     version: 0,
     section: "memory",
     baseValue: c.policies.memory,
-    value: { candidates: 0 },
+    value: { candidates: 50 },
   });
   await a.savePolicy({
     version: 0,
@@ -368,7 +369,8 @@ test("context honors injection caps and zero, compression threshold and summary-
       undefined,
       limited,
     ).prepare(args);
-    assert.deepEqual(continued.messages, [messages.at(-1)]);
+    assert.deepEqual(continued.messages.at(-1), messages.at(-1));
+    assert(continued.messages.length>1, "recent turns remain verbatim when they fit");
     assert(calls > 2);
     const small: Message[] = [
       { role: "user", content: "x".repeat(4500) },
@@ -460,7 +462,7 @@ test("web composition snapshots policies per turn and persists them across resta
         };
       primary++;
       if (primary === 1) {
-        assert.match(r.instructions, /16/);
+        assert(!r.instructions.includes("Limite configurée"));
         const c = await app.assistant.policyCatalog();
         await app.assistant.savePolicy({
           version: c.version,

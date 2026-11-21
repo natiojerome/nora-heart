@@ -150,16 +150,15 @@ carte, ouverture et rechargement. Les autres fournisseurs restent à qualifier e
 
 Le module prépare les termes Unicode, retire les mots courants français et
 cherche des candidats actifs dans la portée autorisée. Le repository filtre
-par présence littérale d’au moins un terme, avec un plafond par défaut de 200 candidats
-récents. Le module classe les correspondances titre/contenu et retourne au plus
+par présence littérale d’au moins un terme, sans plafond de candidats par défaut. Le module classe les correspondances titre/contenu et retourne au plus
 12 résultats déterministes par défaut. Ces valeurs et le nombre de termes
 (défaut 16) sont configurables, 0 sans plafond, voir [POLICIES.md](POLICIES.md). Pas d’embeddings, de recherche sémantique ni d’appel
 LLM pour cette sélection. Le classement peut manquer une paraphrase ou un
 souvenir ancien ; il ne prétend pas être exhaustif.
 
 Le constructeur de contexte utilise le dernier sujet développé, conservé pour
-« continue ». Par défaut trois souvenirs entiers au plus et 3000 caractères au total, sans
-doublon avec le contexte disponible. ID/version accompagnent la sélection.
+« continue ». Les souvenirs entiers sont injectés selon le budget restant du modèle,
+sans plafond fixe par défaut et sans doublon avec le contexte disponible. ID/version accompagnent la sélection.
 Un souvenir trop long peut être présenté par titre et référence, avec instruction
 de consulter `memory.get` avant de conclure : sa contrainte n’est pas coupée.
 La sélection est relue avant chaque appel, donc une correction ou un oubli

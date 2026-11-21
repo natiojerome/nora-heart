@@ -52,7 +52,7 @@ export class Engine {
     if(!Number.isSafeInteger(maxCallsPerBatch)||maxCallsPerBatch<0)throw new Error('Budget de lot invalide.');
     const privateMessage=(message:Message):Message=>{
       if(message.role==='assistant')return {...message,toolCalls:message.toolCalls.map(call=>this.tools.get(call.name)?.transient?{...call,arguments:{withheld:true}}:call)};
-      if(message.role==='tool'&&this.tools.get(message.name)?.transient)return {...message,content:'Résultat sensible non conservé. Relire le coffre si nécessaire ; aucune action rejouée.'};
+      if(message.role==='tool'&&this.tools.get(message.name)?.transient)return {...message,content:'Résultat sensible non conservé. Relire la source si nécessaire ; aucune action rejouée.'};
       return message;
     };
     const runId=options.runId??randomUUID();

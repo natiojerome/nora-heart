@@ -5,6 +5,23 @@ Socle livré ; la parité complète avec Codex CLI et la qualification de tous l
 fournisseurs restent partielles. Les preuves détaillées sont dans TESTING.md et
 les rapports opérateur privés, pas dans le contexte permanent de l’assistant.
 
+## Personnalité et continuité des informations
+
+Défauts : amical avec l’utilisateur, amical et professionnel avec les interlocuteurs
+externes ; personnalités personnalisées préservées. Limites de message/lot, appels
+de résumé, taille fixe du résumé, candidats et injection mémoire sans plafond
+Heart par défaut ; le budget réel du modèle reste déterminant. Configuration →
+Limites expose taille de résumé et nombre de tours récents (défaut quatre).
+Compression conserve les décisions et faits précis ; mémoire ajustée à la place
+disponible. Les originaux ne sont jamais remplacés : history.read permet au modèle
+de retrouver messages/date et outils historiques du fil après compression.
+
+242 tests ; quatre parcours navigateur ciblés et démo. GPT‑6 Luna medium réel :
+15 appels, deux compressions, code/date/heure/montant conservés, récupération
+spontanée d’un détail puis référence et horodatage du message original, brouillon
+externe cordial sans envoi. Aucun souvenir ni fil propriétaire modifié. Voir
+TESTING.md pour les limites et les premiers essais exclus de la validation.
+
 ## Mission, autonomie et initiative
 
 Le bloc Exécution et autonomie définit l’objectif principal : accomplir la demande
@@ -89,7 +106,7 @@ métier implicite. Les modules SQL restent utilisables pour les fixtures.
 
 ## Vérifications
 
-Dernière passe : 238 tests et parcours navigateur ciblés (instructions, revue mémoire,
+Passe précédente : 238 tests et parcours navigateur ciblés (instructions, revue mémoire,
 assemblage web à 8 192 tokens). Les premiers ajouts de consignes dépassaient cette
 petite fenêtre ; texte condensé, sans augmenter le budget ni retirer d’outils.
 GPT‑6 Luna medium réel : 22 appels répartis en deux parcours. Inspection du moteur
@@ -113,7 +130,7 @@ ils ne sont pas présentés comme tous relancés à chaque changement de consign
 
 ## Déploiement et suite
 
-Dernier déploiement vérifié : mission/autonomie après sauvegarde locale chiffrée
+Déploiement précédent : mission/autonomie après sauvegarde locale chiffrée
 et redémarrage web coordonné. Contrôle authentifié HTTPS : treize blocs visibles,
 nouveau défaut de travail et déclencheur code-review chargés. Santé interne saine,
 aucune modification des personnalités/overrides ni des droits des fils propriétaires.

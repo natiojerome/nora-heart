@@ -286,7 +286,7 @@ test("one profile read per web turn atomically snapshots identity, instructions,
         assert(
           r.instructions.includes(before ? "DISPLAY-BEFORE" : "DISPLAY-AFTER"),
         );
-        assert(r.instructions.includes(before ? "16 appels" : "1 appels"));
+        assert(before ? !r.instructions.includes("Limite configurée") : r.instructions.includes("1 appels"));
         if (step++ === 0)
           return {
             content: "",

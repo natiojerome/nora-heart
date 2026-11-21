@@ -17,10 +17,12 @@
     context: {
       title: "Contexte",
       icon: "brain",
-      help: "Le seuil porte sur le contexte utilisable, après réserve de réponse. Le tour courant reste entier.",
+      help: "Le tour courant reste entier. Les tours récents sont gardés si la fenêtre le permet. 0 = résumé sans plafond fixe, dans le budget du modèle.",
       fields: [
         ["compressionPercent", "Déclenchement de la compression", "%", 1, 100],
         ["maxSummaryCalls", "Appels de résumé par compression", "appels"],
+        ["maxSummaryCharacters", "Taille maximale du résumé", "caractères"],
+        ["recentTurns", "Tours récents à conserver", "tours", 1],
       ],
     },
     memory: {

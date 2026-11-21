@@ -54,8 +54,8 @@ Pour une API ou un catalogue sans capacité, la valeur doit être configurée ;
 l’interface affiche explicitement cette origine et propose 32768 comme valeur
 à vérifier, sans prétendre connaître la capacité réelle du modèle.
 Le budget de tours web vaut 0 par défaut (jusqu’à réponse finale ou arrêt),
-avec un plafond positif configurable par fil ; la compression peut ajouter
-jusqu’à 16 appels de résumé au maximum. Les appels réels peuvent consommer le forfait
+avec un plafond positif configurable par fil ; le nombre d’appels de compression
+est réglable, sans plafond Heart par défaut. Les appels réels peuvent consommer le forfait
 ou être facturés par le fournisseur choisi.
 
 Un seul envoi travaille dans un fil ; plusieurs fils peuvent progresser

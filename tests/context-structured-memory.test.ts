@@ -29,7 +29,7 @@ test("active context exposes whole short facts and scoped long references, then 
     const first = await context.prepare(options);
     assert.match(first.instructions, /PostgreSQL version 17/);
     assert(first.instructions.includes(`[${long.id} v1]`));
-    assert(!first.instructions.includes("Exception finale"));
+    assert(first.instructions.includes("Exception finale"), "large windows retain the full useful fact by default");
     assert(!first.instructions.includes("autre projet"));
     const detail = JSON.parse(await tools.find(tool => tool.name === "memory.get")!.execute({ id: long.id }, { workspace: directory }));
     assert(detail.content.endsWith("Exception finale à conserver intégralement."));

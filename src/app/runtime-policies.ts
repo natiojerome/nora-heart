@@ -26,6 +26,7 @@ export function validatePolicyOverrides(value: unknown): PolicyOverrides {
         !Object.hasOwn(defaults, field) ||
         !Number.isSafeInteger(n) ||
         (n as number) < 0 ||
+        (field === "recentTurns" && (n as number) < 1) ||
         (field === "compressionPercent" &&
           ((n as number) < 1 || (n as number) > 100))
       )

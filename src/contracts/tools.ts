@@ -15,7 +15,7 @@ export interface ToolContext {
   signal?: AbortSignal;
 }
 
-export type Permission = "skills.read" | "files.read" | "files.write" | "memory.read" | "memory.write" | "process.execute" | "user.input" | "external.read" | "external.write" | "tasks.read" | "tasks.write";
+export type Permission = "history.read" | "skills.read" | "files.read" | "files.write" | "memory.read" | "memory.write" | "process.execute" | "user.input" | "external.read" | "external.write" | "tasks.read" | "tasks.write";
 
 export interface Tool<T = string> extends ToolDefinition {
   permission: Permission;

@@ -5,6 +5,19 @@ assemble les implémentations au démarrage. La mémoire est un module, pas un
 composant imposé du core. Voir [STATUS.md](STATUS.md) pour les limites livrées et
 [PLAN.md](PLAN.md) pour la suite.
 
+## Personnalité et rétention du contexte
+
+L’app compose les défauts de personnalité avec un ton amical pour l’utilisateur
+et cordial/professionnel à l’extérieur ; les textes personnalisés restent prioritaires.
+Les contrats context incluent maxSummaryCharacters et recentTurns. Le module
+bounded garde jusqu’à quatre tours récents complets selon la fenêtre, adapte le
+résumé et l’injection mémoire au budget réel et conserve tous les originaux.
+Pas de limites fixes de résumé/injection par défaut ; réglages explicites conservés.
+L’app relie `modules/tools/history/index.ts` au SessionStore et à l’UUID du fil.
+`history.read` relit les originaux paginés avec recherche et date, sans SQL dans
+l’adaptateur, sans accès inter-fil et sans duplication persistante des résultats.
+Le core connaît seulement la permission et le caractère transitoire du contrat.
+
 ## Organisation en place
 
 ```text

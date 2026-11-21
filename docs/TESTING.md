@@ -21,6 +21,26 @@ Les tests locaux ne lisent pas de clés et n’appellent pas une API LLM. Les te
 PostgreSQL créent leur propre service temporaire. Une démo avec le module `demo`
 prouve la boucle ; elle ne qualifie pas un fournisseur commercial réel.
 
+## Qualification personnalité et rétention — 21 novembre 2026
+
+242 tests locaux couvrent notamment résumés supérieurs à 6000 caractères, plafond
+choisi, tours récents, mémoire adaptée, lecture historique isolée et récupération
+d’une information absente du résumé. Les parcours navigateur ciblent historique,
+instructions, limites (nouveaux champs sauvegardés/reset/rechargés) et assemblage
+SQLite à 8192 tokens.
+
+`tests/live-execution.ts --retention` utilise GPT‑6 Luna medium réellement, une
+base temporaire et des données fictives : deux compressions, rappel exact d’un
+code/date/heure/montant, lecture de la référence originale avec sa date puis
+brouillon externe cordial/professionnel, sans envoi. Dernier parcours : 15 appels.
+Fenêtre QA 32768, capacité du catalogue 272000 ; historique de charge synthétique,
+résumés et réponses LLM réels. Les originaux restent présents. Les rapports privés
+sont sous docs/qualification/execution. Une première recherche s’arrêtait trop
+tôt et citait seulement le résumé : correction du parcours serveur des pages et
+exclusion du run courant, puis nouvelle qualification réussie. Une première
+configuration QA n’avait pas réduit le catalogue et n’avait pas comprimé : exclue
+des preuves. Ces essais ne garantissent pas toute nuance ni tous les modèles.
+
 ## État de validation courant
 
 Interactions : 114 tests, sept E2E et 20 tests PostgreSQL avec dump/restauration.

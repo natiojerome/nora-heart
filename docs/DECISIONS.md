@@ -52,6 +52,18 @@ sont dans [PLAN.md](PLAN.md).
 | Tests | `node:test`, tsx, commandes par famille, tests de frontières et PostgreSQL isolé. | Tester un module seul et vérifier son intégration sans clé LLM payante. |
 | Abonnement ChatGPT | Module direct Sign in with ChatGPT, distinct du module API ; OAuth/SSE testés en simulation et parcours ciblés qualifiés en réel. | Garder notre boucle, nos outils et les clés API fonctionnelles ; connexion et parcours court avec outil qualifiés sur GPT-6.1-Sol, aucun harness Codex imbriqué. |
 
+## Ton et continuité des informations
+
+Défauts amicaux avec le propriétaire et amicaux/professionnels avec les tiers ;
+personnalisation existante préservée. Retirer les plafonds implicites de message,
+lot d’outils, appels/résumé, candidats mémoire et injection ; conserver le seuil
+80 %, les 12 résultats classés et les 16 termes, tous réglables. Garder jusqu’à
+quatre tours récents entiers selon le contexte. Remplacer les limites cachées
+2500/6000 caractères par le budget cible et un plafond facultatif visible.
+Préserver les originaux et les rendre relisibles par history.read dans le fil :
+un résumé n’est pas une archive exacte, la récupération doit rester possible.
+Aucune migration, aucun écrasement d’override propriétaire, aucune nouvelle base.
+
 ## Contraintes à conserver
 
 - PostgreSQL et SQLite sont des options explicites ; aucun repli ni transfert automatique entre bases.

@@ -59,11 +59,29 @@ const lab = new TestLab({
 });
 await lab.prepare();
 let calls = 0;
-lab.capabilities = async () => entry;
-lab.models = async () => ({ models: catalog });
+const historyReads = new Map<string, any>();
+lab.capabilities = async () =>
+  process.argv.includes("--retention")
+    ? { ...entry, contextWindow: 32768 }
+    : entry;
+lab.models = async () => ({
+  models: process.argv.includes("--retention")
+    ? catalog.map((model) =>
+        model.id === modelId ? { ...model, contextWindow: 32768 } : model,
+      )
+    : catalog,
+});
 lab.model = () => ({
   id: real.id,
   async generate(request: ModelRequest) {
+    if (process.argv.includes("--retention"))
+      for (const message of request.messages) {
+        if (message.role === "tool" && message.name === "history.read") {
+          try {
+            historyReads.set(message.callId, JSON.parse(message.content));
+          } catch {}
+        }
+      }
     if (++calls > 40) throw Error("Live execution call budget exceeded");
     const call = calls,
       started = Date.now();
@@ -134,7 +152,8 @@ try {
     version: 0,
     settings: {
       ...defaultAssistant,
-      ...(process.argv.includes("--inspection")
+      ...(process.argv.includes("--inspection") ||
+      process.argv.includes("--retention")
         ? { initiative: "proactive" as const, personality: "creative" as const }
         : {}),
       completed: true,
@@ -205,7 +224,124 @@ try {
     cases.push({ label, tools: names, answer: final });
     console.log(JSON.stringify({ label, tools: names, answer: final }));
   };
-  if (process.argv.includes("--inspection")) {
+  if (process.argv.includes("--retention")) {
+    await app.conversations.fileAccess(conversation.id, { access: "none" });
+    const reference = "COMPTA-" + randomUUID().slice(0, 8),
+      code = "DOSSIER-" + randomUUID().slice(0, 8),
+      storage = await openSqliteStorage(file);
+    const seed = async (count: number, first = false) => {
+      for (let i = 0; i < count; i++) {
+        const fact =
+          first && i === 0
+            ? `Référence comptable : ${reference}. Code du dossier : ${code}. Livraison le 2027-02-18 à 10:30 Indian/Reunion, montant 9876,54 EUR. Données de test fictives. `
+            : "";
+        for (const message of [
+          {
+            role: "user",
+            content:
+              fact +
+              "Notes de discussion sans décision supplémentaire. ".repeat(260),
+          },
+          { role: "assistant", content: "Bien reçu.", toolCalls: [] },
+        ])
+          await storage.sessions.append(conversation.id, {
+            id: randomUUID(),
+            runId: randomUUID(),
+            at: new Date().toISOString(),
+            type: "message",
+            data: message as any,
+          });
+      }
+    };
+    const reply = async (prompt: string, label: string) => {
+      const result = await app.conversations.send(conversation.id, {
+        provider: "chatgpt",
+        modelId,
+        reasoningEffort: "medium",
+        contextWindow: 32768,
+        prompt,
+      });
+      const runId = result.events.findLast(
+          (e) => e.type === "run.started",
+        )!.runId,
+        events = result.events.filter((e) => e.runId === runId);
+      const answer = String(
+        (
+          events.findLast(
+            (e) =>
+              e.type === "message" &&
+              (e.data as any).role === "assistant" &&
+              !(e.data as any).toolCalls?.length,
+          )?.data as any
+        )?.content ?? "",
+      );
+      assert(!events.some((e) => e.type === "interaction.requested"));
+      assert(answer.length);
+      const tools = events
+        .filter((e) => e.type === "tool.started")
+        .map((e) => (e.data as any).name);
+      await writeFile(
+        "docs/qualification/execution/" + label + ".json",
+        JSON.stringify(events, null, 2),
+      );
+      console.log(JSON.stringify({ label, tools, answer }));
+      cases.push({ label, tools, answer });
+      return { answer, events, tools };
+    };
+    try {
+      await seed(8, true);
+      const first = await reply(
+        "Rappelle le code du dossier, sa date de livraison et son montant. Réponds simplement ; données QA, rien à mémoriser.",
+        "retention-first-compression",
+      );
+      assert(first.answer.includes(code));
+      assert(first.answer.replace(/[^0-9]/g, "").includes("987654"));
+      const checkpointCount = (
+        await storage.sessions.read(conversation.id)
+      ).filter((e) => e.type === "context.checkpoint").length;
+      assert(checkpointCount > 0);
+      await seed(6);
+      const second = await reply(
+        "On continue : rappelle le même code de dossier, la date et le montant convenus au début.",
+        "retention-second-compression",
+      );
+      assert(second.answer.includes(code));
+      assert(second.answer.replace(/[^0-9]/g, "").includes("987654"));
+      assert(
+        (await storage.sessions.read(conversation.id)).filter(
+          (e) => e.type === "context.checkpoint",
+        ).length > checkpointCount,
+      );
+      const recovered = await reply(
+        "Relis les messages originaux avec history.read pour retrouver la référence comptable donnée au début. Cite sa valeur et le message source.",
+        "retention-original-history",
+      );
+      assert(recovered.tools.includes("history.read"));
+      assert(recovered.answer.includes(reference));
+      assert(
+        [...historyReads.values()].some((page) =>
+          page.messages?.some((entry: any) =>
+            JSON.stringify(entry).includes(reference),
+          ),
+        ),
+        "The original source must actually reach the model, not just the checkpoint",
+      );
+      await writeFile(
+        "docs/qualification/execution/retention-history-receipts.json",
+        JSON.stringify([...historyReads.values()], null, 2),
+      );
+      await reply(
+        "Prépare un message court, sympathique et professionnel pour Madame Martin, cliente fictive jamais contactée, pour confirmer la livraison. Ne l’envoie pas.",
+        "friendly-external-draft",
+      );
+      const originals = (await storage.sessions.read(conversation.id)).filter(
+        (e) => e.type === "message",
+      );
+      assert(originals.some((e) => JSON.stringify(e.data).includes(reference)));
+    } finally {
+      await storage.close();
+    }
+  } else if (process.argv.includes("--inspection")) {
     const sendTo = (id: string, prompt: string) =>
       app.conversations.send(id, {
         provider: "chatgpt",
@@ -460,17 +596,22 @@ try {
     modelId,
     effort: "medium",
     realModelCalls: calls,
+    ...(process.argv.includes("--retention")
+      ? { qaContextWindow: 32768, actualModelContext: entry.contextWindow }
+      : {}),
     cases,
     ownerBusinessWrites: 0,
     apiFallback: false,
   };
   await mkdir("docs/qualification/execution", { recursive: true });
   await writeFile(
-    process.argv.includes("--inspection")
-      ? process.argv.includes("--execution-only")
-        ? "docs/qualification/execution/inspection-execution.json"
-        : "docs/qualification/execution/inspection.json"
-      : "docs/qualification/execution/live.json",
+    process.argv.includes("--retention")
+      ? "docs/qualification/execution/retention.json"
+      : process.argv.includes("--inspection")
+        ? process.argv.includes("--execution-only")
+          ? "docs/qualification/execution/inspection-execution.json"
+          : "docs/qualification/execution/inspection.json"
+        : "docs/qualification/execution/live.json",
     JSON.stringify(report, null, 2) + "\n",
   );
   console.log(JSON.stringify({ passed: true, realModelCalls: calls }));

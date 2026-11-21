@@ -8,6 +8,8 @@ export interface ToolPolicy {
 export interface ContextPolicy {
   compressionPercent: number;
   maxSummaryCalls: number;
+  maxSummaryCharacters: number;
+  recentTurns: number;
 }
 export interface MemoryPolicy {
   candidates: number;
@@ -27,14 +29,19 @@ export type PolicyOverrides = {
   [K in PolicySection]?: Partial<RuntimePolicies[K]>;
 };
 export const defaultRuntimePolicies: Readonly<RuntimePolicies> = {
-  messages: { maxCharacters: 8000 },
-  tools: { maxCallsPerBatch: 16 },
-  context: { compressionPercent: 80, maxSummaryCalls: 16 },
+  messages: { maxCharacters: 0 },
+  tools: { maxCallsPerBatch: 0 },
+  context: {
+    compressionPercent: 80,
+    maxSummaryCalls: 0,
+    maxSummaryCharacters: 0,
+    recentTurns: 4,
+  },
   memory: {
-    candidates: 200,
+    candidates: 0,
     results: 12,
     terms: 16,
-    injectedItems: 3,
-    injectedCharacters: 3000,
+    injectedItems: 0,
+    injectedCharacters: 0,
   },
 };

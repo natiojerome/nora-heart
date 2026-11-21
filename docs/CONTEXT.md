@@ -30,19 +30,22 @@ n’est jamais déduite du nom du modèle.
 Le seuil déclenche une compression lorsqu’un ancien historique peut être résumé.
 Il n’est pas un plafond dur : un tour indivisible qui tient encore dans le budget
 utilisable reste accepté. Un résumé au-dessus du seuil est accepté s’il tient dans
-ce budget. Si le tour courant avec ses souvenirs le dépasse à lui seul, refuser
+ce budget. Les souvenirs sont ajustés à la place disponible. Si le tour courant seul dépasse ce budget, refuser
 avant tout appel de résumé inutile.
 
 Au seuil :
 
-1. Conserver le tour utilisateur courant avec tous ses appels et résultats
-   d’outils. Résumer les échanges antérieurs avec l’ancien point de reprise.
-2. Demander au modèle sélectionné un résumé factuel : objectif, décisions,
+1. Conserver jusqu’à quatre tours utilisateur récents verbatim (réglables), selon
+   la place disponible, avec tous leurs appels et résultats d’outils. Le tour courant
+   reste entier. Résumer les échanges antérieurs avec l’ancien point de reprise.
+2. Demander au modèle sélectionné un résumé adapté au budget cible, sans limite
+   fixe de caractères par défaut : objectif, identifiants, dates, montants, décisions,
    contraintes avec exceptions, progression, questions ouvertes et résultats
    utiles ; conserver les incertitudes. Aucun outil dans l’appel de résumé.
 3. Si le nouveau cerveau est plus petit, découper les échanges à résumer en
    morceaux compatibles avec sa fenêtre, sans séparer un lot d’appels de ses
-   résultats. Par défaut au maximum 16 appels de résumé, configurables (0 sans plafond) ; aucun retry ou repli payant.
+   résultats. Le nombre d’appels est réglable, sans plafond Heart par défaut ; le parcours
+   des groupes est fini. Aucun retry ou repli payant.
 4. Vérifier le résultat et le budget réduit, puis enregistrer atomiquement un
    événement `context.checkpoint` : version, UUID du segment, segment parent,
    résumé, modèle auteur et référence au dernier message couvert.
@@ -65,8 +68,9 @@ de répétition d’outil ; ils ne prouvent pas la qualité d’une compression 
 La sélection structurée est déterministe, sans appel LLM supplémentaire.
 Elle utilise les termes du dernier sujet développé, en gardant le sujet lors
 d’un « continue ». Les candidats actifs sont limités aux souvenirs personnels
-et au projet du fil, puis classés dans le module mémoire. Par défaut jusqu’à trois faits
-entiers et 3000 caractères, ID/version compris ; aucune contrainte tronquée.
+et au projet du fil, puis classés dans le module mémoire. Les faits entiers sont
+injectés selon le budget réel restant, ID/version compris ; aucune contrainte
+tronquée. Les plafonds fixes de nombre/caractères sont désactivés par défaut.
 Un souvenir long est proposé par titre et référence à consulter via `memory.get`.
 Ces deux limites sont configurables, 0 sans plafond, voir [POLICIES.md](POLICIES.md).
 Le nombre de souvenirs limite les faits/références effectivement injectés :
@@ -80,7 +84,7 @@ effacement des anciens prompts. Voir [MEMORY.md](MEMORY.md) pour les limites.
 La stabilité vient du classement déterministe, sans cache invalidable ni LLM.
 Les souvenirs conservés dans le prompt coûtent toujours des tokens d’entrée.
 
-Restent à améliorer : recherche par paraphrase, pagination et candidats anciens,
+Restent à améliorer : recherche par paraphrase, coût des recherches volumineuses,
 mesures d’usage, cache avec invalidation si un besoin mesuré le justifie, qualité
 des longs résumés. La recherche/injection reste distincte de la revue mémoire
 post-tour par LLM, désormais raccordée et qualifiée sur les scénarios ciblés.
@@ -117,3 +121,13 @@ Les skills effectivement chargés restent hors résumé, une seule copie par ski
 les anciens résultats sont présentés comme reçus sans changer le journal ni les
 indices du checkpoint. Désactiver un skill enlève sa guidance au tour suivant.
 Le module de contexte et le core ne dépendent d’aucun catalogue concret. [SKILLS.md](SKILLS.md).
+
+## Relire les originaux après compression
+
+`history.read` donne au modèle les messages originaux du fil courant, avec leur
+identifiant et date. Le point de reprise indique un curseur vers les échanges
+résumés. Recherche littérale normalisée, pagination et anciens outils facultatifs ;
+les résultats ne certifient aucun état courant. Les lectures sont transitoires pour
+ne pas recopier les archives dans le journal. Aucun accès à un autre fil.
+Voir [HISTORY.md](HISTORY.md). Un résumé peut omettre un détail : les originaux
+restent récupérables, sans prétendre rendre toute compression sans perte.

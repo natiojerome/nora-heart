@@ -4,6 +4,19 @@ Le journal persistant reste la source de vérité. Le contexte envoyé au modèl
 la compression et les règles mémoire ne dépendent pas de la fenêtre d’affichage.
 Aucune migration ni inférence pour lire l’historique.
 
+## Lecture par le modèle
+
+`modules/tools/history` expose `history.read`, permission de lecture accordée aux
+conversations persistantes. L’assemblage lie le SessionStore et l’UUID du fil ;
+aucun paramètre ne permet de sélectionner un autre fil. `before`, `limit` (20
+événements/page par défaut), `query` et `includeTools` utilisent le journal existant.
+La recherche normalise casse/accents et exige chaque mot-clé. Elle remonte les
+pages côté serveur jusqu’à une correspondance ou épuisement, ignore le run courant
+et contrôle l’annulation à chaque page. Le résultat porte ID/date, hasMore et
+continuation. Les anciens résultats restent expurgés comme à leur écriture et ne
+prouvent aucun état courant. Lecture transitoire, sans recopier les archives ni
+rejouer d’effet ; fallback SessionStore.read pour les stores sans pagination.
+
 ## Contrats et lectures
 
 `SessionStore.page(sessionId, window)` utilise des identifiants d’événements

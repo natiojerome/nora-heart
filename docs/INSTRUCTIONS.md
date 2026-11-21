@@ -24,6 +24,16 @@ Actualiser force une lecture, utile après une modification sur un autre apparei
 Une réponse plus ancienne que le profil local est ignorée ; la déconnexion vide
 le cache. Aucune sauvegarde ni inférence n’est déclenchée par la navigation.
 
+## Ton selon le destinataire
+
+Les modèles de personnalité donnent un ton amical, naturel et attentif avec
+l’utilisateur, amical et professionnel avec les interlocuteurs externes, adapté
+au destinataire. Les variantes et l’initiative choisies restent actives. Aucun
+écrasement du texte personnalisé ; Rétablir permet d’adopter le nouveau défaut.
+La compression conserve les critères de réussite, décisions actives, exceptions,
+identifiants, dates, montants et suites utiles. Son budget vient du contexte cible,
+au lieu d’une consigne fixe de 2500 caractères.
+
 ## Source et persistance
 
 `app/instruction-defaults.ts` assemble les treize blocs livrés.

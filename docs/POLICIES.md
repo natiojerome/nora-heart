@@ -7,18 +7,20 @@ revue mémoire et compression comprises. Modifier ces valeurs ne lance aucun LLM
 
 | Groupe | Réglage | Défaut |
 | --- | --- | ---: |
-| Messages | Caractères par message | 8000 |
-| Outils | Appels proposés par réponse du modèle | 16 |
+| Messages | Caractères par message | 0 |
+| Outils | Appels proposés par réponse du modèle | 0 |
 | Contexte | Compression, pourcentage du budget utilisable | 80 % |
-| Contexte | Appels de résumé par compression | 16 |
+| Contexte | Appels de résumé par compression | 0 |
+| Contexte | Caractères du résumé | 0 |
+| Contexte | Tours récents à conserver si possible | 4 |
 | Mémoire | Mots-clés de recherche après filtrage | 16 |
-| Mémoire | Candidats correspondants examinés | 200 |
+| Mémoire | Candidats correspondants examinés | 0 |
 | Mémoire | Résultats classés par recherche | 12 |
-| Mémoire | Souvenirs injectés dans le contexte | 3 |
-| Mémoire | Caractères injectés, références comprises | 3000 |
+| Mémoire | Souvenirs injectés dans le contexte | 0 |
+| Mémoire | Caractères injectés, références comprises | 0 |
 
 **0 = sans plafond Heart pour ce réglage**, sauf le pourcentage de compression
-qui reste entre 1 et 100. Zéro n’est pas une désactivation de la mémoire.
+qui reste entre 1 et 100 et le nombre de tours récents (au moins 1). Zéro n’est pas une désactivation de la mémoire.
 Les autres valeurs sont des entiers positifs représentables exactement en JS.
 Aucun maximum arbitraire supplémentaire. Le pourcentage déclenche la compression, sans devenir un plafond dur du tour.
 Un message reste soumis à la capacité
@@ -75,7 +77,8 @@ Le corps JSON des messages authentifiés n’est plus plafonné à l’ancien tr
 
 Ce lot ne crée pas de plafond financier. Les limites natives fournisseur, les
 permissions, le budget d’étapes par fil, la réserve de sortie et les contrôles
-historiques restent applicables. La validation du résumé (6000 caractères), les
+historiques restent applicables. Le résumé et les souvenirs doivent tenir dans
+le budget du modèle ; aucun plafond caché de 6000 caractères. Les
 limites des fiches mémoire (titre 160/contenu 4000), les pièces jointes et les
 pages d’administration restent distinctes des limites configurées ici.
 « Sans plafond » n’est pas une promesse de ressources matérielles infinies.
@@ -92,5 +95,5 @@ GET périmé, feedback d’écriture, persistance, composeur sans plafond et mes
 UTF-8 de 17 000 caractères (>32 Kio) conservé via HTTP jusqu’au fournisseur simulé.
 Quatre largeurs 320/390/820/1440 sans débordement. La suite SQL commune vérifie le
 sens de `limit: 0` sur les deux moteurs. Les fournisseurs de ce lot sont simulés :
-aucun nouvel appel payant et aucune nouvelle qualification de modèle réel.
+qualification réelle de la rétention distincte dans [TESTING.md](TESTING.md).
 [Preuves](qualification/policies/README.md).

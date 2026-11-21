@@ -1,3 +1,4 @@
+import {historyTools} from "../modules/tools/history/index.ts";
 import {HostFiles} from '../modules/tools/host-files/index.ts';
 import type {ProjectRepository} from "../contracts/projects.ts";
 import {McpProjectsRepository} from "../modules/storage/mcp-projects/index.ts";
@@ -106,6 +107,7 @@ export async function openWebConversations(
         [
           ...(await externalTools.toolsFor(conversation,memoryConnectionId?[memoryConnectionId]:[])),
           ...(runSkills?skillTools(runSkills,runSkills.entries):[]),
+          ...historyTools(storage.sessions,conversation.id),
           ...fileTools(conversation.fileAccess==='yolo'?hostFiles:undefined,conversation.fileAccess==='yolo'),
           ...(selected
             ? terminalTools(

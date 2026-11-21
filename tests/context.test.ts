@@ -88,3 +88,37 @@ test("model change below threshold preserves full messages without summarization
     assert.equal((await f.storage.sessions.read("short")).length, 0);
   } finally { await f.close(); }
 });
+
+test('summary size follows the target window instead of the old fixed character cap, with owner limits still enforced',async()=>{
+ const f=await fixture();
+ try{
+  const messages:Message[]=[{role:'user',content:'archive '.repeat(5500)},{role:'assistant',content:'Décision conservée.',toolCalls:[]},{role:'user',content:'autre '.repeat(7000)},{role:'assistant',content:'Suite.',toolCalls:[]},{role:'user',content:'Continue'}];
+  for(const data of messages)await f.storage.sessions.append('long-summary',{id:randomUUID(),runId:randomUUID(),at:new Date().toISOString(),type:'message',data:data as unknown as Json});
+  const summary='Détail utile. '.repeat(550)+'CODE-EXACT-71';
+  const options={sessionId:'long-summary',runId:randomUUID(),contextWindow:32768,reserveTokens:1024,request:{instructions:'Nora',messages,tools:[]},provider:{id:'qa',async generate(request:ModelRequest){assert.match(request.instructions,/Budget du point/);assert(!request.instructions.includes('2500'));return {content:summary,toolCalls:[]};}}};
+  const {resolvePolicies}=await import('../src/app/runtime-policies.ts');
+  const result=await new BoundedContext(f.storage.sessions,undefined,undefined,resolvePolicies({context:{recentTurns:1}})).prepare(options);
+  assert(result.instructions.includes(summary));assert(summary.length>6000);
+  const before=await f.storage.sessions.read('long-summary');
+  // A fresh session with the same source checks configured caps without changing the previous checkpoint.
+  for(const event of before.filter(e=>e.type==='message'))await f.storage.sessions.append('owner-cap',{...event,id:randomUUID()});
+  await assert.rejects(new BoundedContext(f.storage.sessions,undefined,undefined,resolvePolicies({context:{recentTurns:1,maxSummaryCharacters:1000}})).prepare({...options,sessionId:'owner-cap'}),/Compression invalide/);
+  assert(!(await f.storage.sessions.read('owner-cap')).some(e=>e.type==='context.checkpoint'));
+ }finally{await f.close();}
+});
+
+test('compression retains recent full turns and adapts memory details to the actual model budget',async()=>{
+ const f=await fixture();
+ try{
+  const messages:Message[]=[];for(let i=0;i<6;i++)messages.push({role:'user',content:'Ancien objectif '+i+' x'.repeat(2500)},{role:'assistant',content:'décision '+i,toolCalls:[]});
+  const recent:Message[]=[{role:'user',content:'Livraison mardi, montant 72 €.'},{role:'assistant',content:'Compris.',toolCalls:[]},{role:'user',content:'Et ne pas déplacer le dossier /tmp/important.'},{role:'assistant',content:'Contrainte comprise.',toolCalls:[]},{role:'user',content:'Continue'}];messages.push(...recent);
+  for(const data of messages)await f.storage.sessions.append('recent',{id:randomUUID(),runId:randomUUID(),at:new Date().toISOString(),type:'message',data:data as unknown as Json});
+  const result=await new BoundedContext(f.storage.sessions).prepare({sessionId:'recent',runId:randomUUID(),contextWindow:8192,reserveTokens:1024,request:{instructions:'Nora',messages,tools:[]},provider:{id:'qa',async generate(){return {content:'Ancien objectif et décisions conservés.',toolCalls:[]};}}});
+  assert.deepEqual(result.messages.slice(-recent.length),recent);assert(result.messages.length>1);
+  const request:ModelRequest={instructions:'Nora',messages:[{role:'user',content:'Une contrainte utile pour ce dossier'}],tools:[{name:'memory.get',description:'get',parameters:{type:'object'}}]};
+  const large={id:randomUUID(),version:1,title:'Contrainte longue à relire',content:'contrainte '.repeat(4000)};
+  const context=new BoundedContext(f.storage.sessions,{async remember(){throw Error('unused');},async search(){return [large];}});
+  const memory=await context.prepare({sessionId:'memory-budget',runId:randomUUID(),contextWindow:4096,reserveTokens:1024,request,provider:{id:'qa',async generate(){throw Error('No compression needed');}}});
+  assert(memory.instructions.includes(large.id));assert(memory.instructions.includes('memory.get'));assert(!memory.instructions.includes(large.content));assert(estimateTokens(memory)<=3072);
+ }finally{await f.close();}
+});

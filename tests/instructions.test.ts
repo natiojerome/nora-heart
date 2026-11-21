@@ -236,7 +236,7 @@ test("compression consumes its supplied instruction without changing checkpoint 
         id: "fake",
         async generate(r) {
           summaries++;
-          assert.equal(r.instructions, "COMPRESSION-CUSTOM");
+          assert(r.instructions.startsWith("COMPRESSION-CUSTOM\n"));
           return { content: "Objectif préservé.", toolCalls: [] };
         },
       },

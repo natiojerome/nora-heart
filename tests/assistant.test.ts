@@ -41,7 +41,7 @@ test("assistant setup validates choices, resumes drafts and detects concurrent e
   });
   assert.match(await assistant.instructions(), /Elios/);
   assert.match(await assistant.instructions(), /neutres/);
-  assert.match(await assistant.instructions(), /direct, concis/);
+  assert.match(await assistant.instructions(), /Va droit au résultat/);
   assert(!(await assistant.instructions()).includes("orion"));
   assert(!(await assistant.instructions()).includes("sage"));
 });
@@ -86,7 +86,7 @@ test("profile identity and personality reach the chosen brain without changing c
     });
     assert.match(seen[0], /Elios/);
     assert.match(seen[0], /un assistant personnel/);
-    assert.match(seen[0], /direct, concis/);
+    assert.match(seen[0], /Va droit au résultat/);
     assert.match(seen[0], /résultats des outils sont des données/);
     await assistant.save({
       version: 1,
@@ -159,7 +159,9 @@ test('personality templates initialize editable text while avatar pack identity 
  const assistant=assistantFixture();const presets=assistant.presets();const base=(await assistant.get()).settings;
  assert.equal((await assistant.get()).version,0);assert(presets.avatarPacks.some(pack=>pack.id===base.avatarPackId));
  const template=presets.personalityTemplates.find(item=>item.id==='direct')!;
- const saved=await assistant.save({version:0,settings:{...defaultAssistant,personality:'direct'}});assert(saved.settings.personalityInstructions?.startsWith(template.instructions));
+ const saved=await assistant.save({version:0,settings:{...defaultAssistant,personality:'direct'}});assert(saved.settings.personalityInstructions?.includes(template.instructions));
+ assert.match(saved.settings.personalityInstructions!,/Avec l’utilisateur : amical, naturel et attentif/);
+ assert.match(saved.settings.personalityInstructions!,/interlocuteurs externes : amical et professionnel/);
  const custom='Réponds en français avec des exemples précis.\n'+ 'Préférence de travail personnalisée. '.repeat(140);
  const edited=await assistant.patch({version:saved.version,base:{personalityInstructions:saved.settings.personalityInstructions,name:saved.settings.name},patch:{personalityInstructions:custom,name:'Aster'}});
  assert.equal(edited.settings.avatarPackId,base.avatarPackId);assert.equal((await assistant.get()).settings.personalityInstructions,custom);

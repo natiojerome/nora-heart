@@ -249,7 +249,7 @@
       !draft || draft === "/"
         ? prompt.content
         : input.value.trimEnd() + "\n" + prompt.content;
-    const maximum=state.assistant?.effectivePolicies?.messages.maxCharacters??8000;
+    const maximum=state.assistant?.effectivePolicies?.messages.maxCharacters??0;
     if (maximum>0&&next.length>maximum) {
       message("Ce prompt dépasse la taille disponible dans le message.", true);
       return;

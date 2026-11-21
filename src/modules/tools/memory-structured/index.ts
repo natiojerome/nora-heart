@@ -17,9 +17,9 @@ export function structuredMemoryTools(memory: StructuredMemoryService, projectId
     name, permission, description, parameters: schema(properties), async execute(args) { return JSON.stringify(await execute(input(args))); },
   });
   return [
-    action("memory.remember", "memory.write", "Conserver spontanément un fait durable utile établi par l’utilisateur (profession, prénom et lien d’un proche, préférence stable, contrainte), même sans demande de mémorisation. Vérifier les souvenirs pertinents pour éviter un doublon. Jamais un secret, une supposition ou une donnée refusée. Portée personal pour le métier et les faits généraux, project pour une décision propre au projet.", fields,
+    action("memory.remember", "memory.write", "Retenir spontanément un fait utile déclaré (métier, proche, préférence, contrainte), selon la politique mémoire. Vérifier les doublons ; personal pour les faits généraux, project pour le projet.", fields,
       args => memory.rememberRecord(record(args))),
-    action("memory.search", "memory.read", "Rechercher des souvenirs actifs pertinents selon les limites configurées, personnels et du projet courant. query vide liste les souvenirs actifs accessibles, selon la limite de résultats configurée : utile pour « que sais-tu de moi ? » ou vérifier une sauvegarde globale. Consulter memory.get pour un détail long. Aucun souvenir d’un autre projet.", { query: { type: "string" } }, async args => (await memory.search(args.query as string)).map(record => ({
+    action("memory.search", "memory.read", "Chercher les souvenirs actifs personnels et du projet. query vide = liste accessible selon les limites choisies ; memory.get fournit le détail.", { query: { type: "string" } }, async args => (await memory.search(args.query as string)).map(record => ({
         id: record.id, title: record.title, kind: record.kind, scope: record.scope, projectId: record.projectId, version: record.version,
         ...(record.content.length <= 700 ? { content: record.content } : { detailsAvailable: true }),
       }))),
