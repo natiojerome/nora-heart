@@ -191,13 +191,18 @@ Catalogue réel lu : 148 modèles texte, 144 avec outils, 92 avec effort réglab
 (valeurs observées, pas un inventaire figé dans le code). Les tests locaux vérifient le vrai adaptateur avec transport simulé et l’interface
 mobile, sans prétendre valider le fournisseur réel.
 
-Qualification réelle du 21 novembre : clé configurée reconnue par
+Qualification réelle du 21 novembre : clé reconnue par
 `GET /api_keys/rate_limits` (HTTP 200), catalogue de 148 modèles texte et aucun
-modèle aux deux tarifs entrée/sortie nuls. Soldes USD, DIEM et BUNDLED_CREDITS
-à zéro. Deux appels minimaux sur `google-gemma-3-27b-it` et
-`deepseek-v4-1-flash-uncensored` retournent HTTP 402 (solde insuffisant).
-Aucune génération ni boucle d’outils Venice réussie à ce stade. Le catalogue
-public ne prouve pas seul la validité d’une clé. Les modèles inclus sans crédits
-dans le chat Venice ne sont pas gratuits via cette API.
+modèle aux deux tarifs entrée/sortie nuls. Les premiers appels sans crédits
+retournaient HTTP 402. Après recharge du compte lié à la clé, le véritable
+adaptateur Venice et le moteur Heart réussissent sur
+`deepseek-v4-1-flash-uncensored` : deux appels fournisseur, lecture d’un fichier
+via l’outil Heart et réponse contenant son marqueur absent du prompt. Stockage et
+fichiers QA temporaires supprimés ; aucune écriture métier ni simulation du modèle.
+Ce parcours qualifie ce modèle et cette boucle fichiers, pas tous les modèles,
+la mémoire, la compression ou l’interface web Venice en conditions réelles.
+
+Le catalogue public ne prouve pas seul la validité d’une clé. Les modèles inclus
+sans crédits dans le chat Venice ne sont pas gratuits via cette API.
 [Limites et soldes API](https://docs.venice.ai/api-reference/endpoint/api_keys/rate_limits),
 [Différence chat/API](https://venice.ai/faqs/all).

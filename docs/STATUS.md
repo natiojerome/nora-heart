@@ -15,11 +15,12 @@ prompt, outils et permissions restent ceux de Heart. Solde Venice non raccordé.
 246 tests locaux et quatre parcours navigateur ciblés validés ; parcours Venice
 avec transport simulé, sauvegarde
 et rechargement des défauts, chat, erreur/reprise de catalogue et quatre largeurs.
-Clé Venice configurée et reconnue le 21 novembre : endpoint authentifié des
-limites HTTP 200, catalogue réel de 148 modèles texte. Aucun tarif texte API nul ;
-soldes USD, DIEM et crédits inclus à zéro. Deux appels réels (Gemma 3 27B et
-DeepSeek V4.1 Flash Uncensored) refusés HTTP 402 pour solde insuffisant.
-L’authentification est qualifiée ; aucune génération Venice réussie à ce stade.
+Clé Venice reconnue et compte rechargé le 21 novembre. Catalogue réel :
+148 modèles texte, aucun tarif API nul. DeepSeek V4.1 Flash Uncensored qualifié
+avec le véritable adaptateur et moteur Heart : deux appels fournisseur, une lecture
+réelle par l’outil fichiers et restitution d’un marqueur inconnu du prompt.
+Fixture temporaire supprimée ; aucune conversation ni mémoire propriétaire modifiée.
+Le solde reste non raccordé à la vue Consommation.
 
 ## Personnalité et continuité des informations
 
@@ -149,8 +150,8 @@ ils ne sont pas présentés comme tous relancés à chaque changement de consign
 Venice AI déployé le 21 novembre après sauvegarde chiffrée et redémarrage web
 coordonné (source f2f0876). Contrôle HTTPS authentifié : connexion visible, catalogue
 réel de 148 modèles, contexte et efforts cohérents, contrôles web présents ; santé
-saine. Clé désormais reconnue ; deux requêtes d’inférence réelles refusées pour
-solde insuffisant, sans génération ni écriture métier.
+saine. Clé désormais reconnue et compte rechargé ; génération et lecture fichiers
+réelles qualifiées sur DeepSeek V4.1 Flash Uncensored, sans écriture métier.
 
 Personnalité et rétention déployées le 21 novembre après sauvegarde locale chiffrée
 et redémarrage web coordonné (source 4d26fea). Contrôle HTTPS authentifié : tons
@@ -160,6 +161,6 @@ profil personnalisé ni historique propriétaire écrasé ; aucun changement du 
 
 Publication publique autorisée : main, petits commits vérifiés et push ; secrets,
 état privé et rapports opérateur exclus. Historique privé conservé localement.
-Suite : qualifier une boucle réelle d’outils Venice lorsque le compte dispose
-de crédits API ; suivre aussi les usages des autres fournisseurs,
+Suite : raccorder le solde et les limites Venice à la vue Consommation ;
+poursuivre les qualifications ciblées des fournisseurs,
 sans réintroduire de prudence générique ni de limites arbitraires.

@@ -32,9 +32,18 @@ catalogue, largeurs 320/390/820/1440. Transport LLM simulé, pas d’inférence 
 246 tests locaux au total et quatre parcours navigateur ciblés validés (Venice,
 atelier/connexions existantes, catalogue des conversations, assemblage SQLite).
 Deux assertions anciennes de personnalité ont été alignées sur les templates
-courants, sans modifier leur comportement. Le catalogue Venice réel est lu sans clé (148 modèles
-texte observés). L’absence de clé configurée empêche la qualification d’inférence
-Venice ; connexion puis parcours réel d’outils restent la prochaine validation.
+courants, sans modifier leur comportement. Le catalogue Venice réel est lu sans clé
+(148 modèles texte observés).
+
+Qualification réelle après configuration et recharge : endpoint authentifié des
+limites HTTP 200 ; `deepseek-v4-1-flash-uncensored` via `createAiSdkProvider` et
+`Engine`, stockage JSON temporaire, seul accès fichiers en lecture. Un marqueur
+UUID écrit dans `preuve.txt` et absent du prompt est retrouvé par un véritable
+appel d’outil puis restitué : deux appels fournisseur, un outil exécuté. Fixture
+supprimée et aucune conversation/mémoire propriétaire modifiée. Pas de repli vers
+un autre modèle. Cela ne qualifie pas les autres modèles, mémoire ou compression.
+`pnpm check` relancé : 246 tests réussis ; `pnpm demo:sdk` relancé et réussi
+(cette démo reste simulée, distincte de l’essai Venice réel).
 
 ## Qualification personnalité et rétention — 21 novembre 2026
 
