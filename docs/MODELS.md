@@ -2,7 +2,7 @@
 
 `ModelProvider` reste un contrat propre au harness. Le core, les outils et les
 sessions n’importent aucun type AI SDK. Le module `modules/models/ai-sdk` traduit
-ce contrat vers AI SDK 7, OpenAI/Anthropic directs ou OpenRouter choisi explicitement.
+ce contrat vers AI SDK 7, OpenAI/Anthropic directs, OpenRouter ou Venice AI choisis explicitement.
 Le module `demo` reste le choix par défaut, sans réseau ni clé.
 
 ## Parcours sans coût
@@ -159,3 +159,36 @@ L’adaptateur traduit les erreurs en messages bornés sans données brutes : st
 HTTP de connexion/crédits/usage/refus/indisponibilité, réponse mal formée, vide,
 tronquée ou appel d’outil invalide. L’application les conserve jusqu’au chat et
 après rechargement. Aucun appel partiel exécuté, retry ou repli automatique.
+
+## Venice AI
+
+Dans **Fournisseurs → Venice AI**, enregistrer la clé API dans le champ privé, puis
+choisir Venice dans le modèle du fil ou dans Configuration → Discussions → Modèle
+et autorisations par défaut. Le catalogue est actualisable ; aucun identifiant à
+saisir de mémoire. La clé reste côté serveur dans le fichier privé existant (0600),
+ou via `HARNESS_VENICE_API_KEY`. Aucun mot de passe Venice dans le chat.
+
+L’adaptateur AI SDK réutilise Chat Completions à
+`https://api.venice.ai/api/v1/chat/completions`. Le catalogue public
+`/models?type=text` fournit les modèles actifs, noms, contexte disponible, tarifs
+USD par million de tokens, vision, appels d’outils et efforts acceptés. Les niveaux
+ne sont pas déduits du nom ; l’effort validé est transmis en `reasoning_effort`.
+Cache de capacités cinq minutes pour les tours suivants ; Actualiser relit le
+catalogue. Les modèles sans outils restent sélectionnables pour le texte.
+
+Le core garde l’exécution et les permissions. Pas de retry, de modèle de repli,
+de recherche web intégrée ni de prompt système Venice ajouté : les instructions
+et les outils viennent de Heart. Les résultats/erreurs sont adaptés aux mêmes
+contrats neutres ; les détails HTTP privés ne sont pas journalisés. Le solde Venice
+n’est pas encore lu : Consommation indique cette absence, sans inventer de crédit.
+Aucune migration SQL ni modification des connexions existantes.
+
+Sources officielles consultées le 21 novembre 2026 :
+[Catalogue](https://docs.venice.ai/api-reference/endpoint/models/list),
+[Effort](https://docs.venice.ai/guides/features/reasoning-models),
+[Chat Completions](https://docs.venice.ai/api-reference/endpoint/chat/completions).
+Catalogue réel lu : 148 modèles texte, 144 avec outils, 92 avec effort réglable
+(valeurs observées, pas un inventaire figé dans le code). Pas de clé Venice
+configurée lors de l’intégration : l’inférence Venice réelle reste à qualifier
+après connexion. Les tests locaux vérifient le vrai adaptateur avec transport
+simulé et l’interface mobile, sans prétendre valider le fournisseur réel.

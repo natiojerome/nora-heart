@@ -10,7 +10,7 @@ import type { ModelProvider } from "../contracts/models.ts";
 import type { Event } from "../contracts/storage.ts";
 import { Engine } from "../core/engine.ts";
 import { ChatGptAuth, ChatGptProvider, readAccountQuotaSnapshot } from "../modules/models/chatgpt/index.ts";
-import { createAiSdkProvider, openRouterModels, readOpenRouterUsage } from "../modules/models/ai-sdk/index.ts";
+import { createAiSdkProvider, openRouterModels, veniceModels, readOpenRouterUsage } from "../modules/models/ai-sdk/index.ts";
 import { DemoProvider } from "../modules/models/demo/index.ts";
 import { BasicMemory } from "../modules/memory/basic/index.ts";
 import { openJsonStorage } from "../modules/storage/json/index.ts";
@@ -20,8 +20,8 @@ import { chatGptErrorMessage } from "./chatgpt.ts";
 
 const exec = promisify(execFile);
 const projectRoot = fileURLToPath(new URL("../../", import.meta.url));
-type Provider = "demo" | "chatgpt" | "openai" | "anthropic" | "openrouter";
-interface Options { directory: string; authDirectory: string; displayName?: string; oauthPort?: number; quotaSnapshotFile?:string; quotaMaxAgeMs?:number; apiKeys?: { openai?: string; anthropic?: string; openrouter?:string } }
+type Provider = "demo" | "chatgpt" | "openai" | "anthropic" | "openrouter" | "venice";
+interface Options { directory: string; authDirectory: string; displayName?: string; oauthPort?: number; quotaSnapshotFile?:string; quotaMaxAgeMs?:number; apiKeys?: { openai?: string; anthropic?: string; openrouter?:string; venice?:string } }
 export interface LoginState { status: "idle" | "pending" | "connected" | "error"; url?: string; message?: string }
 
 export class TestLab {
@@ -29,12 +29,14 @@ export class TestLab {
   private auth: ChatGptAuth;
   private busy = false;
   private usageCache=new Map<string,{key:string;at:number;pending:boolean;value:Promise<ProviderUsage>}>();
+  private veniceCatalog?:{at:number;models:Awaited<ReturnType<typeof veniceModels>>};
+  private veniceModels=new Map<string,{supportsTools:boolean}>();
   private routerModels=new Map<string,{supportsTools:boolean}>();
   private loginState: LoginState = { status: "idle" };
   private loginController?: AbortController;
   private loginTask?: Promise<unknown>;
   private callbackTarget?: URL;
-  private keys: { openai?: string; anthropic?: string; openrouter?:string } = {};
+  private keys: { openai?: string; anthropic?: string; openrouter?:string; venice?:string } = {};
   constructor(private readonly options: Options) {
     this.displayName = options.displayName ?? "Nora Heart";
     this.auth = new ChatGptAuth({ directory: options.authDirectory });
@@ -49,15 +51,15 @@ export class TestLab {
       const stat = await lstat(file);
       if (!stat.isFile() || (stat.mode & 0o077) || (process.getuid && stat.uid !== process.getuid())) throw new Error("Fichier de clés non privé.");
       const saved = JSON.parse(await readFile(file, "utf8")) as typeof this.keys;
-      for (const provider of ["openai", "anthropic", "openrouter"] as const) if (typeof saved[provider] === "string") this.keys[provider] = saved[provider];
+      for (const provider of ["openai", "anthropic", "openrouter", "venice"] as const) if (typeof saved[provider] === "string") this.keys[provider] = saved[provider];
     } catch (error) { if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error; }
   }
   async state() {
     return { displayName: this.displayName, chatgpt: await this.auth.status(),
-      api: { openai: !!this.keys.openai, anthropic: !!this.keys.anthropic, openrouter:!!this.keys.openrouter }, login: this.loginStatus() };
+      api: { openai: !!this.keys.openai, anthropic: !!this.keys.anthropic, openrouter:!!this.keys.openrouter, venice:!!this.keys.venice }, login: this.loginStatus() };
   }
   async setKey(provider: unknown, apiKey: unknown) {
-    if ((provider !== "openai" && provider !== "anthropic" && provider !== "openrouter") || typeof apiKey !== "string" || apiKey.length < 8 || apiKey.length > 4096 || /\s/.test(apiKey)) throw new Error("Clé ou fournisseur invalide.");
+    if ((provider !== "openai" && provider !== "anthropic" && provider !== "openrouter" && provider !== "venice") || typeof apiKey !== "string" || apiKey.length < 8 || apiKey.length > 4096 || /\s/.test(apiKey)) throw new Error("Clé ou fournisseur invalide.");
     const next = { ...this.keys, [provider]: apiKey };
     const temporary = path.join(this.options.directory, `.keys-${randomUUID()}.tmp`);
     try {
@@ -123,12 +125,25 @@ export class TestLab {
       "Compte déconnecté ici. Révocation distante non confirmée : déconnecter aussi l’application dans les réglages ChatGPT." };
   }
   async models(provider: string) {
+    if (provider === "venice") {
+      const models = await veniceModels();
+      this.veniceModels = new Map(models.map(model => [model.id, model]));
+      this.veniceCatalog = { at: Date.now(), models };
+      return { models, updatedAt: new Date().toISOString() };
+    }
     if(provider==="openrouter"){const models=await openRouterModels();this.routerModels=new Map(models.map(model=>[model.id,model]));return {models,updatedAt:new Date().toISOString()};}
     if (provider !== "chatgpt") throw new Error("Catalogue disponible après connexion ChatGPT.");
     return { models: await new ChatGptProvider({ modelId: "catalog", accessToken: signal => this.auth.accessToken(signal) }).models() };
   }
   async capabilities(provider:string,modelId:string){
     if(!modelId.trim()||modelId.length>200)throw new Error('Choisir un modèle.');
+    if (provider === "venice") {
+      const models = this.veniceCatalog && Date.now() - this.veniceCatalog.at < 300000
+        ? this.veniceCatalog.models : (await this.models(provider)).models;
+      const selected = models.find(model => model.id === modelId);
+      if (!selected) throw new Error('Modèle absent du catalogue Venice AI. Actualise la liste.');
+      return selected;
+    }
     if(provider==='chatgpt'||provider==='openrouter')return (await this.models(provider)).models.find(model=>model.id===modelId)??{id:modelId,reasoningEfforts:[]};
     if(provider!=='openai'&&provider!=='anthropic')return {id:modelId,reasoningEfforts:[]};
     const key=this.keys[provider];if(!key)throw new Error('Configurer d’abord la clé API de ce fournisseur.');
@@ -136,7 +151,7 @@ export class TestLab {
   }
   async usage(provider:string,modelId:string,refresh=false):Promise<ProviderUsage>{
     if(modelId.length>200)throw new Error('Modèle invalide.');
-    if(!['demo','chatgpt','openai','anthropic','openrouter'].includes(provider))throw new Error('Module inconnu.');
+    if(!['demo','chatgpt','openai','anthropic','openrouter','venice'].includes(provider))throw new Error('Module inconnu.');
     const base:ProviderUsage={provider:provider as Provider,modelId,status:'unavailable',observedAt:new Date().toISOString(),source:'Connexion Heart',message:'Solde et reset non communiqués par cette connexion.'};
     if(provider==='demo')return {...base,status:'not_applicable',message:'Simulation locale, sans crédits ni quota fournisseur.'};
     if(provider==='chatgpt'){
@@ -149,6 +164,7 @@ export class TestLab {
       }catch{return missing;}
     }
     const key=this.keys[provider as keyof typeof this.keys];if(!key)return {...base,status:'unconfigured',message:'Configurer la clé de ce fournisseur.'};
+    if(provider==='venice')return {...base,message:'Lecture du solde Venice non raccordée dans Heart ; aucun montant estimé.'};
     if(provider!=='openrouter')return {...base,message:'Cette clé d’inférence ne fournit pas de solde ou de reset de facturation.'};
     const cached=this.usageCache.get(modelId);
     if(cached?.key===key&&(cached.pending||(!refresh&&Date.now()-cached.at<60000)))return cached.value;
@@ -157,7 +173,7 @@ export class TestLab {
   }
   model(body: Record<string, unknown>): ModelProvider {
     const provider = body.provider as Provider;
-    if (!["demo", "chatgpt", "openai", "anthropic", "openrouter"].includes(provider)) throw new Error("Module inconnu.");
+    if (!["demo", "chatgpt", "openai", "anthropic", "openrouter", "venice"].includes(provider)) throw new Error("Module inconnu.");
     if (provider !== "demo" && (typeof body.modelId !== "string" || !body.modelId.trim() || body.modelId.length > 200)) throw new Error("Choisir un modèle.");
     let model: ModelProvider;
     if (provider === "demo") model = new DemoProvider();
@@ -165,14 +181,14 @@ export class TestLab {
     else {
       const apiKey = this.keys[provider];
       if (!apiKey) throw new Error("Configurer d’abord la clé API de ce fournisseur.");
-      model = createAiSdkProvider({ provider, apiKey, modelId: body.modelId as string, ...(typeof body.reasoningEffort==='string'&&body.reasoningEffort?{reasoningEffort:body.reasoningEffort}:{}), ...(provider==="openrouter"?{supportsTools:this.routerModels.get(body.modelId as string)?.supportsTools}:{}) });
+      model = createAiSdkProvider({ provider, apiKey, modelId: body.modelId as string, ...(typeof body.reasoningEffort==='string'&&body.reasoningEffort?{reasoningEffort:body.reasoningEffort}:{}), ...(["openrouter","venice"].includes(provider)?{supportsTools:(provider==="venice"?this.veniceModels:this.routerModels).get(body.modelId as string)?.supportsTools}:{}) });
     }
     return model;
   }
   async test(body: Record<string, unknown>, signal?: AbortSignal) {
     if (this.busy) throw new Error("Un test est déjà en cours.");
     const provider = body.provider as Provider;
-    if (!["demo", "chatgpt", "openai", "anthropic", "openrouter"].includes(provider)) throw new Error("Module inconnu.");
+    if (!["demo", "chatgpt", "openai", "anthropic", "openrouter", "venice"].includes(provider)) throw new Error("Module inconnu.");
     if (typeof body.prompt !== "string" || !body.prompt.trim() || body.prompt.length > 8000) throw new Error("Message requis (8000 caractères maximum).");
     const maxSteps = body.maxSteps ?? 4;
     if (!Number.isInteger(maxSteps) || (maxSteps as number) < 1 || (maxSteps as number) > 4) throw new Error("Choisir entre 1 et 4 étapes.");

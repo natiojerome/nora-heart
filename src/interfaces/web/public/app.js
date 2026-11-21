@@ -31,7 +31,7 @@ let modelsRequest;
 let modelsVersion = 0;
 let modelsUpdatedAt = "";
 function usesCatalog(provider = selectedProvider()) {
-  return provider === "chatgpt" || provider === "openrouter";
+  return provider === "chatgpt" || provider === "openrouter" || provider === "venice";
 }
 function modelAvailable(provider = selectedProvider()) {
   if (provider === "demo") return true;
@@ -54,6 +54,7 @@ const names = {
   openai: "OpenAI · API",
   anthropic: "Claude · API",
   openrouter: "OpenRouter · API",
+  venice: "Venice AI · API",
 };
 
 function selectedProvider() {
@@ -121,6 +122,7 @@ function renderState() {
   $("openrouter-card-status").textContent = state.api?.openrouter
     ? "Clé configurée"
     : "Clé absente";
+  $("venice-card-status").textContent = state.api?.venice ? "Clé configurée" : "Clé absente";
   $("conversations").hidden = !state.conversationsAvailable;
   $("memories").hidden = !state.memoriesAvailable;
   $("conversation-project-box").hidden = !state.memoriesAvailable;
@@ -130,7 +132,7 @@ function renderState() {
   window.heartPreferences?.sync();
 }
 function accountKey() {
-  if (selectedProvider() === "openrouter") return "openrouter-public";
+  if (["openrouter","venice"].includes(selectedProvider())) return selectedProvider()+"-public";
   return state.chatgpt?.connected
     ? `${state.chatgpt.profile || "default"}:${state.chatgpt.clientId || state.chatgpt.email || ""}`
     : "";
@@ -145,6 +147,7 @@ function clearModels(dropSelection = true) {
   if (dropSelection) {
     delete rememberedModels.chatgpt;
     delete rememberedModels.openrouter;
+    delete rememberedModels.venice;
   }
   $("model-options").replaceChildren();
 }
@@ -164,7 +167,7 @@ async function refreshState() {
   // Independent local data must not queue behind a remote model catalogue.
   const tasks = [];
   if (state.authenticated && usesCatalog() &&
-      (selectedProvider() === "openrouter" || state.chatgpt?.connected) && modelsStatus === "idle")
+      (selectedProvider() !== "chatgpt" || state.chatgpt?.connected) && modelsStatus === "idle")
     tasks.push(loadModels());
   if (state.authenticated && state.memoriesAvailable && !memoryLoaded)
     tasks.push(loadMemories());
@@ -195,7 +198,7 @@ function renderModelPicker() {
     : "";
   $("model-id").value = $("model-options").value;
   const source =
-    provider === "openrouter"
+    provider !== "chatgpt"
       ? "modèles disponibles"
       : models.length === 1
         ? "modèle disponible dans ton compte"
@@ -408,9 +411,7 @@ async function loadModels(force = false) {
       const placeholder = document.createElement("option");
       placeholder.value = "";
       placeholder.textContent =
-        provider === "openrouter"
-          ? "Choisir un modèle OpenRouter"
-          : "Choisir un modèle ChatGPT";
+        "Choisir un modèle "+(provider === "venice" ? "Venice AI" : provider === "openrouter" ? "OpenRouter" : "ChatGPT");
       $("model-options").replaceChildren(placeholder);
       for (const model of models) {
         const option = document.createElement("option");
@@ -433,6 +434,7 @@ async function loadModels(force = false) {
         option.dataset.detail = [
           provider === "chatgpt"
             ? "ChatGPT"
+            : provider === "venice" ? "Venice AI"
             : model.name.includes(":")
               ? model.name.split(":")[0]
               : model.id.split("/")[0],
@@ -526,7 +528,7 @@ document.querySelectorAll('input[name="provider"]').forEach((input) =>
     renderProvider();
     if (
       usesCatalog() &&
-      (selectedProvider() === "openrouter" || state.chatgpt?.connected)
+      (selectedProvider() !== "chatgpt" || state.chatgpt?.connected)
     )
       void loadModels();
   }),
@@ -548,7 +550,7 @@ document.querySelectorAll('[data-configure-provider]').forEach(button=>button.ad
 $("api-key-form").addEventListener("submit", async (event) => {
   event.preventDefault();
   const provider = credentialProvider;
-  if (!["openai", "anthropic", "openrouter"].includes(provider)) return;
+  if (!["openai", "anthropic", "openrouter", "venice"].includes(provider)) return;
   const apiKey = $("api-key").value.trim();
   if (!apiKey) {
     message("Colle la clé du fournisseur choisi avant de l’enregistrer.", true);
@@ -772,7 +774,7 @@ function renderConversationBrain() {
   $("context-window").disabled = !!capacity;
   $("context-window").value = String(capacity || configuredContextWindow);
   $("context-capacity-help").textContent = capacity
-    ? `Capacité fournie par le catalogue ${provider === "openrouter" ? "OpenRouter" : "ChatGPT"}. Comptage des entrées estimé.`
+    ? `Capacité fournie par le catalogue ${provider === "venice" ? "Venice AI" : provider === "openrouter" ? "OpenRouter" : "ChatGPT"}. Comptage des entrées estimé.`
     : "Valeur configurée à vérifier pour le modèle choisi. Comptage des entrées estimé.";
   $("chat-context-limit").textContent = new Intl.NumberFormat("fr-FR").format(
     Number($("context-window").value),

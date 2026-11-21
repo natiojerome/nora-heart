@@ -8,7 +8,7 @@ export function validateConversationDefaults(input:unknown):ConversationDefaults
  let selection:ConversationDefaults['selection']=null;
  if(value.selection){
   const s=value.selection;
-  if(!['demo','chatgpt','openai','anthropic','openrouter'].includes(s.provider)||typeof s.modelId!=='string'||s.modelId.length>200||(s.provider!=='demo'&&!s.modelId.trim())||!Number.isInteger(s.contextWindow)||s.contextWindow<4096||s.contextWindow>2000000||!['catalog','configured'].includes(s.capacitySource))return fail();
+  if(!['demo','chatgpt','openai','anthropic','openrouter','venice'].includes(s.provider)||typeof s.modelId!=='string'||s.modelId.length>200||(s.provider!=='demo'&&!s.modelId.trim())||!Number.isInteger(s.contextWindow)||s.contextWindow<4096||s.contextWindow>2000000||!['catalog','configured'].includes(s.capacitySource))return fail();
   if(s.reasoningEffort!==undefined&&(s.provider==='demo'||typeof s.reasoningEffort!=='string'||!s.reasoningEffort||s.reasoningEffort.length>40))return fail();
   selection={provider:s.provider,modelId:s.modelId.trim(),contextWindow:s.contextWindow,capacitySource:s.capacitySource,...(s.reasoningEffort?{reasoningEffort:s.reasoningEffort}:{})};
  }

@@ -5,6 +5,17 @@ assemble les implémentations au démarrage. La mémoire est un module, pas un
 composant imposé du core. Voir [STATUS.md](STATUS.md) pour les limites livrées et
 [PLAN.md](PLAN.md) pour la suite.
 
+## Fournisseur Venice AI
+
+Venice est une sélection explicite du module models/ai-sdk existant, avec un
+fichier interne venice.ts pour le catalogue. Aucune dépendance supplémentaire ni
+import entre implémentations. L’app relie clés privées, catalogue/capacités et
+choix du fil ; le core conserve son ModelProvider neutre. Effort, prix, outils et
+contexte sont traduits à la frontière ; UUID des conversations inchangés.
+Le catalogue public est actualisable, cache de capacités cinq minutes côté app.
+Le web expose la connexion, le choix par fil et les défauts des nouveaux fils.
+Voir MODELS.md pour le contrat HTTP et la portée de qualification.
+
 ## Personnalité et rétention du contexte
 
 L’app compose les défauts de personnalité avec un ton amical pour l’utilisateur

@@ -129,12 +129,12 @@ test("web ChatGPT relay allows only the pending loopback callback and never acce
 });
 
 
-test('OpenRouter credentials persist privately without replacing existing API keys',async()=>{
+test('OpenRouter and Venice credentials persist privately without replacing existing API keys',async()=>{
  const directory=await mkdtemp(path.join(os.tmpdir(),'heart-openrouter-'));
  const options={directory:path.join(directory,'state'),authDirectory:path.join(directory,'auth')};
  try {
-  const lab=new TestLab(options);await lab.prepare();await lab.setKey('openai','fake-openai-key');await lab.setKey('openrouter','fake-openrouter-key');
-  const restarted=new TestLab(options);await restarted.prepare();const state=await restarted.state();assert(state.api.openai);assert(state.api.openrouter);assert(!JSON.stringify(state).includes('fake-openrouter-key'));
+  const lab=new TestLab(options);await lab.prepare();await lab.setKey('openai','fake-openai-key');await lab.setKey('openrouter','fake-openrouter-key');await lab.setKey('venice','fake-venice-key');
+  const restarted=new TestLab(options);await restarted.prepare();const state=await restarted.state();assert(state.api.openai);assert(state.api.openrouter);assert(state.api.venice);assert(!JSON.stringify(state).includes('fake-openrouter-key'));assert(!JSON.stringify(state).includes('fake-venice-key'));
   assert.equal((await stat(path.join(options.directory,'api-keys.json'))).mode&0o777,0o600);
   assert(restarted.model({provider:'openrouter',modelId:'vendor/paid'}));
   await restarted.close();await lab.close();

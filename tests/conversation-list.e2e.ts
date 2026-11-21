@@ -29,7 +29,7 @@ test('conversation catalogue fills mobile width, hides usage and filters project
  const personal=(await fixture.service.create({title:'Discussion personnelle'})).conversation;
  const reservation=createServer();await new Promise<void>(r=>reservation.listen(0,'127.0.0.1',r));const port=(reservation.address() as {port:number}).port;await new Promise<void>(r=>reservation.close(()=>r()));
  const origin='http://127.0.0.1:'+port;
- const originalState=lab.state.bind(lab);lab.state=async()=>({...await originalState(),chatgpt:{connected:true,profile:"fake-account"},api:{openai:false,anthropic:false,openrouter:true}});
+ const originalState=lab.state.bind(lab);lab.state=async()=>({...await originalState(),chatgpt:{connected:true,profile:"fake-account"},api:{openai:false,anthropic:false,openrouter:true,venice:false}});
  lab.models=async(provider)=>({models:provider==='openrouter'?[{id:'vendor/reasoner',name:'Reasoner de test',contextWindow:32768,reasoningEfforts:['low','high']}]:[{id:'gpt-test-sol',name:'Sol de test',contextWindow:8192,reasoningEfforts:['low','high'],defaultReasoningEffort:'low'}]});
  lab.usage=async(provider,modelId)=>({provider:provider as 'openrouter'|'chatgpt',modelId,status:'available',observedAt:new Date().toISOString(),source:'Fixture isolée',message:'Métadonnées de test',...(provider==='openrouter'?{spend:{scope:'key' as const,currency:'USD' as const,daily:0,total:2.5},balance:{scope:'key' as const,currency:'USD' as const,remaining:8}}:{quota:{scope:'account' as const,appLimitAvailable:false as const,windows:[{limitId:'codex',limitName:'Compte',usedPercent:28,remainingPercent:72,windowDurationMins:10080,resetsAt:'2026-11-20T00:00:00Z'}]}})});
 

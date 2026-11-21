@@ -21,6 +21,18 @@ Les tests locaux ne lisent pas de clés et n’appellent pas une API LLM. Les te
 PostgreSQL créent leur propre service temporaire. Une démo avec le module `demo`
 prouve la boucle ; elle ne qualifie pas un fournisseur commercial réel.
 
+## Qualification Venice AI — 21 novembre 2026
+
+`tests/venice.test.ts` vérifie catalogue, unités de prix, capacités/efforts, boucle
+HTTP d’outil via Engine, absence de repli/retry, erreurs sûres et annulation.
+Persistance privée de clé et sélection d’effort couvertes aussi par les suites
+web/conversations. `tests/venice.e2e.ts` utilise Chromium, HTTP et SQLite jetable :
+connexion, défauts/override, effort, rechargement, chat, panne et reprise du
+catalogue, largeurs 320/390/820/1440. Transport LLM simulé, pas d’inférence réelle.
+246 tests locaux au total. Le catalogue Venice réel est lu sans clé (148 modèles
+texte observés). L’absence de clé configurée empêche la qualification d’inférence
+Venice ; connexion puis parcours réel d’outils restent la prochaine validation.
+
 ## Qualification personnalité et rétention — 21 novembre 2026
 
 242 tests locaux couvrent notamment résumés supérieurs à 6000 caractères, plafond

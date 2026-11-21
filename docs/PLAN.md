@@ -1,6 +1,6 @@
 # Plan courant
 
-Point du 19 novembre 2026, après revue/debug de la planification durable. Finalité conservée : une
+Point du 21 novembre 2026, après ajout de Venice AI. Finalité conservée : une
 assistante quotidienne dont le propriétaire contrôle moteur, données, outils et
 permissions, avec des cerveaux interchangeables selon besoin et coût.
 [STATUS.md](STATUS.md) décrit le livré ; les lots 1 et 2 sont livrés ; le lot 3 est qualifié sur un scénario réel ciblé. [REVIEW.md](REVIEW.md) donne les écarts constatés.
@@ -15,7 +15,7 @@ permissions, avec des cerveaux interchangeables selon besoin et coût.
   implicite. YOLO reste un accès root consenti, pas un module fictif.
 - Interface native mobile first ; nettoyage progressif et tests de non-régression.
   Pas de changement de stack ou de framework justifié actuellement.
-- Contributions externes prévues, dépôt encore local : publication sur instruction.
+- Contributions externes possibles sur le dépôt public autorisé ; main et petits commits vérifiés.
 
 ## Livré et conservé
 
@@ -190,6 +190,8 @@ l’historique actuel, sans nouvelle centralisation dans ce lot.
 
 ## Suite
 
+Configurer Venice AI dans Fournisseurs puis qualifier une vraie boucle d’outils
+avec le modèle choisi ; catalogue réel déjà lu, inférence encore non qualifiée.
 Consolider sur les usages quotidiens et les défauts mesurés. Ne pas réintroduire de
 catalogue métier local, ni créer de routine/notification externe sans besoin réel.
 

@@ -52,6 +52,16 @@ sont dans [PLAN.md](PLAN.md).
 | Tests | `node:test`, tsx, commandes par famille, tests de frontières et PostgreSQL isolé. | Tester un module seul et vérifier son intégration sans clé LLM payante. |
 | Abonnement ChatGPT | Module direct Sign in with ChatGPT, distinct du module API ; OAuth/SSE testés en simulation et parcours ciblés qualifiés en réel. | Garder notre boucle, nos outils et les clés API fonctionnelles ; connexion et parcours court avec outil qualifiés sur GPT-6.1-Sol, aucun harness Codex imbriqué. |
 
+## Venice AI comme fournisseur
+
+Ajouter Venice au module AI SDK déjà utilisé pour les API compatibles OpenAI.
+URL officielle fixe, modèle choisi uniquement, aucun repli ni exécution SDK.
+Catalogue dynamique pour contexte, tarifs USD/1M, outils, vision et effort réel.
+Désactiver le prompt Venice et ses recherches intégrées pour garder l’orchestration
+et les accès réseau dans Heart. Réutiliser les clés privées et les sélecteurs
+existants, sans nouvelle table, framework ou catalogue manuel. Ne pas assimiler
+la lecture du catalogue à la validation d’une inférence avec une vraie clé.
+
 ## Ton et continuité des informations
 
 Défauts amicaux avec le propriétaire et amicaux/professionnels avec les tiers ;

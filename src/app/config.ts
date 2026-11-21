@@ -15,7 +15,7 @@ export interface Config {
   storage: StorageConfig;
   modules: { memory: string; model: string };
   model?: {
-    provider: "openai" | "anthropic" | "openrouter";
+    provider: "openai" | "anthropic" | "openrouter" | "venice";
     modelId: string;
     apiKeyEnv: string;
     maxOutputTokens: number;
@@ -90,7 +90,8 @@ export async function loadConfig(file: string): Promise<Config> {
       !options ||
       (options.provider !== "openai" &&
         options.provider !== "anthropic" &&
-        options.provider !== "openrouter") ||
+        options.provider !== "openrouter" &&
+        options.provider !== "venice") ||
       typeof options.modelId !== "string" ||
       !options.modelId.trim() ||
       typeof options.apiKeyEnv !== "string" ||

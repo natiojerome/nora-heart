@@ -130,7 +130,7 @@ export class AiSdkProvider implements ModelProvider {
 }
 
 export interface AiSdkOptions {
-  provider: "openai" | "anthropic" | "openrouter";
+  provider: "openai" | "anthropic" | "openrouter" | "venice";
   modelId: string;
   apiKey: string;
   /** Omit to use the selected provider/SDK default; explicit CLI budgets remain supported. */
@@ -144,6 +144,33 @@ export interface AiSdkOptions {
 }
 
 export function createAiSdkProvider(options: AiSdkOptions): ModelProvider {
+  if (options.provider === "venice") {
+    const transport = options.fetch ?? globalThis.fetch;
+    const guarded: typeof fetch = async (input, init) => {
+      if (String(input) !== "https://api.venice.ai/api/v1/chat/completions" || typeof init?.body !== "string")
+        throw new Error("Requête Venice AI refusée.");
+      const body = JSON.parse(init.body);
+      if (body.model !== options.modelId || body.models) throw new Error("Modèle Venice AI refusé.");
+      if (options.reasoningEffort) body.reasoning_effort = options.reasoningEffort;
+      body.store = false;
+      body.fallbacks = [];
+      body.venice_parameters = {
+        include_venice_system_prompt: false,
+        enable_web_search: "off",
+        enable_web_scraping: false,
+        enable_x_search: false,
+        strip_thinking_response: true,
+      };
+      return transport(input, { ...init, redirect: "error", body: JSON.stringify(body) });
+    };
+    const model = createOpenAI({ name: "venice", apiKey: options.apiKey, baseURL: "https://api.venice.ai/api/v1", fetch: guarded }).chat(options.modelId);
+    const provider = new AiSdkProvider(model, options.maxOutputTokens);
+    return {
+      id: `ai-sdk:venice:${options.modelId}`,
+      ...(options.supportsTools === false ? { supportsTools: false } : {}),
+      generate: request => provider.generate(options.supportsTools === false ? { ...request, tools: [] } : request),
+    };
+  }
   if(options.provider === "openrouter"){
     if(options.freeOnly&&!/^[a-zA-Z0-9_.-]+\/[a-zA-Z0-9_.:-]+:free$/.test(options.modelId))throw new Error("OpenRouter : choisir un identifiant de modèle terminé par :free. Aucun modèle payant autorisé.");
     if(options.maxPrice && Object.values(options.maxPrice).some(value=>!Number.isFinite(value)||value<0))throw new Error("Plafond de prix invalide.");
@@ -200,3 +227,5 @@ export async function openRouterModels(transport:typeof fetch=globalThis.fetch):
 export {readOpenRouterUsage} from './usage.ts';
 
 export {apiModelCapabilities} from "./capabilities.ts";
+
+export {veniceModels} from "./venice.ts";

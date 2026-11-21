@@ -95,12 +95,12 @@ test('API-provider effort is checked against that model, preserved and passed th
  const f=await conversationFixture(directory,selection=>({id:selection.provider+':'+selection.modelId,async generate(){used.push(selection.reasoningEffort!);return {content:'ok',toolCalls:[]};}}),undefined,undefined,undefined,undefined,async(_provider,id)=>({id,contextWindow:32768,reasoningEfforts:['low','high']}));
  try{
   const id=(await f.service.create({title:'Effort'})).conversation.id;
-  for(const provider of ['openrouter','openai','anthropic']){
+  for(const provider of ['openrouter','openai','anthropic','venice']){
    await f.service.send(id,{provider,modelId:'test-model',contextWindow:8192,reasoningEffort:'high',prompt:'Continue'});
    assert.equal((await f.restart().get(id)).conversation.selection?.reasoningEffort,'high');
    await assert.rejects(f.service.send(id,{provider,modelId:'test-model',contextWindow:8192,reasoningEffort:'unsupported',prompt:'No'}),/Choisir un niveau/);
   }
-  assert.deepEqual(used,['high','high','high']);
+  assert.deepEqual(used,['high','high','high','high']);
  }finally{await f.storage.close();await rm(directory,{recursive:true,force:true});}
 });
 

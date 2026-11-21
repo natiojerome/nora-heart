@@ -1,3 +1,4 @@
+import {personalityTemplates} from "../src/app/assistant-presets.ts";
 import { assistantFixture } from "./assistant.fixture.ts";
 import assert from "node:assert/strict";
 import { existsSync } from "node:fs";
@@ -205,7 +206,7 @@ test(
       await page.check("[name=theme][value=sage]");
       await page.click("#setup-next");
       await choose("#setup-personality", "direct");
-      assert.match(await page.inputValue('#setup-personality-text'),/direct, concis/);
+      assert.equal(await page.inputValue('#setup-personality-text'),personalityTemplates.find(item=>item.id==='direct')!.instructions);
       const installPersonality=(await page.inputValue('#setup-personality-text'))+'\nPrivilégie les exemples TypeScript et indique les incertitudes.';
       await page.fill('#setup-personality-text',installPersonality);
       await page.click("#setup-next");
@@ -239,7 +240,7 @@ test(
       await page.click('#assistant-save');await page.waitForSelector('#assistant-dialog .dialog-feedback.error');assert.equal(await page.inputValue('#assistant-personality-text'),refined);assert(await page.locator('#assistant-dialog').isVisible());
       await page.unroute('**/api/assistant');await page.click('#assistant-save');await page.waitForSelector('#assistant-dialog',{state:'hidden'});
       const personalized=await (await context.request.get(origin+'/api/assistant')).json();assert.equal(personalized.settings.name,'Aster');assert.equal(personalized.settings.personalityInstructions,refined);assert.equal(personalized.settings.avatarPackId,avatarId);
-      await page.click('#edit-assistant');await page.locator('#assistant-dialog .personality-templates summary').click();await choose('#assistant-personality-template','creative');assert.equal(await page.inputValue('#assistant-personality-text'),refined);await page.click('#assistant-apply-template');assert.match(await page.inputValue('#assistant-personality-text'),/créatif/);await page.keyboard.press('Escape');
+      await page.click('#edit-assistant');await page.locator('#assistant-dialog .personality-templates summary').click();await choose('#assistant-personality-template','creative');assert.equal(await page.inputValue('#assistant-personality-text'),refined);await page.click('#assistant-apply-template');assert.equal(await page.inputValue('#assistant-personality-text'),personalityTemplates.find(item=>item.id==='creative')!.instructions);await page.keyboard.press('Escape');
       await page.click('#edit-assistant');assert.equal(await page.inputValue('#assistant-personality-text'),refined);await page.locator('#assistant-dialog [data-close-editor]').click();
       await page.reload();await page.waitForSelector('#app-view:not([hidden])');await page.click('#edit-assistant');assert.equal(await page.inputValue('#assistant-personality-text'),refined);assert.equal(await page.inputValue('#assistant-avatar-pack'),avatarId);await page.locator('#assistant-dialog [data-close-editor]').click();
       await page.setViewportSize({width:1440,height:1050});await page.evaluate(()=>location.hash='playground');

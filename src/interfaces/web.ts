@@ -12,7 +12,7 @@ try {
   const lab = new TestLab({ directory: required("HARNESS_WEB_STATE_DIR"), authDirectory: required("HARNESS_CHATGPT_AUTH_DIR"),
     quotaSnapshotFile:process.env.HARNESS_QUOTA_SNAPSHOT_FILE,
     quotaMaxAgeMs:process.env.HARNESS_QUOTA_MAX_AGE_MS?Number(process.env.HARNESS_QUOTA_MAX_AGE_MS):undefined,
-    apiKeys: { openai: process.env.HARNESS_OPENAI_API_KEY, anthropic: process.env.HARNESS_ANTHROPIC_API_KEY, openrouter:process.env.HARNESS_OPENROUTER_API_KEY } });
+    apiKeys: { openai: process.env.HARNESS_OPENAI_API_KEY, anthropic: process.env.HARNESS_ANTHROPIC_API_KEY, openrouter:process.env.HARNESS_OPENROUTER_API_KEY, venice:process.env.HARNESS_VENICE_API_KEY } });
   await lab.prepare();
   const storageConfig=webStorageConfig(process.env);
   const persistent = storageConfig

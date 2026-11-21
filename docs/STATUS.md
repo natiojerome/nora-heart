@@ -5,6 +5,18 @@ Socle livré ; la parité complète avec Codex CLI et la qualification de tous l
 fournisseurs restent partielles. Les preuves détaillées sont dans TESTING.md et
 les rapports opérateur privés, pas dans le contexte permanent de l’assistant.
 
+## Venice AI
+
+Fournisseur ajouté aux connexions, modèles du fil et défauts des nouvelles
+conversations. Catalogue public réel actualisable : 148 modèles texte observés,
+capacités outils/vision/effort et tarifs adaptés. Clé privée via UI ou environnement,
+indépendante des autres connexions. Contexte/effort vérifiés sur le catalogue ;
+prompt, outils et permissions restent ceux de Heart. Solde Venice non raccordé.
+246 tests locaux ; parcours navigateur dédié avec transport simulé, sauvegarde
+et rechargement des défauts, chat, erreur/reprise de catalogue et quatre largeurs.
+Aucune clé Venice actuellement configurée : inférence réelle à qualifier après
+connexion, sans présenter les simulations comme une preuve fournisseur.
+
 ## Personnalité et continuité des informations
 
 Défauts : amical avec l’utilisateur, amical et professionnel avec les interlocuteurs
