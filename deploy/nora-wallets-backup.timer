@@ -1,0 +1,9 @@
+[Unit]
+Description=Daily verification of the remote wallets recovery copy
+[Timer]
+OnCalendar=daily
+Persistent=true
+RandomizedDelaySec=5m
+Unit=nora-wallets-backup.service
+[Install]
+WantedBy=timers.target

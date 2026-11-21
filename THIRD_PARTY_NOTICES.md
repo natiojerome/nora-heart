@@ -1,5 +1,22 @@
 # Browser rendering dependencies
 
+## Local wallet cryptography
+
+`viem` 2.56.9 — MIT, https://github.com/wevm/viem. Used through its public
+accounts/serialization APIs, not copied into Heart. Reviewed runtime dependencies:
+`@noble/curves` 1.9.1, `@noble/hashes` 1.8.0, `@scure/bip32` 1.7.0,
+`@scure/bip39` 1.6.0, `abitype` 1.2.3, `isows` 1.0.7, `ox` 0.14.45 and `ws`
+8.21.0. Versions are locked in pnpm-lock.yaml; package notices remain intact.
+No browser wallet, exchange SDK or Solana web3 SDK added to the signing runtime.
+
+`@scure/base` 1.2.6 — MIT, https://github.com/paulmillr/scure-base,
+dependency-free base58 encoding. Original MIT notices for these two direct
+dependencies are retained in `docs/licenses/viem.txt` and `docs/licenses/scure-base.txt`.
+Ed25519 and AES-GCM use the existing Node crypto module. The new implementation
+does not incorporate source excerpts from the older Nora wallet signer.
+
+## Browser bundles
+
 The browser bundles below are unmodified copies of the pinned packages in
 `pnpm-lock.yaml`. `pnpm web:vendor` verifies the expected package versions and
 copies the bundles and license notices from installed packages. No CDN is used.

@@ -1,4 +1,6 @@
 import {historyTools} from "../modules/tools/history/index.ts";
+import {WalletClient} from '../modules/wallets/unix/index.ts';
+import {walletTools} from '../modules/tools/wallets/index.ts';
 import {HostFiles} from '../modules/tools/host-files/index.ts';
 import type {ProjectRepository} from "../contracts/projects.ts";
 import {McpProjectsRepository} from "../modules/storage/mcp-projects/index.ts";
@@ -41,6 +43,8 @@ export async function openWebConversations(
   projectRepository?: ProjectRepository,
 ) {
   const storage = await openSqlStorage(config);
+  const walletSocket=process.env.HARNESS_WALLETS_SOCKET;
+  const wallets=walletSocket?new WalletClient(walletSocket):undefined;
   const externalTools = new ExternalTools(
     storage.externalTools,
     (connection, signal) => connectMcp(connection, { signal }),
@@ -108,6 +112,7 @@ export async function openWebConversations(
           ...(await externalTools.toolsFor(conversation,memoryConnectionId?[memoryConnectionId]:[])),
           ...(runSkills?skillTools(runSkills,runSkills.entries):[]),
           ...historyTools(storage.sessions,conversation.id),
+          ...(wallets?walletTools(wallets,conversation.fileAccess==='yolo'&&process.env.HARNESS_WALLETS_SIGN_ENABLED==='1',conversation.fileAccess==='yolo'||!!conversation.networkAccess):[]),
           ...fileTools(conversation.fileAccess==='yolo'?hostFiles:undefined,conversation.fileAccess==='yolo'),
           ...(selected
             ? terminalTools(
@@ -139,6 +144,7 @@ export async function openWebConversations(
     externalTools,
     memories: new Memories(memory, projects),
     close: async () => {
+      wallets?.close();
       scheduler.stop();
       await conversations.shutdown();
       await scheduler.close();

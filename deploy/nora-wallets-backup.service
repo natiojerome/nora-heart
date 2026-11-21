@@ -1,0 +1,21 @@
+[Unit]
+Description=Verify encrypted Nora wallets backup in remote MCP Vault
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=nora-wallets
+Group=nora-wallets
+WorkingDirectory=/projects/nora-heart
+ExecStart=/projects/nora-heart/.tools/node-v24.22.3-linux-x64/bin/node /projects/nora-heart/node_modules/tsx/dist/cli.mjs /projects/nora-heart/src/interfaces/wallets.ts backup
+LoadCredentialEncrypted=master:/etc/nora-wallets/master.cred
+EnvironmentFile=/etc/personal-harness/nora-mcps.env
+UMask=0077
+NoNewPrivileges=true
+ProtectSystem=strict
+ReadWritePaths=/var/lib/nora-wallets
+ProtectHome=true
+PrivateTmp=true
+PrivateDevices=true
+LimitCORE=0

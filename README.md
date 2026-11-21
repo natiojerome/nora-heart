@@ -6,12 +6,14 @@ persistence. TypeScript, Node.js 24 and a mobile-first web interface.
 Heart orchestrates conversations and execution. Its core is independent of concrete
 LLM SDKs, tools and database clients. Explicit composition connects the modules.
 
-- Model adapters: ChatGPT subscription, OpenAI, Anthropic, OpenRouter and a local demo.
+- Model adapters: ChatGPT subscription, OpenAI, Anthropic, OpenRouter, Venice and a local demo.
 - Tools: files, sandboxed terminal, opt-in host execution, MCP connections and skills.
 - Remote MCP authorities: projects, structured memory and vault; separate user-scoped keys.
 - Local conversation history and execution state; PostgreSQL or SQLite adapters.
 - Context budgeting, compression, memory revisions and verified action receipts.
 - Persistent scheduled tasks, interactive forms and concurrent conversations.
+- Local wallets: multi-network assets, offline EVM/Solana signing, persistent
+  JavaScript/Python clients and verified MCP Vault recovery. See [wallet documentation](docs/WALLETS.md).
 
 This is actively developed software, not a claim of complete Codex CLI parity.
 A simulated provider is not evidence that a real integration works.
