@@ -493,3 +493,15 @@ et déclencheur du skill visibles, sans changer les overrides du propriétaire.
 Santé interne saine. Le transport diagnostic provisoire de qualification a été
 retiré du driver de test ; aucun changement du transport produit, aucun log brut
 de réponse fournisseur ajouté au runtime.
+
+## Mission et autonomie — 21 novembre 2026
+
+238 tests, démo et deux parcours navigateur ciblés : modification/reset des consignes
+et assemblage SQLite à 8 192 tokens. Première passe trop volumineuse : texte des
+droits condensé, sans changer les règles ni augmenter la fenêtre.
+GPT‑6 Luna medium réel, fixtures jetables : 12 appels ; sortie partielle poursuivie
+au bon offset, bug de sum corrigé via files.replace, test node réussi (tests-ok),
+aucun formulaire ni repli API. Le nouveau défaut précise le bénéfice utilisateur
+et exclut les recherches CGU/CGV/analyses juridiques non demandées. Cette dernière
+consigne est fournie au modèle ; le parcours ne prétend pas valider toutes les
+décisions juridiques possibles d’un LLM.

@@ -250,7 +250,7 @@ export class Conversations {
     const access=conversation.fileAccess??'read';
     instructions+="\nDate actuelle du serveur (UTC) : "+new Date().toISOString().slice(0,10)+". Utilise cette date pour les calculs d’âge et les dates relatives, sauf précision de l’utilisateur.";
     instructions+="\n"+instructionValue(blocks,"memory")+"\n"+instructionValue(blocks,"memoryPolicy");
-    instructions+="\nDroits actuels de ce fil : "+({none:'aucun accès fichiers ni terminal',read:'lecture seule des fichiers, sans écriture ni terminal',write:'lecture et écriture des fichiers, sans terminal',develop:'lecture/écriture et terminal isolé',yolo:'lecture/écriture et terminal root sur le serveur entier'}[access])+". Droits modifiables par le propriétaire dans Fichiers → Accès de l’assistant. Ne les change pas toi-même ; désactivé ne signifie pas inexistant dans Heart.";
+    instructions+="\nDroits actuels de ce fil : "+({none:'aucun accès fichiers ni terminal',read:'lecture seule des fichiers, sans écriture ni terminal',write:'lecture et écriture des fichiers, sans terminal',develop:'lecture/écriture et terminal isolé',yolo:'lecture/écriture et terminal root sur le serveur entier'}[access])+". Seul le propriétaire les change dans Réglages → Accès. Absent ici ne signifie pas inexistant dans Heart.";
     if(["develop","yolo"].includes(conversation.fileAccess??"read"))instructions+="\n"+instructionValue(blocks,"development");
     if(conversation.fileAccess==='yolo')instructions+="\n"+instructionValue(blocks,"yolo");
     if(conversation.fileAccess!=="none"){

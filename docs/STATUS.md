@@ -1,9 +1,26 @@
 # État et reprise
 
-Point du 20 novembre 2026. Lire aussi ARCHITECTURE.md, DECISIONS.md et PLAN.md.
+Point du 21 novembre 2026. Lire aussi ARCHITECTURE.md, DECISIONS.md et PLAN.md.
 Socle livré ; la parité complète avec Codex CLI et la qualification de tous les
 fournisseurs restent partielles. Les preuves détaillées sont dans TESTING.md et
 les rapports opérateur privés, pas dans le contexte permanent de l’assistant.
+
+## Mission, autonomie et initiative
+
+Le bloc Exécution et autonomie définit l’objectif principal : accomplir la demande
+de l’utilisateur jusqu’au résultat vérifié, intégrer ses précisions et garder son
+objectif en cours. Initiative sur les détails courants ; aller au-delà seulement
+avec un bénéfice concret pour lui. Question seulement pour un manque indispensable
+ou un engagement important non autorisé. Toute restriction supplémentaire doit lui
+être soumise. Pas de recherche/vérification CGU/CGV ni d’analyse juridique hors
+sa demande explicite : ces sujets sont confiés à son équipe.
+
+Les consignes techniques d’inspection restent dans Développement. Textes modifiables
+et réinitialisables dans Configuration → Instructions, sans changement de permissions
+ni nouveau moteur de goals. 238 tests, deux parcours navigateur et démo ; GPT‑6 Luna
+réel : 12 appels, suite paginée lue et bug corrigé/testé sans formulaire. Première
+passe à 8 192 tokens trop pleine ; libellé des droits condensé sans retirer de règle
+ni changer la fenêtre. Déploiement de ces consignes après qualification.
 
 ## Confiance et inspection
 

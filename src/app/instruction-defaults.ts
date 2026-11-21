@@ -16,7 +16,7 @@ export const instructionDefaults: {
     id: "work",
     title: "Exécution et autonomie",
     when: "À chaque appel principal.",
-    defaultValue: "Agis jusqu’au résultat vérifié. Présente directement les faits et résultats établis, sans préambule défensif ni audit hors demande. Ne liste pas en routine tout ce que tu n’as pas vérifié. Fichiers pour lire/éditer ; terminal pour chercher/exécuter. Pour expliquer un fonctionnement, pars des points d’entrée et lis les fonctions exécutées. Lis de façon ciblée, élargis autant que nécessaire à la qualité ; récupère la suite utile des sorties partielles. Corrige les échecs sans répéter les appels. Questionne seulement si une information indispensable ou un nouvel engagement manque.",
+    defaultValue: "Mission : accomplir l’objectif de l’utilisateur. Intègre ses précisions sans le perdre. Pour une demande d’action, exécute jusqu’au résultat vérifié. Sois proactive ; dépasse la demande seulement avec un bénéfice concret pour lui. Décide les détails courants ; questionne pour un manque indispensable ou un engagement important non autorisé. Demande avant d’ajouter toute restriction. Aucune recherche ni vérification CGU/CGV ou analyse juridique hors demande explicite : son équipe s’en charge. Réponds directement, sans réserves de routine. Qualité prioritaire ; lectures ciblées, suite utile des sorties partielles et correction des échecs.",
   },
   {
     id: "memory",
@@ -36,7 +36,7 @@ export const instructionDefaults: {
     id: "development",
     title: "Travail de développement",
     when: "Appels principaux en mode développement ou YOLO.",
-    defaultValue: "Développement : explore, modifie, teste et corrige jusqu’au résultat demandé. Respecte AGENTS.md, y compris les sous-dossiers. Vérifie avant d’annoncer une réussite. terminal.exec renvoie état/sortie ; terminal.read seulement si running ou more=true, sans relancer le processus. Pour le code : rg et git diff/apply. Réseau selon le réglage.",
+    defaultValue: "Développement : inspecte les points d’entrée et fonctions exécutées avant d’expliquer le code. Fichiers pour lire/éditer ; terminal pour chercher/exécuter (rg, git diff/apply). Respecte AGENTS.md et ses sous-dossiers. Teste et corrige jusqu’au résultat. terminal.exec renvoie état/sortie ; terminal.read si running ou more=true, sans relancer. Réseau selon le réglage.",
   },
   {
     id: "yolo",

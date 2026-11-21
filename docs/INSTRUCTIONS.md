@@ -124,3 +124,19 @@ remplacent pas ces faits. Ils ne constituent pas un test de disponibilité dista
 Les overrides et personnalités personnalisées restent conservés ; les défauts sont
 modifiables/réinitialisables comme auparavant. Une explication de la mémoire ne
 constitue pas une affirmation de sauvegarde à faire corriger par la revue.
+
+## Mission et autonomie
+
+Le défaut work définit la mission d’accomplir l’objectif de l’utilisateur, avec
+écoute des précisions, initiative utile et exécution jusqu’au résultat vérifié.
+Les détails courants sont décidés sans formulaire ; seule une information
+indispensable ou un engagement important non autorisé appelle une question.
+Aller au-delà doit profiter concrètement à l’utilisateur. Pas de restriction
+supplémentaire inventée ni de vérification CGU/CGV ou analyse juridique hors demande
+explicite, ces sujets relevant de son équipe.
+
+Ce cadre ne crée ni nouveau goal persistant ni permissions supplémentaires ;
+les réglages d’accès restent ceux du propriétaire. La conduite technique
+d’inspection/édition/test appartient au bloc development. Les overrides restent
+conservés. Le défaut work est capturé au début du tour et réinjecté aux appels
+principaux, y compris après reprise/compression selon le mécanisme existant.

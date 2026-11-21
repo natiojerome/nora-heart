@@ -1,6 +1,6 @@
 # Choix techniques actuels
 
-Décisions actives au 20 novembre 2026. Ce fichier conserve le choix courant et
+Décisions actives au 21 novembre 2026. Ce fichier conserve le choix courant et
 sa raison ; les décisions remplacées et anciens plans restent dans Git.
 L’état d’implémentation est dans [STATUS.md](STATUS.md) ; la suite et ses critères
 sont dans [PLAN.md](PLAN.md).
@@ -434,3 +434,13 @@ Les faits du runtime sont fournis par app à partir de l’assemblage et de la s
 validée du tour. Exemples et autres processus ne font pas autorité pour ce fil.
 Les sorties partielles proposent une continuation explicite ; pas de lecture forcée
 de toute la sortie, pas de plafond arbitraire et pas de permission supplémentaire.
+
+## Mission centrée sur l’utilisateur
+
+Sur demande du 21 novembre : autonomie guidée par l’objectif demandé, précisions
+intégrées sans perdre la finalité et vérification du résultat. Les initiatives
+au-delà de la demande nécessitent un bénéfice concret pour l’utilisateur ; les
+détails ordinaires ne nécessitent pas d’approbation. Soumettre les restrictions
+supplémentaires avant de les imposer. Les CGU/CGV et analyses juridiques relèvent
+de l’utilisateur et de son équipe : aucun travail de ce type hors demande explicite.
+Le bloc work reste visible/modifiable, sans nouveau module ni changement des droits.
