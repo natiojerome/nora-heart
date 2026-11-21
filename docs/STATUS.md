@@ -20,7 +20,8 @@ et réinitialisables dans Configuration → Instructions, sans changement de per
 ni nouveau moteur de goals. 238 tests, deux parcours navigateur et démo ; GPT‑6 Luna
 réel : 12 appels, suite paginée lue et bug corrigé/testé sans formulaire. Première
 passe à 8 192 tokens trop pleine ; libellé des droits condensé sans retirer de règle
-ni changer la fenêtre. Déploiement de ces consignes après qualification.
+ni changer la fenêtre. Consignes déployées après sauvegarde chiffrée et redémarrage
+web ; catalogue authentifié contrôlé (13 blocs, nouveau work actif), santé saine.
 
 ## Confiance et inspection
 
@@ -112,7 +113,7 @@ ils ne sont pas présentés comme tous relancés à chaque changement de consign
 
 ## Déploiement et suite
 
-Dernier déploiement vérifié : inspection/confiance après sauvegarde locale chiffrée
+Dernier déploiement vérifié : mission/autonomie après sauvegarde locale chiffrée
 et redémarrage web coordonné. Contrôle authentifié HTTPS : treize blocs visibles,
 nouveau défaut de travail et déclencheur code-review chargés. Santé interne saine,
 aucune modification des personnalités/overrides ni des droits des fils propriétaires.

@@ -505,3 +505,8 @@ aucun formulaire ni repli API. Le nouveau défaut précise le bénéfice utilisa
 et exclut les recherches CGU/CGV/analyses juridiques non demandées. Cette dernière
 consigne est fournie au modèle ; le parcours ne prétend pas valider toutes les
 décisions juridiques possibles d’un LLM.
+
+Consignes d’autonomie déployées après sauvegarde chiffrée et redémarrage web.
+Catalogue HTTPS authentifié : nouveau défaut work actif sans override, treize blocs,
+mission/bénéfice utilisateur et absence d’analyses juridiques non demandées vérifiés.
+Santé interne saine. Aucun changement des permissions ou données métier.
