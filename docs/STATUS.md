@@ -130,12 +130,11 @@ ils ne sont pas présentés comme tous relancés à chaque changement de consign
 
 ## Déploiement et suite
 
-Déploiement précédent : mission/autonomie après sauvegarde locale chiffrée
-et redémarrage web coordonné. Contrôle authentifié HTTPS : treize blocs visibles,
-nouveau défaut de travail et déclencheur code-review chargés. Santé interne saine,
-aucune modification des personnalités/overrides ni des droits des fils propriétaires.
-Le worker existant reste compatible ; les changements portent sur l’assemblage et
-les adaptateurs d’outils, pas le lancement des processus.
+Personnalité et rétention déployées le 21 novembre après sauvegarde locale chiffrée
+et redémarrage web coordonné (source 4d26fea). Contrôle HTTPS authentifié : tons
+utilisateur/externe actifs, quatre tours récents, résumé et injection adaptatifs,
+13 blocs d’instructions et nouveaux assets chargés. Santé interne saine. Aucun
+profil personnalisé ni historique propriétaire écrasé ; aucun changement du worker.
 
 Publication publique autorisée : main, petits commits vérifiés et push ; secrets,
 état privé et rapports opérateur exclus. Historique privé conservé localement.
