@@ -1,6 +1,6 @@
 # Plan courant
 
-Point du 21 novembre 2026, après ajout de Venice AI. Finalité conservée : une
+Point du 21 novembre 2026, après qualification de Venice, compteurs et reprise des appels invalides. Finalité conservée : une
 assistante quotidienne dont le propriétaire contrôle moteur, données, outils et
 permissions, avec des cerveaux interchangeables selon besoin et coût.
 [STATUS.md](STATUS.md) décrit le livré ; les lots 1 et 2 sont livrés ; le lot 3 est qualifié sur un scénario réel ciblé. [REVIEW.md](REVIEW.md) donne les écarts constatés.
@@ -190,10 +190,20 @@ l’historique actuel, sans nouvelle centralisation dans ce lot.
 
 ## Suite
 
-Configurer Venice AI dans Fournisseurs puis qualifier une vraie boucle d’outils
-avec le modèle choisi ; catalogue réel déjà lu, inférence encore non qualifiée.
-Consolider sur les usages quotidiens et les défauts mesurés. Ne pas réintroduire de
-catalogue métier local, ni créer de routine/notification externe sans besoin réel.
+Venice est connecté et qualifié sur une boucle fichiers réelle ; soldes/limites
+sont visibles sans inférence. Les appels invalides sont corrigeables dans le même
+tour, sans effet du lot rejeté ni rejeu des opérations déjà réussies.
+
+Prochain lot recommandé : consolider les longs travaux sur les cerveaux utilisés.
+Couvrir d’abord en local les chaînes lecture/édition/test, sorties terminal longues,
+correction d’erreurs et interruption/reprise ; compléter par de petits scénarios
+réels ciblés, avec coût mesuré. Étendre ensuite la qualification mémoire/compression
+au modèle Venice utilisé, sans rejouer les conversations propriétaire. Les preuves
+ChatGPT/OpenRouter existantes restent distinctes de cette qualification à venir.
+
+Consolider sur les défauts mesurés, sans nouvelle couche d’orchestration ni changement
+de stack. Ne pas réintroduire de catalogue métier local, ni créer de routine ou
+notification externe sans besoin réel.
 
 ## Après ces lots
 
