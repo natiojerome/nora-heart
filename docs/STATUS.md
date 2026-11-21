@@ -15,8 +15,11 @@ prompt, outils et permissions restent ceux de Heart. Solde Venice non raccordé.
 246 tests locaux et quatre parcours navigateur ciblés validés ; parcours Venice
 avec transport simulé, sauvegarde
 et rechargement des défauts, chat, erreur/reprise de catalogue et quatre largeurs.
-Aucune clé Venice actuellement configurée : inférence réelle à qualifier après
-connexion, sans présenter les simulations comme une preuve fournisseur.
+Clé Venice configurée et reconnue le 21 novembre : endpoint authentifié des
+limites HTTP 200, catalogue réel de 148 modèles texte. Aucun tarif texte API nul ;
+soldes USD, DIEM et crédits inclus à zéro. Deux appels réels (Gemma 3 27B et
+DeepSeek V4.1 Flash Uncensored) refusés HTTP 402 pour solde insuffisant.
+L’authentification est qualifiée ; aucune génération Venice réussie à ce stade.
 
 ## Personnalité et continuité des informations
 
@@ -146,7 +149,8 @@ ils ne sont pas présentés comme tous relancés à chaque changement de consign
 Venice AI déployé le 21 novembre après sauvegarde chiffrée et redémarrage web
 coordonné (source f2f0876). Contrôle HTTPS authentifié : connexion visible, catalogue
 réel de 148 modèles, contexte et efforts cohérents, contrôles web présents ; santé
-saine. Aucun échange LLM Venice réel ni écriture métier : clé encore non configurée.
+saine. Clé désormais reconnue ; deux requêtes d’inférence réelles refusées pour
+solde insuffisant, sans génération ni écriture métier.
 
 Personnalité et rétention déployées le 21 novembre après sauvegarde locale chiffrée
 et redémarrage web coordonné (source 4d26fea). Contrôle HTTPS authentifié : tons
@@ -156,6 +160,6 @@ profil personnalisé ni historique propriétaire écrasé ; aucun changement du 
 
 Publication publique autorisée : main, petits commits vérifiés et push ; secrets,
 état privé et rapports opérateur exclus. Historique privé conservé localement.
-Suite : configurer Venice dans Fournisseurs puis qualifier une boucle réelle
-d’outils avec le modèle choisi ; suivre aussi les usages des autres fournisseurs,
+Suite : qualifier une boucle réelle d’outils Venice lorsque le compte dispose
+de crédits API ; suivre aussi les usages des autres fournisseurs,
 sans réintroduire de prudence générique ni de limites arbitraires.
