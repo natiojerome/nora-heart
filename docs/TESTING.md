@@ -29,7 +29,10 @@ Persistance privée de clé et sélection d’effort couvertes aussi par les sui
 web/conversations. `tests/venice.e2e.ts` utilise Chromium, HTTP et SQLite jetable :
 connexion, défauts/override, effort, rechargement, chat, panne et reprise du
 catalogue, largeurs 320/390/820/1440. Transport LLM simulé, pas d’inférence réelle.
-246 tests locaux au total. Le catalogue Venice réel est lu sans clé (148 modèles
+246 tests locaux au total et quatre parcours navigateur ciblés validés (Venice,
+atelier/connexions existantes, catalogue des conversations, assemblage SQLite).
+Deux assertions anciennes de personnalité ont été alignées sur les templates
+courants, sans modifier leur comportement. Le catalogue Venice réel est lu sans clé (148 modèles
 texte observés). L’absence de clé configurée empêche la qualification d’inférence
 Venice ; connexion puis parcours réel d’outils restent la prochaine validation.
 

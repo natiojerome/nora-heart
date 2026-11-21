@@ -12,7 +12,8 @@ conversations. Catalogue public réel actualisable : 148 modèles texte observé
 capacités outils/vision/effort et tarifs adaptés. Clé privée via UI ou environnement,
 indépendante des autres connexions. Contexte/effort vérifiés sur le catalogue ;
 prompt, outils et permissions restent ceux de Heart. Solde Venice non raccordé.
-246 tests locaux ; parcours navigateur dédié avec transport simulé, sauvegarde
+246 tests locaux et quatre parcours navigateur ciblés validés ; parcours Venice
+avec transport simulé, sauvegarde
 et rechargement des défauts, chat, erreur/reprise de catalogue et quatre largeurs.
 Aucune clé Venice actuellement configurée : inférence réelle à qualifier après
 connexion, sans présenter les simulations comme une preuve fournisseur.
@@ -142,6 +143,11 @@ ils ne sont pas présentés comme tous relancés à chaque changement de consign
 
 ## Déploiement et suite
 
+Venice AI déployé le 21 novembre après sauvegarde chiffrée et redémarrage web
+coordonné (source f2f0876). Contrôle HTTPS authentifié : connexion visible, catalogue
+réel de 148 modèles, contexte et efforts cohérents, contrôles web présents ; santé
+saine. Aucun échange LLM Venice réel ni écriture métier : clé encore non configurée.
+
 Personnalité et rétention déployées le 21 novembre après sauvegarde locale chiffrée
 et redémarrage web coordonné (source 4d26fea). Contrôle HTTPS authentifié : tons
 utilisateur/externe actifs, quatre tours récents, résumé et injection adaptatifs,
@@ -150,5 +156,6 @@ profil personnalisé ni historique propriétaire écrasé ; aucun changement du 
 
 Publication publique autorisée : main, petits commits vérifiés et push ; secrets,
 état privé et rapports opérateur exclus. Historique privé conservé localement.
-Suite : suivre les usages réels et qualifier les autres fournisseurs sur les mêmes
-tâches complètes, sans réintroduire de prudence générique ni de limites arbitraires.
+Suite : configurer Venice dans Fournisseurs puis qualifier une boucle réelle
+d’outils avec le modèle choisi ; suivre aussi les usages des autres fournisseurs,
+sans réintroduire de prudence générique ni de limites arbitraires.
