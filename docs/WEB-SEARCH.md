@@ -1,9 +1,8 @@
 # Recherche web auto-hébergée
 
 Décision du 18 novembre 2026 : aucun fournisseur dont l’offre gratuite impose un
-quota pour pousser vers le paiement. Le MCP Exa est désactivé ; son historique
-reste conservé. Le preset de Heart est désormais le MCP de recherche locale.
-Pas de repli vers Exa, une API payante ou un compte à crédits.
+quota pour pousser vers le paiement. Le preset de Heart est désormais le MCP de recherche locale.
+Pas de repli vers une API payante ou un compte à crédits.
 
 ## Fonctionnement
 
@@ -77,7 +76,7 @@ pour exploiter le moteur Python SearXNG existant sans l’incorporer au core TS.
    n’importe pas web.env et ne peut lire les données/credentials privés de Heart.
 4. Dans Capacités, le preset **Configurer la recherche locale** utilise
    http://127.0.0.1:4217/mcp sans authentification. Tester, cocher web_search et
-   web_fetch, activer et enregistrer. Exa doit rester désactivé.
+   web_fetch, activer et enregistrer. Seule la recherche locale est préconfigurée.
 
 Sondes : SearXNG `/healthz` sur 4216 ; MCP `/health` sur 4217. Ces sondes prouvent
 la disponibilité des processus, pas le succès d’une recherche sur tous les moteurs.

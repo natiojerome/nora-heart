@@ -216,7 +216,9 @@
       target.append(card);
     }
     get("mcp-empty").hidden = !!records.length;
-    get("mcp-exa").hidden = records.some((item) => item.id === preset?.id);
+    get("mcp-local-search").hidden = records.some(
+      (item) => item.id === preset?.id,
+    );
     renderTools();
     window.heartIcons?.render(target);
   }
@@ -282,7 +284,7 @@
     }
   }
   get("mcp-add").onclick = () => open();
-  get("mcp-exa").onclick = () => open(preset);
+  get("mcp-local-search").onclick = () => open(preset);
   get("mcp-tools-refresh").onclick = () => void load(true);
   get("mcp-refresh").onclick = () => void load(true);
   get("mcp-discover").onclick = () => void discover();
@@ -348,7 +350,7 @@
       return;
     }
     get("mcp-add").disabled = !state.externalToolsAvailable;
-    get("mcp-exa").disabled = !state.externalToolsAvailable;
+    get("mcp-local-search").disabled = !state.externalToolsAvailable;
     get("mcp-refresh").disabled = loading || !state.externalToolsAvailable;
     get("mcp-tools-refresh").disabled =
       loading || !state.externalToolsAvailable;

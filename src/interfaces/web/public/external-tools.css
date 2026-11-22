@@ -102,7 +102,7 @@
 #mcp-header-box[hidden],
 #mcp-catalogue[hidden],
 #mcp-empty[hidden],
-#mcp-exa[hidden] {
+#mcp-local-search[hidden] {
   display: none;
 }
 #mcp-status,
@@ -130,7 +130,7 @@
 .mcp-panel {
   grid-column: 1/-1;
 }
-#mcp-exa {
+#mcp-local-search {
   margin-top: 12px;
 }
 .module-symbol svg {

@@ -9,7 +9,7 @@ processus navigateur ou framework serveur n’est ajouté. Le core ne connaît q
 
 La recherche par défaut est auto-hébergée : SearXNG et lecteur de pages derrière un
 MCP privé, sans abonnement ou quota commercial. Le preset se configure dans
-Capacités → Connexions ; réseau du fil requis, déjà inclus en YOLO. Exa est désactivé sur demande
+Capacités → Connexions ; réseau du fil requis, déjà inclus en YOLO. La recherche commerciale a été retirée sur demande
 du propriétaire. [Installation, outils et limites réelles](WEB-SEARCH.md).
 Les autres serveurs MCP restent remplaçables par configuration et approbation.
 
@@ -115,7 +115,7 @@ choix, CSRF, refus sans réseau, résultat journalisé, désactivation et affich
 Recherche locale réelle : trois requêtes aux moteurs et une lecture de page sans
 coupe, puis ChatGPT réel avec recherche et lecture de PostgreSQL, trois appels
 modèle réussis et réponse citée. [Preuves actuelles](qualification/self-search/).
-Les essais Exa précédents restent des qualifications historiques dans
+Les essais de fournisseurs précédents restent des qualifications historiques dans
 qualification/mcp ; ce serveur n’est plus le choix actif. OAuth et stdio ne sont pas livrés. Les écritures externes sont approuvées par connexion. Voir PLAN.md.
 
 Sources : [SDK officiel](https://ts.sdk.modelcontextprotocol.io/client),
