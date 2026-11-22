@@ -53,7 +53,7 @@ export class Engine {
     if(!Number.isSafeInteger(maxCallsPerBatch)||maxCallsPerBatch<0)throw new Error('Budget de lot invalide.');
     const privateMessage=(message:Message):Message=>{
       if(message.role==='assistant')return {...message,toolCalls:message.toolCalls.map(call=>this.tools.get(call.name)?.transient?{...call,arguments:{withheld:true}}:call)};
-      if(message.role==='tool'&&this.tools.get(message.name)?.transient)return {...message,content:'Résultat sensible non conservé. Relire la source si nécessaire ; aucune action rejouée.'};
+      if(message.role==='tool'&&this.tools.get(message.name)?.transient)return {...message,images:undefined,content:'Résultat sensible non conservé. Relire la source si nécessaire ; aucune action rejouée.'};
       return message;
     };
     const runId=options.runId??randomUUID();
@@ -157,15 +157,15 @@ export class Engine {
           if(signal?.aborted){await append('message',{role:'tool',callId:call.id,name:call.name,content:'Appel annulé avant exécution à la demande de l’utilisateur.',error:true});continue;}
           const tool=this.tools.get(call.name);
           await append('tool.started',{callId:call.id,name:call.name,...(tool?.title?{title:tool.title}:{})});
-          let content='',error=false,input:InputRequest|undefined;
+          let content='',error=false,input:InputRequest|undefined,images:import('../contracts/messages.ts').ToolImage[]|undefined;
           try{
             if(!tool||!availableNames.has(call.name)||!options.permissions.has(tool.permission))throw new Error('Outil indisponible ou permission refusée.');
-            const result=await tool.execute(call.arguments,{workspace:options.workspace,signal,runId,callId:call.id});
-            if(typeof result==='string')content=result;else input=result;
+            const context={workspace:options.workspace,signal,runId,callId:call.id};
+            if(tool.executeWithMedia){const rich=await tool.executeWithMedia(call.arguments,context);content=rich.text;images=rich.images;}else{const result=await tool.execute(call.arguments,context);if(typeof result==='string')content=result;else input=result;}
           }catch(cause){error=true;content=cause instanceof Error?cause.message:'Échec de l’outil.';}
           if(input){const requestId=await append('interaction.requested',{callId:call.id,toolName:call.name,request:input} as unknown as Json);return requestId;}
           await append('tool.finished',{callId:call.id,name:call.name,error});
-          const result:Message={role:'tool',callId:call.id,name:call.name,content,error};await append('message',privateMessage(result) as unknown as Json);messages.push(result);
+          const result:Message={role:'tool',callId:call.id,name:call.name,content,error,...(images?.length?{images}:{})};const{images:volatileImages,...persisted}=result;await append('message',privateMessage(persisted) as unknown as Json);messages.push(result);
         }
       };
       let reviewed = false;

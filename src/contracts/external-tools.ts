@@ -1,3 +1,4 @@
+import type { ToolMediaResult } from "./messages.ts";
 import type { Json } from "./json.ts";
 /** Heart stores plain JSON Schema snapshots, never SDK objects or credentials. */
 export interface ExternalToolDefinition {
@@ -37,6 +38,11 @@ export interface ExternalToolRepository {
 export interface ExternalToolSession {
   definitions: ExternalToolDefinition[];
   call(name: string, args: Json, signal?: AbortSignal): Promise<string>;
+  callWithMedia?(
+    name: string,
+    args: Json,
+    signal?: AbortSignal,
+  ): Promise<ToolMediaResult>;
   close(): Promise<void>;
 }
 export type ConnectExternalTools = (

@@ -258,6 +258,46 @@ export class ExternalTools {
     connection: ExternalToolConnection,
     definition: ExternalToolDefinition,
   ): Tool {
+    const executeWithMedia: NonNullable<Tool["executeWithMedia"]> = async (
+      args,
+      context,
+    ) => {
+      const live = await this.repository.get(connection.id);
+      if (
+        !live?.enabled ||
+        live.version !== connection.version ||
+        !live.tools.some((tool) => isDeepStrictEqual(tool, definition))
+      )
+        throw new ExternalToolError(
+          "MCP : connexion désactivée ou modifiée. Relance avec les droits actuels.",
+        );
+      let session: ExternalToolSession | undefined;
+      try {
+        session = await this.connect(connection, context.signal);
+        const actual = session.definitions.find(
+          (tool) => tool.name === definition.name,
+        );
+        if (!actual || !isDeepStrictEqual(actual, definition))
+          throw new ExternalToolError(
+            "MCP : catalogue modifié. Actualise et approuve les outils.",
+          );
+        const result = session.callWithMedia
+          ? await session.callWithMedia(definition.name, args, context.signal)
+          : { text: await session.call(definition.name, args, context.signal) };
+        this.health.set(connection.id, { status: "connected" });
+        return result;
+      } catch (error) {
+        if (error instanceof ExternalCallError) throw error;
+        this.health.set(connection.id, { status: "unavailable" });
+        if (context.signal?.aborted)
+          throw new ExternalToolError("MCP : appel interrompu.");
+        throw new ExternalToolError(
+          "MCP : appel échoué ou catalogue modifié. Vérifie la connexion dans Capacités. Aucun appel rejoué.",
+        );
+      } finally {
+        await session?.close().catch(() => {});
+      }
+    };
     return {
       name: externalToolName(connection.id, definition.name),
       title: connection.label + " · " + (definition.title || definition.name),
@@ -268,45 +308,9 @@ export class ExternalTools {
           ? ("external.write" as const)
           : ("external.read" as const),
       ...(connection.transient ? { transient: true } : {}),
-      execute: async (args, context) => {
-        const live = await this.repository.get(connection.id);
-        if (
-          !live?.enabled ||
-          live.version !== connection.version ||
-          !live.tools.some((tool) => isDeepStrictEqual(tool, definition))
-        )
-          throw new ExternalToolError(
-            "MCP : connexion désactivée ou modifiée. Relance avec les droits actuels.",
-          );
-        let session: ExternalToolSession | undefined;
-        try {
-          session = await this.connect(connection, context.signal);
-          const actual = session.definitions.find(
-            (tool) => tool.name === definition.name,
-          );
-          if (!actual || !isDeepStrictEqual(actual, definition))
-            throw new ExternalToolError(
-              "MCP : catalogue modifié. Actualise et approuve les outils.",
-            );
-          const result = await session.call(
-            definition.name,
-            args,
-            context.signal,
-          );
-          this.health.set(connection.id, { status: "connected" });
-          return result;
-        } catch (error) {
-          if (error instanceof ExternalCallError) throw error;
-          this.health.set(connection.id, { status: "unavailable" });
-          if (context.signal?.aborted)
-            throw new ExternalToolError("MCP : appel interrompu.");
-          throw new ExternalToolError(
-            "MCP : appel échoué ou catalogue modifié. Vérifie la connexion dans Capacités. Aucun appel rejoué.",
-          );
-        } finally {
-          await session?.close().catch(() => {});
-        }
-      },
+      executeWithMedia,
+      execute: async (args, context) =>
+        (await executeWithMedia(args, context)).text,
     };
   }
 }

@@ -30,7 +30,8 @@ export async function mcpFixture(
       name: string,
       args: Record<string, unknown>,
     ) => Promise<{
-      content: { type: "text"; text: string }[];
+      content: ({ type: "text"; text: string } | {type:"image";mimeType:string;data:string})[];
+      structuredContent?:Record<string,unknown>;
       isError?: boolean;
     }>;
     delayList?: () => Promise<void>;

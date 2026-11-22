@@ -1,3 +1,4 @@
+import {withToolImages}from"../../../contracts/messages.ts";
 import {routerReasoning} from "./capabilities.ts";
 import { createHash } from "node:crypto";
 import { APICallError, InvalidResponseDataError, JSONParseError, TypeValidationError, generateText, jsonSchema, stepCountIs, type LanguageModel, type ModelMessage, type ToolSet } from "ai";
@@ -71,7 +72,7 @@ export class AiSdkProvider implements ModelProvider {
           // No execute callback: only the harness may execute a tool.
         };
       }
-      const messages: ModelMessage[] = request.messages.map(message => {
+      const messages: ModelMessage[] = withToolImages(request.messages).map(message => {
         if (message.role === "user") {
           if(!message.attachments?.length)return {role:"user",content:message.content};
           const content:Exclude<Extract<ModelMessage,{role:"user"}>["content"],string>=[{type:"text",text:message.content}];

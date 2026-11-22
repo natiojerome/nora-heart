@@ -1,7 +1,10 @@
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
 import { ToolListChangedNotificationSchema } from "@modelcontextprotocol/sdk/types.js";
-import {ExternalCallError,type ExternalErrorCode} from "../../../contracts/external-tools.ts";
+import {
+  ExternalCallError,
+  type ExternalErrorCode,
+} from "../../../contracts/external-tools.ts";
 import { Ajv } from "ajv";
 import { Ajv2020 } from "ajv/dist/2020.js";
 import type {
@@ -23,7 +26,8 @@ function failed(error: unknown, signal?: AbortSignal): never {
     throw new McpToolError(
       "MCP : authentification refusée. Vérifie la connexion.",
     );
-  if (error instanceof McpToolError || error instanceof ExternalCallError) throw error;
+  if (error instanceof McpToolError || error instanceof ExternalCallError)
+    throw error;
   throw new McpToolError(
     "MCP : serveur indisponible ou réponse incompatible. Aucun appel rejoué.",
   );
@@ -122,42 +126,76 @@ export async function connectMcp(
         return [tool.name, validator] as const;
       }),
     );
+    const callWithMedia: NonNullable<
+      ExternalToolSession["callWithMedia"]
+    > = async (name, args, signal) => {
+      if (closed)
+        throw new McpToolError(
+          "MCP : connexion fermée. Reconnecte le serveur.",
+        );
+      if (changed)
+        throw new McpToolError(
+          "MCP : catalogue modifié. Actualise et approuve les outils.",
+        );
+      const validate = validators.get(name);
+      if (!validate || !validate(args))
+        throw new McpToolError("MCP : arguments invalides.");
+      signal?.throwIfAborted();
+      try {
+        const result = await client.callTool(
+          { name, arguments: args as Record<string, unknown> },
+          undefined,
+          { signal, timeout: connection.timeoutMs },
+        );
+        if (result.isError) {
+          const structured = result.structuredContent as
+            { error?: { code?: unknown } } | undefined;
+          const code = structured?.error?.code;
+          if (
+            typeof code === "string" &&
+            [
+              "INVALID",
+              "NOT_FOUND",
+              "CONFLICT",
+              "GONE",
+              "UNAVAILABLE",
+            ].includes(code)
+          )
+            throw new ExternalCallError(code as ExternalErrorCode);
+          throw new McpToolError(
+            "MCP : le serveur a refusé cet appel. Aucun appel rejoué.",
+          );
+        }
+        // Avoid sending both the text fallback and identical structured data to the model.
+        const blocks: Record<string, unknown>[] = Array.isArray(result.content)
+          ? result.content.filter(
+              (p: unknown): p is Record<string, unknown> =>
+                !!p && typeof p === "object",
+            )
+          : [];
+        const images = blocks.flatMap((part) =>
+          part.type === "image" &&
+          typeof part.data === "string" &&
+          typeof part.mimeType === "string"
+            ? [{ mediaType: part.mimeType, data: part.data }]
+            : [],
+        );
+        let text = JSON.stringify(
+          result.structuredContent ?? {
+            content: blocks.filter((part) => part.type !== "image"),
+          },
+        );
+        if (secret) text = text.split(secret).join("[secret masqué]");
+        return { text, ...(images.length ? { images } : {}) };
+      } catch (error) {
+        failed(error, signal);
+      }
+    };
     return {
       definitions,
+      callWithMedia,
       async call(name, args, signal) {
-        if (closed)
-          throw new McpToolError(
-            "MCP : connexion fermée. Reconnecte le serveur.",
-          );
-        if (changed)
-          throw new McpToolError(
-            "MCP : catalogue modifié. Actualise et approuve les outils.",
-          );
-        const validate = validators.get(name);
-        if (!validate || !validate(args))
-          throw new McpToolError("MCP : arguments invalides.");
-        signal?.throwIfAborted();
-        try {
-          const result = await client.callTool(
-            { name, arguments: args as Record<string, unknown> },
-            undefined,
-            { signal, timeout: connection.timeoutMs },
-          );
-          if (result.isError) {
-            const structured=result.structuredContent as {error?:{code?:unknown}}|undefined;
-            const code=structured?.error?.code;
-            if(typeof code==='string' && ['INVALID','NOT_FOUND','CONFLICT','GONE','UNAVAILABLE'].includes(code))throw new ExternalCallError(code as ExternalErrorCode);
-            throw new McpToolError(
-              "MCP : le serveur a refusé cet appel. Aucun appel rejoué.",
-            );
-          }
-          // Avoid sending both the text fallback and identical structured data to the model.
-          let text = JSON.stringify(result.structuredContent ?? {content:result.content});
-          if (secret) text = text.split(secret).join("[secret masqué]");
-          return text;
-        } catch (error) {
-          failed(error, signal);
-        }
+        return (await callWithMedia(name, args, signal)).text;
       },
       async close() {
         await client.close();

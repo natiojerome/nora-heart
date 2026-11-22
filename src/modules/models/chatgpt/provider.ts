@@ -1,3 +1,4 @@
+import {withToolImages}from"../../../contracts/messages.ts";
 import { createHash } from "node:crypto";
 import { Ajv } from "ajv";
 import { Ajv2020 } from "ajv/dist/2020.js";
@@ -82,7 +83,7 @@ export class ChatGptProvider implements ModelProvider {
       const tools = new Map(request.tools.map(tool => [alias(tool.name), { tool, validate: (String(tool.parameters.$schema??"").includes("2020-12")?ajv2020:ajv).compile(tool.parameters) }]));
       if (tools.size !== request.tools.length) throw failure();
       const input: Wire[] = [];
-      for (const message of request.messages) {
+      for (const message of withToolImages(request.messages)) {
         if (message.role === "user") {
           if(!message.attachments?.length)input.push({role:"user",content:message.content});
           else {
