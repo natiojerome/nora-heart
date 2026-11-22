@@ -115,6 +115,7 @@ export function createWebServer(options: Options) {
     "/chat.css": { name:"chat.css",type:"text/css; charset=utf-8" },
     "/vendor/marked.js": { name:"vendor/marked.js",type:"text/javascript; charset=utf-8" },
     "/vendor/purify.js": { name:"vendor/purify.js",type:"text/javascript; charset=utf-8" },
+    "/platform.js": {name:"platform.js",type:"text/javascript; charset=utf-8"},
     "/api-client.js": {name:"api-client.js",type:"text/javascript; charset=utf-8"},
     "/icons.js": {name:"icons.js",type:"text/javascript; charset=utf-8"},
     "/app.js": { name: "app.js", type: "text/javascript; charset=utf-8" },

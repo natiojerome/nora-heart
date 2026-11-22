@@ -25,13 +25,7 @@
         })[char],
     );
   }
-  async function writeClipboard(text){
-    if(navigator.clipboard?.writeText){try{await navigator.clipboard.writeText(text);return;}catch{}}
-    const previous=document.activeElement,field=document.createElement('textarea');
-    field.value=text;field.readOnly=true;field.style.cssText='position:fixed;opacity:0;inset:0;pointer-events:none';document.body.append(field);
-    try{field.select();if(!document.execCommand('copy'))throw new Error('Clipboard unavailable');}
-    finally{field.remove();previous?.focus({preventScroll:true});}
-  }
+  async function writeClipboard(text){return window.heartPlatform.copy(text);}
   function rich(node, content) {
     node.className = "markdown-body";
     node.dir = "auto";

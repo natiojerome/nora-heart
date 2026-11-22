@@ -180,7 +180,7 @@
     if (saving) e.preventDefault();
   });
   get("skill-copy").onclick = () =>
-    navigator.clipboard.writeText(get("skill-invocation").textContent).then(
+    window.heartPlatform.copy(get("skill-invocation").textContent).then(
       () => message("Invocation copiée."),
       () => message("Copie impossible. Sélectionne l’invocation.", true),
     );

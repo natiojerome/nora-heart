@@ -10,7 +10,10 @@ composant imposé du core. Voir [STATUS.md](STATUS.md) pour les limites livrées
 `install.sh` clone le dépôt dans un chemin neuf ; `scripts/install.py` prépare
 les dépendances et les unités systemd par UUID. Les services restent natifs pour
 le terminal hôte ; PostgreSQL/SearXNG et le proxy optionnel utilisent Docker.
-Ports privés, chemins explicites et données sous `<installation>/.heart` ; aucun
+Web directement sur IP par défaut, domaine/HTTPS optionnel, `--private` pour
+boucle locale. Origine et cookies correspondent au mode choisi ; utilitaires
+navigateur UUID/copie compatibles HTTP sur IP. PostgreSQL/SearXNG restent privés.
+Chemins explicites et données sous `<installation>/.heart` ; aucun
 identifiant métier dérivé du dossier ni import des services existants.
 
 `app/installation.ts` vérifie les endpoints/credentials MCP, conserve les secrets

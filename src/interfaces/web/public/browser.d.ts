@@ -25,6 +25,7 @@ interface Window {
   heartTasks?: { sync(): void; reset(): void; open(id: string): Promise<void> };
   heartControls?: { sync(): void };
   heartUI: { openEditor(id: string, focusId?: string): void };
+  heartPlatform: { uuid(): string; copy(value: string): Promise<void> };
 }
 declare const state: { authenticated: boolean; tasksAvailable?: boolean };
 declare function api(url: string, options?: HeartApiOptions): Promise<any>;

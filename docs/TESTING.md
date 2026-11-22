@@ -2,7 +2,19 @@
 
 ## Installation indépendante — 22 novembre 2026
 
-266 tests, démo SDK et trois parcours navigateur de régression. Nouveaux tests de
+266 tests, démo SDK et cinq parcours navigateur de régression.
+Onboarding également sur IP privée non loopback en HTTP : `isSecureContext` faux,
+`crypto.randomUUID` absent, 1 000 UUID v4 uniques, copie de texte Unicode par
+secours, initialisation des formules et cookies de session adaptés. Configuration
+réseau Python : IPv4/IPv6, modes exclusifs, détection métadonnées/routage simulée
+et maintien des anciens déploiements privés.
+Les installations vierges décrites ci-dessous utilisent un hôte existant,
+pas une nouvelle VM Hetzner ; installation depuis un OS vierge non qualifiée.
+Qualification supplémentaire sur une troisième installation en HTTP/IP privée :
+PostgreSQL/systemd réels, wizard mobile, fichiers, terminal protégé/YOLO, chat
+simulé, restart et relance sans options réseau validés. Détection de l’IP publique
+également vérifiée sur l’hôte réel ; aucune nouvelle VM créée pour cet essai.
+ Nouveaux tests de
 configuration MCP : vérification des outils attendus avant enregistrement,
 credentials privés séparés des schémas, versions/identifiants conservés,
 concurrence/reprise et rejet des variables d’environnement étrangères. Tests
@@ -96,7 +108,7 @@ Persistance privée de clé et sélection d’effort couvertes aussi par les sui
 web/conversations. `tests/venice.e2e.ts` utilise Chromium, HTTP et SQLite jetable :
 connexion, défauts/override, effort, rechargement, chat, panne et reprise du
 catalogue, largeurs 320/390/820/1440. Transport LLM simulé, pas d’inférence réelle.
-246 tests locaux au total et quatre parcours navigateur ciblés validés (Venice,
+246 tests locaux au total et cinq parcours navigateur ciblés validés (Venice,
 atelier/connexions existantes, catalogue des conversations, assemblage SQLite).
 Deux assertions anciennes de personnalité ont été alignées sur les templates
 courants, sans modifier leur comportement. Le catalogue Venice réel est lu sans clé

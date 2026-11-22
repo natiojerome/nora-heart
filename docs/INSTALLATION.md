@@ -27,16 +27,24 @@ Caddy gère HTTPS et le renouvellement des certificats. Le script vérifie
 l’accès HTTPS authentifié avant de déclarer ce mode prêt. Si le DNS ou l’émission
 du certificat échoue, les données sont conservées pour une reprise.
 
-Si un proxy est déjà installé, ne pas donner `--domain` : garder le web en local
+Si un proxy est déjà installé, utiliser `--private` sans `--domain` pour garder le web en local
 et ajouter une route dans ce proxy vers le port indiqué. Aucun proxy existant
 n’est remplacé. L’installation actuelle `heart.natio.re` n’est pas un exemple de
 compte ou de configuration partagé à recopier.
 
-Sans domaine, l’écoute reste sur **127.0.0.1**. Le script affiche la commande de
-tunnel SSH et l’URL `http://localhost:<port>` à ouvrir sur son ordinateur. Le port
-est choisi automatiquement ; `--port 4215` permet de le fixer. Ne pas ouvrir une
-adresse IP distante en HTTP : l’origine et les cookies correspondent à l’URL
-configurée. Le tunnel permet de faire l’onboarding avant d’ajouter un domaine.
+Par défaut, aucun domaine n’est nécessaire : ouvrir **`http://IP_DU_SERVEUR:<port>`**
+affiché par l’installateur. L’adresse est détectée via les métadonnées locales
+Hetzner, sinon via les interfaces/routage de la machine. `--address 203.0.113.10`
+permet de la préciser (IPv6 accepté). Le web écoute sur les interfaces réseau ;
+PostgreSQL et les moteurs locaux restent privés. Le port est choisi automatiquement ;
+`--port 4215` le fixe. Autoriser ce port TCP dans le pare-feu du serveur si nécessaire.
+La connexion et l’onboarding fonctionnent sur cette origine IP ; HTTP ne chiffre
+pas les échanges. `--domain` reste une option pour HTTPS.
+
+`--private` demande une écoute sur **127.0.0.1** et le tunnel SSH affiché, pour un
+accès local ou derrière son propre proxy. `--private`, `--domain` et `--address`
+sont des modes exclusifs. Une reprise conserve le mode réseau enregistré : les
+installations antérieures en local ne sont pas exposées implicitement.
 
 ## Ce que la commande installe
 
@@ -172,10 +180,12 @@ les anciens services Nora ne sont pas copiés.
 
 ## Vérifications et sources
 
-`pnpm check`, `pnpm demo:sdk`, `tests/web.e2e.ts`, `tests/sqlite-web.e2e.ts`
-et `tests/onboarding.e2e.ts` couvrent les régressions. Le dernier contrôle vérifie
-le parcours fournisseur → modèle/effort → défauts, avec catalogue simulé et aucun
-appel commercial.
+`pnpm check`, `pnpm demo:sdk`, `tests/web.e2e.ts`, `tests/sqlite-web.e2e.ts`,
+`tests/chat-math.e2e.ts` et `tests/onboarding.e2e.ts` couvrent les régressions. Le dernier contrôle vérifie
+le parcours fournisseur → modèle/effort → défauts, sur loopback et sur IP privée
+non loopback en HTTP (contexte navigateur non sécurisé), avec catalogue simulé
+et aucun appel commercial. UUID, copie et initialisation du rendu mathématique
+fonctionnent aussi sans les API navigateur réservées à HTTPS.
 `tests/installation.test.ts` vérifie les connexions/credentials, compatibilité,
 concurrence, reprise et absence de clés dans les métadonnées. Les tests Python
 vérifient les fichiers privés et les diagnostics sans secrets.

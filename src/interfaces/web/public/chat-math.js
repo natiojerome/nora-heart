@@ -48,7 +48,7 @@
     originals.forEach((node,index)=>{const token=records.get(node),copy=copies[index];if(!token||!copy)return;records.set(copy,token);if(ready)renderFormula(copy,token);else assets().then(()=>renderFormula(copy,token),()=>{});});
   }
   function create(){
-    const nonce=crypto.randomUUID(),formulas=[];
+    const nonce=window.heartPlatform.uuid(),formulas=[];
     const extensions=[true,false].map(block=>{const type=block?'heartMathBlock':'heartMathInline';return {
       name:type,level:block?'block':'inline',
       start(source){return start(source,block);},

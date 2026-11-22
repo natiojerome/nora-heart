@@ -3,6 +3,7 @@
 import argparse
 import fcntl
 import hashlib
+import ipaddress
 import json
 import os
 from pathlib import Path
@@ -39,10 +40,49 @@ def atomic(file, value, mode=0o600):
         os.fsync(stream.fileno())
     os.replace(tmp, file)
 
-def available_port(preferred=0):
-    with socket.socket() as listener:
-        listener.bind(('127.0.0.1', preferred))
+def available_port(preferred=0,host='127.0.0.1'):
+    with socket.socket(socket.AF_INET6 if ':' in host else socket.AF_INET,socket.SOCK_STREAM) as listener:
+        listener.bind((host, preferred))
         return listener.getsockname()[1]
+
+def machine_address():
+    # Hetzner link-local metadata; no third-party IP service or secret queried.
+    opener=urllib.request.build_opener(urllib.request.ProxyHandler({}))
+    try:
+        with opener.open('http://169.254.169.254/hetzner/v1/metadata/public-ipv4',timeout=1) as response:
+            candidate=ipaddress.ip_address(response.read(128).decode().strip())
+        if candidate.is_global:return str(candidate)
+    except Exception:pass
+    if shutil.which('ip'):
+        try:
+            route=json.loads(run(['ip','-j','route','get','1.1.1.1']))[0]
+            candidate=ipaddress.ip_address(route.get('prefsrc') or route.get('src'))
+            if not candidate.is_loopback and not candidate.is_link_local:return str(candidate)
+        except Exception:pass
+        interfaces=json.loads(run(['ip','-j','address','show','scope','global']))
+        addresses=[ipaddress.ip_address(a['local']) for interface in interfaces for a in interface.get('addr_info',[]) if a.get('family') in ['inet','inet6']]
+        for candidate in sorted(addresses,key=lambda a:(not a.is_global,a.version)):
+            if not candidate.is_loopback and not candidate.is_link_local:return str(candidate)
+    raise RuntimeError('Adresse IP non détectée ; préciser --address ADRESSE_IP.')
+
+def network_settings(domain=None,address=None,private=False):
+    if domain and (address or private) or address and private:
+        raise RuntimeError('Choisir --domain, --address ou --private ; options incompatibles.')
+    if domain:return {'access':'domain','host':'127.0.0.1','address':None}
+    if private:return {'access':'private','host':'127.0.0.1','address':None}
+    try:ip=ipaddress.ip_address((address or machine_address()).strip('[]'))
+    except ValueError:raise RuntimeError('--address doit être une adresse IP valide.')
+    if ip.is_unspecified or ip.is_multicast or ip.is_link_local:raise RuntimeError('Adresse IP de connexion requise, pas une adresse d’écoute ou multicast.')
+    return {'access':'ip','host':'0.0.0.0' if ip.version==4 else '::','address':str(ip)}
+
+def web_origin(identity):
+    if identity['domain']:return 'https://'+identity['domain']
+    address=identity.get('address') if identity.get('access')=='ip' else 'localhost'
+    if ':' in address:address='['+address+']'
+    return 'http://'+address+':'+str(identity['port'])
+
+def local_url(identity):
+    return 'http://'+('[::1]' if identity.get('host')=='::' else '127.0.0.1')+':'+str(identity['port'])
 
 def unit_value(value):
     return json.dumps(str(value).replace('%', '%%'), ensure_ascii=False)
@@ -93,7 +133,7 @@ def socket_ready(file):
 
 def verify_web(identity, credentials, public=False):
     origin=identity['origin']
-    endpoint=origin if public else 'http://127.0.0.1:'+str(identity['port'])
+    endpoint=origin if public else local_url(identity)
     headers={'Host':urllib.parse.urlparse(origin).netloc,'Origin':origin,'Content-Type':'application/json'}
     request=urllib.request.Request(endpoint+'/api/login',data=json.dumps({'password':credentials['password']}).encode(),headers=headers)
     with urllib.request.urlopen(request,timeout=5) as response:
@@ -104,7 +144,7 @@ def verify_web(identity, credentials, public=False):
     return state.get('authenticated') and state.get('assistant') is not None and state.get('conversationsAvailable') and state.get('installation',{}).get('available')
 
 def check_terminal(identity, credentials):
-    endpoint='http://127.0.0.1:'+str(identity['port'])
+    endpoint=local_url(identity)
     headers={'Host':urllib.parse.urlparse(identity['origin']).netloc,'Origin':identity['origin'],'Content-Type':'application/json'}
     with urllib.request.urlopen(urllib.request.Request(endpoint+'/api/login',data=json.dumps({'password':credentials['password']}).encode(),headers=headers),timeout=5) as response:
         headers['Cookie']=response.headers['Set-Cookie'].split(';')[0]
@@ -167,6 +207,11 @@ def install(options):
         raise RuntimeError('systemd-creds requis : Debian 12+ ou Ubuntu 24.04+.')
     if options.port and not 1024<=options.port<=65535:
         raise RuntimeError('Port requis entre 1024 et 65535.')
+    if options.address:
+        try:options.address=str(ipaddress.ip_address(options.address.strip('[]')))
+        except ValueError:raise RuntimeError('--address doit être une adresse IP valide.')
+    if options.private and (options.domain or options.address) or options.domain and options.address:
+        raise RuntimeError('Choisir --domain, --address ou --private ; options incompatibles.')
     root = Path(options.path).expanduser().absolute().resolve()
     if root != REPOSITORY or root == Path('/') or any(c in str(root) for c in '\n\r\0'):
         raise RuntimeError('Exécuter l’installateur dans le dépôt cloné au chemin choisi.')
@@ -188,10 +233,13 @@ def install(options):
         raise RuntimeError('Installation déplacée : migration explicite requise, aucun chemin réécrit.')
     if not identity:
         install_id = str(uuid.uuid4())
-        identity = {'version': 1, 'id': install_id, 'root': str(root), 'unit': 'heart-' + install_id.replace('-', '')[:10], 'port': available_port(options.port), 'domain': options.domain, 'searchPort': available_port(), 'enginePort': available_port(), 'phase': 'created'}
+        network=network_settings(options.domain,options.address,options.private)
+        identity = {'version': 1, 'id': install_id, 'root': str(root), 'unit': 'heart-' + install_id.replace('-', '')[:10], 'port': available_port(options.port,network['host']), 'domain': options.domain, 'searchPort': available_port(), 'enginePort': available_port(), 'phase': 'created',**network}
         atomic(manifest, json.dumps(identity))
     elif (options.domain and identity['domain'] != options.domain) or (options.port and identity['port'] != options.port):
         raise RuntimeError('Une autre URL/port est déjà enregistré ; pas de modification implicite.')
+    if (options.address and options.address!=identity.get('address')) or (options.private and identity.get('access','domain' if identity['domain'] else 'private')!='private'):
+        raise RuntimeError('Accès réseau existant différent ; aucune exposition ou migration implicite.')
     name = identity['unit']
     if identity['phase'] == 'ready':
         try: healthy=units_active(identity) and health('http://127.0.0.1:'+str(identity['enginePort'])+'/') and verify_web(identity,json.loads((config/'secrets.json').read_text()),public=bool(identity['domain']))
@@ -273,9 +321,9 @@ def install(options):
         image=next(line.strip().split(': ',1)[1] for line in (root / 'deploy/search.compose.yml').read_text().splitlines() if 'image:' in line)
         run(['docker','run','-d','--name',engine_name,'--label','re.natio.heart.installation='+identity['id'],'--restart=unless-stopped','-p','127.0.0.1:'+str(identity['enginePort'])+':8080','--mount','type=bind,src='+str(search_settings)+',dst=/etc/searxng/settings.yml,readonly',image])
     else: run(['docker','start',engine_name])
-    origin = 'https://' + identity['domain'] if identity['domain'] else 'http://localhost:' + str(identity['port'])
+    origin = web_origin(identity)
     identity['origin'] = origin
-    values = {'NODE_ENV': 'production', 'PATH': env['PATH'], 'PORT': identity['port'], 'HARNESS_WEB_HOST': '127.0.0.1', 'HARNESS_WEB_ORIGIN': origin,
+    values = {'NODE_ENV': 'production', 'PATH': env['PATH'], 'PORT': identity['port'], 'HARNESS_WEB_HOST': identity.get('host','127.0.0.1'), 'HARNESS_WEB_ORIGIN': origin,
               'HARNESS_WEB_SESSION_SECRET': credentials['session'], 'HARNESS_WEB_PASSWORD': credentials['password'],
               'HARNESS_STORAGE_DRIVER': 'postgres', 'HARNESS_DATABASE_URL': 'postgresql://heart:' + credentials['postgres'] + '@127.0.0.1:' + db_port + '/heart',
               'HARNESS_WEB_STATE_DIR': str(private / 'state'), 'HARNESS_CHATGPT_AUTH_DIR': str(private / 'auth'), 'HARNESS_PROJECTS_ROOT': str(root / 'projects'),
@@ -333,7 +381,7 @@ def install(options):
     print('Démarrage du web et vérification réelle…', flush=True)
     run(['systemctl', 'daemon-reload'])
     run(['systemctl', 'enable', '--now', name + '-host.service',name+'-search.service',name+'-wallets.service',name+'-wallets-backup.timer', name + '-web.service'])
-    wait_for(lambda: health('http://127.0.0.1:' + str(identity['port']) + '/healthz'), 'Interface web')
+    wait_for(lambda: health(local_url(identity)+'/healthz'), 'Interface web')
     wait_for(lambda:verify_web(identity,credentials),'Connexion propriétaire et stockage')
     wait_for(lambda:units_active(identity),'Services de l’installation')
     wait_for(lambda:health('http://127.0.0.1:'+str(identity['enginePort'])+'/'),'Moteur de recherche local')
@@ -347,8 +395,10 @@ def install(options):
     identity['phase'] = 'ready'
     atomic(manifest, json.dumps(identity))
     print('Installation prête : ' + origin)
-    if not identity['domain']:
+    if identity.get('access','private')=='private' and not identity['domain']:
         print('Accès privé : ssh -L ' + str(identity['port']) + ':127.0.0.1:' + str(identity['port']) + ' utilisateur@serveur, puis ouvrir ' + origin)
+    elif not identity['domain']:
+        print('Accès direct par IP : '+origin+' (autoriser TCP '+str(identity['port'])+' dans le pare-feu si nécessaire).')
     print('Mot de passe permanent : fichier privé ' + str(config / 'owner-password'))
     try:
         with open('/dev/tty', 'w') as terminal:
@@ -362,6 +412,8 @@ def main():
     parser = argparse.ArgumentParser(description='Installer Heart indépendamment dans le chemin choisi.')
     parser.add_argument('--path', default='/opt/nora-heart')
     parser.add_argument('--domain')
+    parser.add_argument('--address',help='Adresse IP annoncée ; détection automatique par défaut.')
+    parser.add_argument('--private',action='store_true',help='Écoute locale et tunnel SSH, sur demande uniquement.')
     parser.add_argument('--port', type=int, default=0)
     parser.add_argument('--password-file')
     options = parser.parse_args()

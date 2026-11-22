@@ -9,8 +9,10 @@ permissions, avec des cerveaux interchangeables selon besoin et coût.
 
 Installateur GitHub, chemin choisi et premier accès documentés dans
 [INSTALLATION.md](INSTALLATION.md). Première qualification réelle sur installation
-jetable dans un chemin avec espaces ; bootstrap public et reprise validés. Suite utile : qualifier le mode domaine/HTTPS sur un
-nouveau serveur avec son propre DNS et le chemin ARM64, puis définir le parcours
+jetable dans un chemin avec espaces ; bootstrap public et reprise validés. Accès direct IP désormais par défaut, domaine optionnel. Suite utile : qualifier
+la préparation complète sur un nouvel OS/serveur temporaire (les installations
+précédentes utilisaient un hôte existant), le mode domaine/HTTPS avec son propre
+DNS et le chemin ARM64, puis définir le parcours
 explicite de mise à jour/sauvegarde. Ne pas confondre réinstallation et mise à jour.
 
 ## Complément livré — Wallet local et sauvegarde MCP

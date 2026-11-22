@@ -11,8 +11,10 @@ Commande GitHub avec `--path`, Debian 12+/Ubuntu 24.04+ et systemd. Prépare Nod
 pnpm, PostgreSQL privé, migrations, web, fichiers/terminal, worker hôte YOLO,
 recherche locale et coffre wallet vide. Services/ports/comptes isolés par UUID,
 données privées dans le dossier choisi, sans importer notre installation.
-`--domain` ajoute Caddy/HTTPS si DNS et ports sont prêts ; sans domaine, boucle
-locale et tunnel SSH. Mot de passe permanent privé, reprise sans réinitialisation.
+Sans domaine, accès direct `http://IP:port` par défaut, détection automatique et
+`--address` pour préciser. `--domain` ajoute Caddy/HTTPS ; `--private` réserve le
+tunnel SSH aux installations qui le demandent. Anciens modes réseau préservés.
+Mot de passe permanent privé, reprise sans réinitialisation.
 
 Onboarding : identité/thème/personnalité, fournisseur et modèle/effort par défaut
 réellement enregistrés, simulation explicite, connexions MCP vérifiées depuis le
@@ -21,7 +23,7 @@ Les nouveaux déploiements n’activent aucune mémoire SQL de remplacement ; m�
 et projets distants demandent leurs connexions. Données métier et ancien runtime
 préservés. Voir [INSTALLATION.md](INSTALLATION.md).
 
-266 tests et trois parcours navigateur de régression ; installation jetable réelle
+266 tests et cinq parcours navigateur de régression ; installation jetable réelle
 dans un chemin avec espaces : onboarding/reprise mobile, fichiers, terminal Node 24
 protégé et root YOLO, chat simulé avec vrai PostgreSQL, recherche déclarée, wallets
 vides et persistance après redémarrage. Connexions réelles Mémoire/Projets/Vault
@@ -30,6 +32,13 @@ publique GitHub exécutée sur une seconde installation neuve avec espaces :
 onboarding/chat/outils/redémarrage réussis, puis même commande rejouée sans
 changer l’UUID, les credentials ou le coffre. Reprise après arrêt volontaire du
 daemon wallet vérifiée, avec autotest terminal ; configurations privées préservées.
+Tests navigateur sur IP privée HTTP non loopback : onboarding, défauts, UUID/copie
+et initialisation mathématique sans API réservée à HTTPS. Les deux installations
+vierges précédentes ont été testées sur un hôte existant, pas sur une nouvelle
+VM Hetzner ; préparation d’un OS vierge encore à qualifier.
+Troisième installation jetable en HTTP sur IP privée : parcours complet PostgreSQL,
+onboarding, fichiers, terminal protégé/YOLO, chat simulé et restart réussis ; reprise
+sans préciser à nouveau l’adresse conserve le mode IP et les données.
 Installations de test supprimées, services historiques sains. Proxy Caddy validé par son binaire ;
 ACME sur DNS public et matériel ARM64 restent à qualifier séparément.
 
@@ -84,7 +93,7 @@ conversations. Catalogue public réel actualisable : 148 modèles texte observé
 capacités outils/vision/effort et tarifs adaptés. Clé privée via UI ou environnement,
 indépendante des autres connexions. Contexte/effort vérifiés sur le catalogue ;
 prompt, outils et permissions restent ceux de Heart.
-246 tests locaux et quatre parcours navigateur ciblés validés ; parcours Venice
+246 tests locaux et cinq parcours navigateur ciblés validés ; parcours Venice
 avec transport simulé, sauvegarde
 et rechargement des défauts, chat, erreur/reprise de catalogue et quatre largeurs.
 Clé Venice reconnue et compte rechargé le 21 novembre. Catalogue réel :
@@ -112,7 +121,7 @@ Compression conserve les décisions et faits précis ; mémoire ajustée à la p
 disponible. Les originaux ne sont jamais remplacés : history.read permet au modèle
 de retrouver messages/date et outils historiques du fil après compression.
 
-242 tests ; quatre parcours navigateur ciblés et démo. GPT‑6 Luna medium réel :
+242 tests ; cinq parcours navigateur ciblés et démo. GPT‑6 Luna medium réel :
 15 appels, deux compressions, code/date/heure/montant conservés, récupération
 spontanée d’un détail puis référence et horodatage du message original, brouillon
 externe cordial sans envoi. Aucun souvenir ni fil propriétaire modifié. Voir

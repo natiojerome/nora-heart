@@ -676,7 +676,7 @@ $("test-form").addEventListener("submit", async (event) => {
 });
 $("copy-answer").addEventListener("click", async () => {
   try {
-    await navigator.clipboard.writeText(answer);
+    await window.heartPlatform.copy(answer);
     $("copy-answer").textContent = "Copié";
     setTimeout(() => {
       $("copy-answer").textContent = "Copier";
@@ -1195,7 +1195,7 @@ $("project-create").addEventListener("submit", async (event) => {
     const data = await post("/api/projects", {
       title: $("project-title").value.trim(),
       objective: $("project-objective").value.trim(),
-      operationId: $("project-create").dataset.operationId ||= crypto.randomUUID(),
+      operationId: $("project-create").dataset.operationId ||= window.heartPlatform.uuid(),
     });
     $("project-dialog").close();
     $("project-title").value = "";

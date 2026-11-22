@@ -13,6 +13,7 @@
   "include": [
     "src/interfaces/web/public/browser.d.ts",
     "src/interfaces/web/public/api-client.js",
+    "src/interfaces/web/public/platform.js",
     "src/interfaces/web/public/icons.js",
     "src/interfaces/web/public/settings.js",
     "src/interfaces/web/public/tasks.js",

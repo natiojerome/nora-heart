@@ -670,7 +670,8 @@
   get("task-run-now").onclick = () => {
     if (!current) return;
     const task = current.task;
-    if (!manualKeys.has(task.id)) manualKeys.set(task.id, crypto.randomUUID());
+    if (!manualKeys.has(task.id))
+      manualKeys.set(task.id, window.heartPlatform.uuid());
     void action("/api/tasks/" + task.id + "/run", {
       version: task.version,
       executionId: manualKeys.get(task.id),
