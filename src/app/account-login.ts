@@ -75,7 +75,13 @@ export class AccountLogin {
       throw new AccountLoginError("Connexion au compte MCP indisponible.");
     return data;
   }
-  async start() {
+  async start(intent: "login" | "register" = "login") {
+    if (intent !== "login" && intent !== "register")
+      throw new AccountLoginError("Parcours de connexion invalide.");
+    if (intent === "register" && (await this.status()).account)
+      throw new AccountLoginError(
+        "Cette installation est déjà liée à un compte. Connecte-toi à ce compte.",
+      );
     for (const [id, p] of this.pending)
       if (p.expires < Date.now()) this.pending.delete(id);
     if (this.pending.size >= this.maxPending)
@@ -101,10 +107,12 @@ export class AccountLogin {
       next: 0,
       interval,
     });
+    const url = new URL(data.verification_uri_complete);
+    if (intent === "register") url.searchParams.set("screen_hint", "signup");
     return {
       flowId: id,
       userCode: data.user_code,
-      url: data.verification_uri_complete,
+      url: url.href,
       interval,
       expiresIn: data.expires_in,
     };

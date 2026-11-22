@@ -86,10 +86,16 @@ terminal interactif ; sinon le retrouver sur la machine :
 sudo cat /srv/mon-assistant/.heart/config/first-login-url
 ```
 
-1. Ouvrir ce lien, puis **Connecter mon compte**.
+1. Ouvrir ce lien, puis **Se connecter à Nora MCPs** ou **Créer un compte**.
+   Ce second bouton ouvre directement l’inscription sur le portail sécurisé,
+   sans perdre la demande de connexion Heart.
 2. Le portail HTTPS s’ouvre : se connecter avec son email/mot de passe, vérifier
    le code affiché dans Heart et autoriser cette installation. Les inscriptions
    restent réservées aux adresses autorisées par le propriétaire du portail.
+   Une adresse refusée reste sur le formulaire avec une erreur ; une inscription
+   réussie passe à l’autorisation de cette installation, puis Heart reprend seul.
+   Sur une installation déjà liée, utiliser son compte existant : le bouton de
+   création n’est plus proposé.
 3. Heart crée les clés distinctes **Mémoire, Projets et Coffre-fort**, vérifie
    réellement les trois MCP, les enregistre côté serveur en fichier privé 0600,
    puis redémarre et reprend automatiquement. Aucune clé à recopier.

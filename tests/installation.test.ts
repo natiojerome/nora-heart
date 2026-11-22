@@ -235,7 +235,8 @@ test("account login keeps device/service secrets out of browser state, binds one
     "https://mcps.test",
     transport,
   );
-  const flow = await login.start();
+  const flow = await login.start("register");
+  assert.equal(new URL(flow.url).searchParams.get("screen_hint"), "signup");
   assert(!JSON.stringify(flow).includes("private-device"));
   assert((await login.poll(flow.flowId)).pending);
   assert((await login.poll(flow.flowId)).pending);
@@ -250,7 +251,9 @@ test("account login keeps device/service secrets out of browser state, binds one
   const saved = await loadInstallation(path.join(root, "installation.json"));
   assert.equal(saved.account!.id, owner.id);
   assert.equal(saved.env.HEART_MCP_MEMORY_TOKEN, "private-key-memory");
+  await assert.rejects(login.start("register"), /déjà liée/);
   const repeated = await login.start();
+  assert.equal(new URL(repeated.url).searchParams.get("screen_hint"), null);
   assert.equal((await login.poll(repeated.flowId)).restartRequired, false);
   assert.equal(bootstrap, 1, "Normal login does not rotate service keys.");
   other = true;

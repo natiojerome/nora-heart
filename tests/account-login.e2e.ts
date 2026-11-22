@@ -19,10 +19,8 @@ import type {
 import { createWebServer } from "../src/interfaces/web/server.ts";
 import { migrateSqlite } from "../src/modules/storage/sqlite/index.ts";
 
-test(
-  "mobile first connection uses portal approval, keeps service keys server-side and opens setup only for the bound account",
-  { timeout: 35000 },
-  async () => {
+function accountJourney(intent: "login" | "register") {
+  return async () => {
     const root = await mkdtemp(path.join(tmpdir(), "heart-account-ui-")),
       file = path.join(root, "test.sqlite"),
       privateFile = path.join(root, "installation.json"),
@@ -55,9 +53,9 @@ test(
     };
     const portal = createServer(async (req, res) => {
       if (req.url?.startsWith("/connect")) {
-        res.setHeader("Content-Type", "text/html");
+        res.setHeader("Content-Type", "text/html; charset=utf-8");
         res.end(
-          '<form method="POST" action="/approve"><h1>Connecter Heart</h1><p>Code MATCH1234</p><button>Connecter</button></form>',
+          `<form method="POST" action="/approve"><h1>${new URL(req.url!, portalOrigin).searchParams.get("screen_hint") === "signup" ? "Créer un compte" : "Connecter Heart"}</h1><p>Code MATCH1234</p><button>Connecter</button></form>`,
         );
         return;
       }
@@ -218,9 +216,34 @@ test(
         { headers: { Origin: origin }, data: { command: "node --version" } },
       );
       assert.equal(forbidden.status(), 401);
+      assert.equal(
+        (
+          await page.request.post(origin + "/api/account/start", {
+            headers: { Origin: origin },
+            data: { intent: "unexpected" },
+          })
+        ).status(),
+        400,
+      );
+      assert(await page.locator("#account-register").isVisible());
       const popupPromise = page.waitForEvent("popup");
-      await page.click("#account-connect");
+      await page.click(
+        intent === "register" ? "#account-register" : "#account-connect",
+      );
       const popup = await popupPromise;
+      await popup.waitForURL((url) => url.pathname === "/connect");
+      await popup
+        .getByRole("heading", {
+          name: intent === "register" ? "Créer un compte" : "Connecter Heart",
+          exact: true,
+        })
+        .waitFor();
+      assert.equal(
+        new URL(popup.url()).searchParams.get("screen_hint"),
+        intent === "register" ? "signup" : null,
+      );
+      assert(await page.locator("#account-register").isDisabled());
+      assert(await page.locator("#account-connect").isDisabled());
       await popup
         .getByRole("button", { name: "Connecter", exact: true })
         .click();
@@ -236,6 +259,10 @@ test(
         "private-memory-key",
       );
       assert(!JSON.stringify(responses).includes("private-"));
+      await page.context().clearCookies();
+      await page.goto(origin);
+      await page.waitForSelector("#account-connect:enabled");
+      assert(await page.locator("#account-registration").isHidden());
       assert.deepEqual(errors, []);
       assert(
         await page.evaluate(
@@ -254,5 +281,12 @@ test(
       else process.env.HARNESS_INSTALL_REVISION = before;
       await rm(root, { recursive: true, force: true });
     }
-  },
-);
+  };
+}
+
+for (const intent of ["login", "register"] as const)
+  test(
+    `mobile ${intent} uses portal approval, keeps service keys server-side and opens setup only for the bound account`,
+    { timeout: 35000 },
+    accountJourney(intent),
+  );

@@ -104,13 +104,16 @@ function showAuthenticated(authenticated) {
     $("callback-url").value = "";
   }
 }
+let accountConnecting=false;
 function renderState() {
   window.heartExternal?.sync();
   showAuthenticated(!!state.authenticated);
   const accountLogin=state.accountLogin;
   $('account-login').hidden=state.authenticated||!accountLogin?.available;
   $('login-form').hidden=!state.authenticated&&!!accountLogin?.available&&accountLogin.bootstrapReady;
-  $('account-connect').disabled=!accountLogin?.bootstrapReady;
+  $('account-connect').disabled=accountConnecting||!accountLogin?.bootstrapReady;
+  $('account-register').disabled=accountConnecting||!accountLogin?.bootstrapReady;
+  $('account-registration').hidden=!!accountLogin?.account;
   if(!state.authenticated&&accountLogin?.available&&!accountLogin.bootstrapReady)$('account-login-status').textContent='Ouvre le lien privé de première connexion fourni à l’installation, ou utilise le token local ci-dessous.';
   if (!state.authenticated) return;
   $("brand-name").firstChild.textContent = state.displayName || "Nora Heart";
@@ -733,22 +736,23 @@ document.querySelectorAll("[data-suite]").forEach((button) =>
     }
   }),
 );
-let accountConnecting=false;
-$('account-connect').addEventListener('click',async()=>{
-  if(accountConnecting)return;accountConnecting=true;const button=$('account-connect'),status=$('account-login-status'),link=$('account-verification-link');button.disabled=true;
+async function connectAccount(intent='login'){
+  if(accountConnecting)return;accountConnecting=true;const buttons=[$('account-connect'),$('account-register')],status=$('account-login-status'),link=$('account-verification-link');buttons.forEach(button=>button.disabled=true);
   const popup=window.open('about:blank','_blank');let opened=false;if(popup)popup.opener=null;
   try{
     status.textContent='Préparation de la connexion sécurisée…';
-    const flow=await post('/api/account/start');link.href=flow.url;link.hidden=false;if(popup){popup.location=flow.url;opened=true;}
-    status.textContent='Confirme le code '+flow.userCode+' sur le portail, puis reviens ici.';
+    const flow=await post('/api/account/start',{intent});link.href=flow.url;link.hidden=false;if(popup){popup.location=flow.url;opened=true;}
+    status.textContent=(intent==='register'?'Crée ton compte sur le portail sécurisé, puis confirme le code ':'Confirme le code ')+flow.userCode+'. Cette page reprendra automatiquement.';
     const expires=Date.now()+flow.expiresIn*1000;let interval=flow.interval;
     while(Date.now()<expires){await new Promise(r=>setTimeout(r,interval*1000));const result=await post('/api/account/poll',{flowId:flow.flowId});if(result.pending){interval=result.interval;continue;}
       status.textContent='Compte connecté. Activation des services…';
       if(result.restartRequired){const until=Date.now()+45000;let ready=false;while(Date.now()<until){try{const s=await api('/api/state');if(s.authenticated&&s.installation?.ready){ready=true;break;}}catch{}await new Promise(r=>setTimeout(r,500));}if(!ready)throw Error('Compte enregistré. Actualise lorsque le service est prêt.');}
       location.reload();return;
     }throw Error('Connexion expirée. Recommence.');
-  }catch(error){status.textContent=errorText(error);if(popup&&!opened)popup.close();}finally{accountConnecting=false;button.disabled=false;}
-});
+  }catch(error){status.textContent=errorText(error);if(popup&&!opened)popup.close();}finally{accountConnecting=false;buttons.forEach(button=>button.disabled=false);}
+}
+$('account-connect').addEventListener('click',()=>connectAccount());
+$('account-register').addEventListener('click',()=>connectAccount('register'));
 async function start() {
   const fragment = new URLSearchParams(window.location.hash.slice(1));
   const invite = fragment.get("invite");

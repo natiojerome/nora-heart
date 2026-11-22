@@ -16,7 +16,11 @@ navigateur UUID/copie compatibles HTTP sur IP. PostgreSQL/SearXNG restent privé
 Chemins explicites et données sous `<installation>/.heart` ; aucun
 identifiant métier dérivé du dossier ni import des services existants.
 
-`app/account-login.ts` réalise RFC 8628 auprès du portail HTTPS. La première
+`app/account-login.ts` réalise RFC 8628 auprès du portail HTTPS. Login/inscription
+partagent ce même flux ; l’intention facultative `register` ajoute le paramètre
+UI `screen_hint=signup` au lien public, sans changer le protocole d’authentification.
+Le portail vérifie toujours lui-même la liste d’emails autorisés ; Heart ne reçoit
+aucun mot de passe d’inscription. Inscription refusée si la machine est déjà liée. La première
 installation est revendiquée par un lien local privé ; le portail authentifie
 l’utilisateur et attribue les trois clés via une extension Nora. Aucun mot de
 passe MCP ni device/access token dans l’état navigateur. Une session Heart liée

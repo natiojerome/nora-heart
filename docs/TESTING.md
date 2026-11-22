@@ -1,5 +1,16 @@
 # Tester les modules
 
+## Inscription depuis Heart — 22 novembre 2026
+
+Bouton « Créer un compte », partage du device flow et accès direct au formulaire
+sécurisé ; aucun mot de passe transmis par Heart. Refus côté portail d’un email
+non autorisé, inscription autorisée, conservation de la demande puis attribution
+des trois clés au nouveau compte vérifiés avec vrai PostgreSQL isolé et navigateur.
+Le test mobile Heart couvre connexion et inscription, progression, clés hors
+réponses et bouton masqué après liaison ; protocole simulé dans ce seul test UI.
+Les parcours onboarding IP/loopback restent valides. Aucun compte de production
+créé, aucune nouvelle VM et aucune inférence LLM pour ces contrôles.
+
 ## Compte MCP et restauration intégrée — 22 novembre 2026
 
 272 tests (`pnpm check`), démo SDK et les 27 tests navigateur de régression réussis,

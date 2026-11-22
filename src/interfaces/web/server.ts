@@ -271,7 +271,10 @@ export function createWebServer(options: Options) {
             403,
             "Ouvre le lien privé de première connexion fourni par l’installation.",
           );
-        json(response, await options.accountLogin.start());
+        const input = await body(request);
+        if(input.intent !== undefined && input.intent !== 'login' && input.intent !== 'register')
+          throw new HttpError(400, 'Parcours de connexion invalide.');
+        json(response, await options.accountLogin.start(input.intent));
         return;
       }
       if(options.accountLogin&&url.pathname==='/api/account/poll'&&request.method==='POST'){

@@ -15,7 +15,7 @@ Sans domaine, accès direct `http://IP:port` par défaut, détection automatique
 `--address` pour préciser. `--domain` ajoute Caddy/HTTPS ; `--private` réserve le
 tunnel SSH aux installations qui le demandent. Anciens modes réseau préservés.
 Nouvelles installations : connexion au compte MCP obligatoire avant le wizard,
-via portail HTTPS ; clés Memory/Projects/Vault créées/vérifiées et stockées en local
+via portail HTTPS (connexion ou création de compte depuis Heart, email autorisé) ; clés Memory/Projects/Vault créées/vérifiées et stockées en local
 sans copier-coller. Compte lié à l’installation, reconnexion sans rotation des clés.
 Lien privé initial à usage unique ; mot de passe local réservé à l’administration.
 Les déploiements existants gardent leur accès et leurs credentials.
