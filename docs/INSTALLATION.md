@@ -78,49 +78,52 @@ qualification ; ce ne sont pas des conteneurs présentés comme un accès root h
 
 ## Premier accès et onboarding
 
-Un **mot de passe permanent unique** est généré. Il est affiché directement dans
-le terminal interactif, pas dans la sortie journalisée du script. Sans terminal
-interactif, le script indique son fichier privé :
+La première connexion passe par **le compte du portail Nora MCPs**, avant la
+personnalisation. L’installateur affiche un lien privé à usage unique dans le
+terminal interactif ; sinon le retrouver sur la machine :
 
 ```sh
-sudo cat /srv/mon-assistant/.heart/config/owner-password
+sudo cat /srv/mon-assistant/.heart/config/first-login-url
 ```
 
-Pour un déploiement automatisé, fournir `--password-file /chemin/prive/password`.
-Le fichier contient une ligne d’au moins 16 caractères ; aucune valeur de secret
-ne doit être passée comme argument de commande ou ajoutée à Git.
+1. Ouvrir ce lien, puis **Connecter mon compte**.
+2. Le portail HTTPS s’ouvre : se connecter avec son email/mot de passe, vérifier
+   le code affiché dans Heart et autoriser cette installation. Les inscriptions
+   restent réservées aux adresses autorisées par le propriétaire du portail.
+3. Heart crée les clés distinctes **Mémoire, Projets et Coffre-fort**, vérifie
+   réellement les trois MCP, les enregistre côté serveur en fichier privé 0600,
+   puis redémarre et reprend automatiquement. Aucune clé à recopier.
+4. Choisir nom/avatar, thème, personnalité et fournisseur/modèle/effort par défaut.
+   Les autorisations du fournisseur LLM restent propres à ce fournisseur : cette
+   connexion MCP ne fournit pas une clé Venice/OpenRouter ou un abonnement ChatGPT.
+5. Terminer. Après actualisation, le wizard reprend à l’étape enregistrée.
 
-Après connexion :
+Le lien initial sert uniquement à réserver la nouvelle installation. Le mot de
+passe MCP est saisi sur **le portail HTTPS**, jamais envoyé à Heart sur IP HTTP.
+Le HTTP de Heart reste non chiffré : choisir domaine/HTTPS ou tunnel pour protéger
+sa session et ses conversations sur un réseau non fiable.
 
-1. Choisir le nom, les formulations et le pack avatar de l’assistant.
-2. Choisir le thème.
-3. Choisir un modèle de personnalité et affiner directement son texte.
-4. Connecter son fournisseur (ChatGPT ou clé API), choisir le modèle et l’effort,
-   puis les utiliser comme défaut des nouveaux fils. Une simulation explicite
-   permet aussi d’explorer sans fournisseur. Le parcours reprend après les
-   écrans de connexion et les réglages ; les choix sont persistants.
-5. Raccorder les services partagés et terminer. Une actualisation du navigateur
-   pendant le parcours reprend à la dernière étape enregistrée.
+Aux connexions suivantes, le même compte MCP est requis ; ses clés ne sont pas
+recréées à chaque connexion. L’installation est liée au compte initial : changer
+implicitement de propriétaire ou d’autorité est refusé. `--account-server` permet
+une instance Nora MCPs compatible en HTTPS, choisie lors de l’installation.
+Le flux de connexion suit RFC 8628 ; l’attribution groupée des clés est une
+extension Nora, pas une promesse d’OAuth générique pour tous les clients MCP.
 
-Pour les services partagés, saisir l’URL de son serveur Nora MCPs compatible et
-ses clés distinctes Mémoire/Projets/Coffre-fort. Le serveur par défaut proposé
-est `https://mcps.natio.re`, mais aucun compte ni accès n’y est créé ou fourni par
-Heart. On peut utiliser sa propre instance et ses propres droits.
-Les endpoints sont construits avec `/memory`, `/projects`, `/vault`.
+Un mot de passe local d’administration reste en fichier privé `config/owner-password`
+(`--password-file` pour l’automatisation). Il permet les contrôles techniques,
+**pas de contourner la connexion MCP** sur ces nouvelles installations.
+Les déploiements existants gardent leur authentification et leurs clés ; aucune
+migration de compte implicite. Leur ancien raccordement manuel reste compatible.
 
-Les clés sont vérifiées par une vraie découverte MCP et les outils attendus sont
-contrôlés avant enregistrement. Elles sont stockées dans un fichier privé,
-séparées des descriptions d’outils en base. Aucune clé n’est renvoyée à l’interface
-ou injectée dans les instructions du modèle. Heart redémarre brièvement pour
-appliquer les autorités choisies, avec indication de progression et reprise.
-Une reconfiguration est refusée pendant un travail actif.
+Après connexion, l’assistant peut appeler `wallets.backups`, puis `wallets.restore`
+pour récupérer une sauvegarde choisie de ce compte dans le coffre actif, sans
+commande d’administration ni redémarrage. Le coffre initial reste vide tant qu’une
+restauration ou création n’est pas demandée. Voir [WALLETS.md](WALLETS.md).
 
-Ces services peuvent être configurés plus tard depuis **Capacités → Connexions →
-Configurer les services partagés**. Le chat personnel fonctionne sans projet.
-Sur cette installation gérée, sans connexion Mémoire, les outils mémoire restent
-absents ; pas de mémoire SQL ou catalogue de projets créé en remplacement.
-Mémoire/projets/coffre ne deviennent utilisables qu’avec des connexions valides.
-Les conversations et leurs configurations restent dans le PostgreSQL local.
+Mémoire/projets/coffre exigent des connexions valides ; pas de mémoire SQL ou de
+catalogue Projets de remplacement. Conversations et réglages restent dans le
+PostgreSQL local. Une reconfiguration attend la fin du travail en cours.
 
 ## Fichiers et isolation
 

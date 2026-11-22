@@ -14,11 +14,14 @@ données privées dans le dossier choisi, sans importer notre installation.
 Sans domaine, accès direct `http://IP:port` par défaut, détection automatique et
 `--address` pour préciser. `--domain` ajoute Caddy/HTTPS ; `--private` réserve le
 tunnel SSH aux installations qui le demandent. Anciens modes réseau préservés.
-Mot de passe permanent privé, reprise sans réinitialisation.
+Nouvelles installations : connexion au compte MCP obligatoire avant le wizard,
+via portail HTTPS ; clés Memory/Projects/Vault créées/vérifiées et stockées en local
+sans copier-coller. Compte lié à l’installation, reconnexion sans rotation des clés.
+Lien privé initial à usage unique ; mot de passe local réservé à l’administration.
+Les déploiements existants gardent leur accès et leurs credentials.
 
 Onboarding : identité/thème/personnalité, fournisseur et modèle/effort par défaut
-réellement enregistrés, simulation explicite, connexions MCP vérifiées depuis le
-navigateur. Credentials en fichier privé, schémas en SQL, restart suivi et reprise.
+réellement enregistrés, simulation explicite, connexions MCP vérifiées par le serveur au retour du portail. Credentials en fichier privé, schémas en SQL, restart suivi et reprise.
 Les nouveaux déploiements n’activent aucune mémoire SQL de remplacement ; mémoire
 et projets distants demandent leurs connexions. Données métier et ancien runtime
 préservés. Voir [INSTALLATION.md](INSTALLATION.md).
@@ -28,7 +31,7 @@ jetables sur l’hôte existant : bootstrap GitHub, chemins avec espaces, IP HTT
 PostgreSQL/systemd, fichiers, terminal protégé/root YOLO, reprise et persistance.
 Les utilitaires navigateur UUID/copie et les formules fonctionnent sur IP HTTP.
 
-**Qualification réelle réussie sur la dernière installation :**
+**Qualification fournisseurs antérieure, avant la connexion unique :**
 - ChatGPT abonnement, `gpt-6-luna`, effort `low` : fichier créé/relu, commande
   Node 24, recherche Projets MCP, mémoire distante créée, puis retrouvée depuis
   un nouveau fil après redémarrage. Dernier essai sans erreur d’outil/JavaScript.
@@ -51,17 +54,24 @@ Proxy Caddy validé séparément par son binaire. Voir [TESTING.md](TESTING.md).
 ## Wallets locaux et reprise distante
 
 
-Création/renommage livrés : UUID stable/idempotent, nom modifiable, génération
-locale EVM et Ed25519/Solana, mutations chiffrées atomiques sous verrou OS.
-Outils Heart, SDK JS/Python et CLI/socket raccordés. Sauvegarde automatique par
-processus séparé, état public de la révision courante, vérification distante et
-reprise dans un nouveau dossier. Le signataire ne charge pas le token Vault.
-270 tests : concurrence, reprise après kill, idempotence, persistance, sauvegarde
-en panne, signatures et restauration. Essai réel daemon + Vault : deux wallets
-synthétiques créés/renommés, backup relu, restart et signatures du clone restauré
-vérifiés ; coffre de test et archive distante supprimés. Aucun wallet personnel
-créé pour cet essai, aucun financement ou transfert. Création aussi qualifiée
-par un vrai DeepSeek Flash/OpenRouter via moteur/socket (deux inférences).
+Création/renommage et reprise livrés : UUID stable/idempotent, nom modifiable,
+génération EVM/Ed25519 locale, mutations chiffrées atomiques sous verrou OS.
+`wallets.backups` découvre les copies du compte ; `wallets.restore` fusionne dans
+le coffre actif, conserve UUID/clés et noms locaux, refuse les conflits sans écrire.
+Rechiffrement avec la clé locale actuelle et signataires utilisables sans restart.
+Outils Heart, SDK JS/Python et CLI/socket raccordés. Backup par processus séparé,
+statut de révision vérifiée. Clé Vault chargée uniquement par l’enfant ; archive
+et clé de reprise via pipe privé, jamais une réponse d’outil modèle.
+272 tests et 27 tests navigateur, dont le parcours mobile compte : succès. Portail : 103 contrôles HTTP/SQL
+réels, isolation A/B, refus/expiration/rejeu, navigateur email/mot de passe + accord.
+Installation native jetable sur l’hôte existant : vraies clés MCP automatiques,
+onboarding, fichiers, terminal, redémarrage, reconnexion sans rotation et refus du
+mot de passe local comme contournement ; autorisation du compte par opérateur,
+chat simulé pour ce parcours. Aucune nouvelle VM ni inférence LLM dans ce lot.
+Essai réel daemon/Vault : deux wallets synthétiques restaurés dans un coffre neuf
+avec autre clé locale, signatures puis répétition sans doublon vérifiées ; archives
+et fixtures retirées. Anciennes sauvegardes réessayables sans changer leur payload.
+Aucun wallet personnel créé/restauré implicitement. Voir TESTING.md.
 Déployé : sauvegarde du coffre existant vérifiée via la nouvelle API, quatre MCP
 actifs et signataire sans token Vault dans son environnement.
 

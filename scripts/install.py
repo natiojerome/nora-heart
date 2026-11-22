@@ -141,7 +141,7 @@ def verify_web(identity, credentials, public=False):
     request=urllib.request.Request(endpoint+'/api/state',headers={**headers,'Cookie':cookie})
     with urllib.request.urlopen(request,timeout=5) as response:
         state=json.load(response)
-    return state.get('authenticated') and state.get('assistant') is not None and state.get('conversationsAvailable') and state.get('installation',{}).get('available')
+    return (state.get('setupReady') and state.get('accountLogin',{}).get('bootstrapReady')) or state.get('authenticated') and state.get('assistant') is not None and state.get('conversationsAvailable') and state.get('installation',{}).get('available')
 
 def check_terminal(identity, credentials):
     endpoint=local_url(identity)
@@ -149,6 +149,10 @@ def check_terminal(identity, credentials):
     with urllib.request.urlopen(urllib.request.Request(endpoint+'/api/login',data=json.dumps({'password':credentials['password']}).encode(),headers=headers),timeout=5) as response:
         headers['Cookie']=response.headers['Set-Cookie'].split(';')[0]
         headers['x-csrf-token']=json.load(response)['csrf']
+    if identity.get('accountRequired'):
+        with urllib.request.urlopen(urllib.request.Request(endpoint+'/api/account/self-test',data=b'{}',headers=headers),timeout=35) as response:
+            if not json.load(response).get('ok'):raise RuntimeError('Terminal protégé Node 24 non vérifié.')
+        return
     with urllib.request.urlopen(urllib.request.Request(endpoint+'/api/projects-root/commands',data=json.dumps({'command':'node --version','cwd':'.'}).encode(),headers=headers),timeout=10) as response:
         command=json.load(response)['command']
     deadline=time.monotonic()+30
@@ -207,6 +211,11 @@ def install(options):
         raise RuntimeError('systemd-creds requis : Debian 12+ ou Ubuntu 24.04+.')
     if options.port and not 1024<=options.port<=65535:
         raise RuntimeError('Port requis entre 1024 et 65535.')
+    if options.account_server:
+        authority=urllib.parse.urlparse(options.account_server)
+        if (authority.scheme!='https' and not(authority.scheme=='http' and authority.hostname in ['127.0.0.1','localhost','::1'])) or authority.path not in ['', '/'] or authority.username or authority.password or authority.query or authority.fragment:
+            raise RuntimeError('Origine HTTPS du portail MCP requise.')
+        options.account_server=options.account_server.rstrip('/')
     if options.address:
         try:options.address=str(ipaddress.ip_address(options.address.strip('[]')))
         except ValueError:raise RuntimeError('--address doit être une adresse IP valide.')
@@ -234,12 +243,13 @@ def install(options):
     if not identity:
         install_id = str(uuid.uuid4())
         network=network_settings(options.domain,options.address,options.private)
-        identity = {'version': 1, 'id': install_id, 'root': str(root), 'unit': 'heart-' + install_id.replace('-', '')[:10], 'port': available_port(options.port,network['host']), 'domain': options.domain, 'searchPort': available_port(), 'enginePort': available_port(), 'phase': 'created',**network}
+        identity = {'version': 1, 'id': install_id, 'root': str(root), 'unit': 'heart-' + install_id.replace('-', '')[:10], 'port': available_port(options.port,network['host']), 'domain': options.domain, 'searchPort': available_port(), 'enginePort': available_port(), 'phase': 'created','accountRequired':True,'accountServer':options.account_server or 'https://mcps.natio.re',**network}
         atomic(manifest, json.dumps(identity))
     elif (options.domain and identity['domain'] != options.domain) or (options.port and identity['port'] != options.port):
         raise RuntimeError('Une autre URL/port est déjà enregistré ; pas de modification implicite.')
     if (options.address and options.address!=identity.get('address')) or (options.private and identity.get('access','domain' if identity['domain'] else 'private')!='private'):
         raise RuntimeError('Accès réseau existant différent ; aucune exposition ou migration implicite.')
+    if options.account_server and identity.get('accountServer','https://mcps.natio.re')!=options.account_server:raise RuntimeError('Portail existant différent ; aucune migration implicite.')
     name = identity['unit']
     if identity['phase'] == 'ready':
         try: healthy=units_active(identity) and health('http://127.0.0.1:'+str(identity['enginePort'])+'/') and verify_web(identity,json.loads((config/'secrets.json').read_text()),public=bool(identity['domain']))
@@ -323,13 +333,20 @@ def install(options):
     else: run(['docker','start',engine_name])
     origin = web_origin(identity)
     identity['origin'] = origin
+    setup_url=config/'first-login-url'
+    if identity.get('accountRequired') and not setup_url.exists():
+        invite=secrets.token_urlsafe(32)
+        invitation=private/'state/setup-invite.json'
+        atomic(invitation,json.dumps({'hash':hashlib.sha256(invite.encode()).hexdigest(),'expiresAt':9007199254740991}))
+        os.chown(invitation,account.pw_uid,account.pw_gid)
+        atomic(setup_url,origin+'/#invite='+invite+'\n')
     values = {'NODE_ENV': 'production', 'PATH': env['PATH'], 'PORT': identity['port'], 'HARNESS_WEB_HOST': identity.get('host','127.0.0.1'), 'HARNESS_WEB_ORIGIN': origin,
-              'HARNESS_WEB_SESSION_SECRET': credentials['session'], 'HARNESS_WEB_PASSWORD': credentials['password'],
+              'HARNESS_WEB_INVITE_FILE':str(private/'state/setup-invite.json'),'HARNESS_WEB_SESSION_SECRET': credentials['session'], 'HARNESS_WEB_PASSWORD': credentials['password'],
               'HARNESS_STORAGE_DRIVER': 'postgres', 'HARNESS_DATABASE_URL': 'postgresql://heart:' + credentials['postgres'] + '@127.0.0.1:' + db_port + '/heart',
               'HARNESS_WEB_STATE_DIR': str(private / 'state'), 'HARNESS_CHATGPT_AUTH_DIR': str(private / 'auth'), 'HARNESS_PROJECTS_ROOT': str(root / 'projects'),
               'HARNESS_MAINTENANCE_FILE': str(private / 'maintenance'), 'HARNESS_HOST_SOCKET': '/run/'+name+'-host/terminal.sock',
               'HARNESS_WALLETS_SOCKET':'/run/'+name+'-wallets/api.sock','HARNESS_WALLETS_SIGN_ENABLED':'1',
-              'HARNESS_INSTALL_CONFIG_FILE': str(private / 'state/installation.json'), 'HARNESS_REQUIRE_REMOTE_MEMORY': '1', 'HARNESS_LOCAL_SEARCH_URL':'http://127.0.0.1:'+str(identity['searchPort'])+'/mcp'}
+              'HARNESS_ACCOUNT_SERVER_URL':identity.get('accountServer','https://mcps.natio.re'),'HARNESS_INSTALL_ID':identity['id'],'HARNESS_REQUIRE_ACCOUNT_LOGIN':'1' if identity.get('accountRequired') else '0','HARNESS_INSTALL_CONFIG_FILE': str(private / 'state/installation.json'), 'HARNESS_REQUIRE_REMOTE_MEMORY': '1', 'HARNESS_LOCAL_SEARCH_URL':'http://127.0.0.1:'+str(identity['searchPort'])+'/mcp'}
     runtime = config / 'runtime.env'
     keep_runtime(runtime,values,binary)
     command = [binary, root / 'node_modules/tsx/dist/cli.mjs']
@@ -399,19 +416,22 @@ def install(options):
         print('Accès privé : ssh -L ' + str(identity['port']) + ':127.0.0.1:' + str(identity['port']) + ' utilisateur@serveur, puis ouvrir ' + origin)
     elif not identity['domain']:
         print('Accès direct par IP : '+origin+' (autoriser TCP '+str(identity['port'])+' dans le pare-feu si nécessaire).')
-    print('Mot de passe permanent : fichier privé ' + str(config / 'owner-password'))
+    if identity.get('accountRequired'):print('Première connexion au compte MCP : lien privé dans '+str(setup_url))
+    print(('Accès d’administration local : fichier privé ' if identity.get('accountRequired') else 'Mot de passe permanent : fichier privé ') + str(config / 'owner-password'))
     try:
         with open('/dev/tty', 'w') as terminal:
-            terminal.write('\nMot de passe Heart (conserve-le) : ' + credentials['password'] + '\n')
+            if identity.get('accountRequired'):terminal.write('\nPremière connexion Heart : '+setup_url.read_text().strip()+'\n')
+            else:terminal.write('\nMot de passe Heart (conserve-le) : ' + credentials['password'] + '\n')
     except OSError:
         pass
-    print('Le premier accès ouvre la personnalisation et les connexions. Aucun compte ou secret de notre installation n’a été importé.')
+    print('Le premier accès demande le compte MCP puis la personnalisation. Aucun secret de notre installation importé.' if identity.get('accountRequired') else 'Le premier accès ouvre la personnalisation et les connexions. Aucun compte ou secret de notre installation n’a été importé.')
 
 def main():
     os.umask(0o022)
     parser = argparse.ArgumentParser(description='Installer Heart indépendamment dans le chemin choisi.')
     parser.add_argument('--path', default='/opt/nora-heart')
     parser.add_argument('--domain')
+    parser.add_argument('--account-server',help='Portail de connexion MCP HTTPS ; mcps.natio.re par défaut.')
     parser.add_argument('--address',help='Adresse IP annoncée ; détection automatique par défaut.')
     parser.add_argument('--private',action='store_true',help='Écoute locale et tunnel SSH, sur demande uniquement.')
     parser.add_argument('--port', type=int, default=0)

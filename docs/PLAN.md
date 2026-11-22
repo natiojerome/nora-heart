@@ -1,6 +1,6 @@
 # Plan courant
 
-Point du 22 novembre 2026, après installation indépendante et onboarding. Finalité conservée : une
+Point du 22 novembre 2026, après connexion initiale et restauration wallet intégrée. Finalité conservée : une
 assistante quotidienne dont le propriétaire contrôle moteur, données, outils et
 permissions, avec des cerveaux interchangeables selon besoin et coût.
 [STATUS.md](STATUS.md) décrit le livré ; les lots 1 et 2 sont livrés ; le lot 3 est qualifié sur un scénario réel ciblé. [REVIEW.md](REVIEW.md) donne les écarts constatés.
@@ -10,7 +10,10 @@ permissions, avec des cerveaux interchangeables selon besoin et coût.
 Installateur GitHub, chemin choisi et premier accès documentés dans
 [INSTALLATION.md](INSTALLATION.md). Première qualification réelle sur installation
 jetable dans un chemin avec espaces ; bootstrap public et reprise validés.
-Accès IP par défaut. ChatGPT/GPT-6 Luna et OpenRouter/DeepSeek Flash qualifiés avec
+Accès IP par défaut. Connexion au compte MCP avant le wizard, attribution des
+trois clés et reprise locale des wallets via outil livrées/qualifiées. Dernier
+parcours natif sur hôte existant : compte approuvé par opérateur, vrais MCP,
+chat simulé. Le navigateur email/mot de passe est qualifié sur PostgreSQL isolé. ChatGPT/GPT-6 Luna et OpenRouter/DeepSeek Flash qualifiés avec
 vrais outils/MCP et rappel mémoire dans un autre fil après restart. Le blocage
 Venice HTTP 402 est indépendant : reprendre ce fournisseur lorsque son accès
 API est réactivé, sans bloquer le développement sur lui.

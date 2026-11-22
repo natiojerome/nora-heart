@@ -1,5 +1,35 @@
 # Tester les modules
 
+## Compte MCP et restauration intégrée — 22 novembre 2026
+
+272 tests (`pnpm check`), démo SDK et les 27 tests navigateur de régression réussis,
+dont le nouveau parcours mobile account-login.
+Compte/device flow simulé uniquement dans le test navigateur Heart ; le portail
+a passé séparément 103 contrôles sur PostgreSQL réel et un parcours navigateur
+email/mot de passe, approbation et refus avec compte synthétique.
+
+Installation native jetable, même hôte, PostgreSQL/systemd réels et portail HTTPS
+public : trois clés créées automatiquement, trois découvertes MCP validées,
+onboarding/reprise, fichiers, terminal protégé/YOLO, restart et accès aux sauvegardes.
+Deux reconnexions valident la conservation exacte des clés et le refus de contourner
+le compte via mot de passe local. L’opérateur a approuvé exclusivement l’UUID QA ;
+pas de mot de passe propriétaire récupéré ni de nouvelle session email réelle
+prétendue. Chat de ce scénario simulé ; anciennes qualifications fournisseurs
+ci-dessous distinctes. Aucun serveur créé/acheté ni crédit LLM consommé ici.
+
+`pnpm qualify:install -- --root /projects/heart-account-qa-UUID --operator-approve`
+reste opt-in et réservé à la fixture explicite. `tests/account-login.e2e.ts` est
+intégré à `test:web:e2e`. Preuve privée : qualification/account-install.
+
+Daemon et vrai Vault : deux wallets synthétiques, backup puis reprise dans un
+nouveau coffre/une autre clé maître, activation sans restart, signatures EVM/Ed25519
+vérifiées, répétition sans doublons, archives et fichiers supprimés. Tests ciblés
+additionnels : refus clé/UUID et absence de modification du coffre lors du conflit.
+La sauvegarde de production existante est à nouveau vérifiée (format immuable
+conservé pour ses reprises), sans restaurer de wallet personnel. Preuve privée :
+qualification/wallet-management/restore-live.json. Sauvegarde MCP chiffrée copiée
+hors machine et restaurée en environnement réseau isolé avant migration 006.
+
 ## Installation indépendante — 22 novembre 2026
 
 266 tests, démo SDK et cinq parcours navigateur réussis. Onboarding testé sur

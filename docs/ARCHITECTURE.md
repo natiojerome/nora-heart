@@ -16,6 +16,12 @@ navigateur UUID/copie compatibles HTTP sur IP. PostgreSQL/SearXNG restent privé
 Chemins explicites et données sous `<installation>/.heart` ; aucun
 identifiant métier dérivé du dossier ni import des services existants.
 
+`app/account-login.ts` réalise RFC 8628 auprès du portail HTTPS. La première
+installation est revendiquée par un lien local privé ; le portail authentifie
+l’utilisateur et attribue les trois clés via une extension Nora. Aucun mot de
+passe MCP ni device/access token dans l’état navigateur. Une session Heart liée
+au UUID du compte est requise sur les nouvelles installations ; les connexions
+suivantes n’attribuent pas de nouvelles clés. Auth locale historique préservée.
 `app/installation.ts` vérifie les endpoints/credentials MCP, conserve les secrets
 dans un fichier privé et les références/schémas dans le repository existant.
 L’entrée web charge uniquement les références d’environnement autorisées avant
@@ -40,6 +46,14 @@ Node autonome ; Python utilise le même contrat avec sa bibliothèque standard.
 `app/wallets.ts` relie ces implémentations aux commandes et au daemon ;
 `app/web-conversations.ts` raccorde le client aux droits courants des fils.
 Le core et la base de conversations ne connaissent aucune implémentation wallet.
+Découverte/reprise sont des méthodes WalletService et JSON-RPC/SDK, au même titre
+que création/renommage. Callbacks injectés dans le module local : seul le child
+worker connaît le transport Vault et charge son token. Les métadonnées passent
+normalement ; l’archive privée revient par un pipe FD3 dédié. Le module local
+vérifie puis fusionne par UUID sous verrou OS, rechiffre avec sa clé courante et
+reconstruit les signataires ; aucun redémarrage ni déplacement manuel de coffre.
+Les permissions de lecture/écriture s’appliquent, pas le bouton réseau des commandes
+pour cette persistance approuvée. Les mises à jour RPC restent soumises au réseau.
 Création/renommage passent par la même socket et des contrats neutres ; UUID de
 création idempotent distinct du label. Mutations du coffre chiffré sous verrou OS
 flock, relecture/validation et remplacement atomique ; signataires préparés en mémoire.

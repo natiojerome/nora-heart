@@ -16,7 +16,13 @@ const allowed = new Set(
   services.flatMap((s) => [tokenName(s), bindingName(s)]),
 );
 allowed.add("HEART_MCP_VAULT_URL");
+export interface InstallationAccount {
+  id: string;
+  email: string;
+  server: string;
+}
 interface Saved {
+  account?: InstallationAccount;
   version: 1;
   revision?: string;
   env: Record<string, string>;
@@ -31,6 +37,11 @@ export async function loadInstallation(file: string): Promise<Saved> {
     throw Error("Configuration privée de l’installation illisible.");
   }
   if (
+    (saved.account !== undefined &&
+      (!saved.account ||
+        typeof saved.account.id !== "string" ||
+        typeof saved.account.email !== "string" ||
+        typeof saved.account.server !== "string")) ||
     saved.version !== 1 ||
     !saved.env ||
     Object.entries(saved.env).some(
@@ -54,10 +65,14 @@ export class Installation {
       ready:
         !!saved.revision &&
         process.env.HARNESS_INSTALL_REVISION === saved.revision,
+      account: saved.account ?? null,
       services: services.filter((s) => saved.env[bindingName(s)]),
     };
   }
-  async configure(body: Record<string, unknown>) {
+  async configure(
+    body: Record<string, unknown>,
+    account?: InstallationAccount,
+  ) {
     if (this.saving) throw Error("Configuration déjà en cours.");
     this.saving = true;
     try {
@@ -66,6 +81,9 @@ export class Installation {
       const saved = await loadInstallation(this.file),
         env = { ...process.env, ...saved.env },
         drafts = [];
+      if (account && saved.account && saved.account.id !== account.id)
+        throw Error("Cette installation appartient à un autre compte.");
+      if (account) saved.account = account;
       for (const s of services) {
         if (body[s] === undefined) continue;
         const value = body[s] as { url?: unknown; token?: unknown };

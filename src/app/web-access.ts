@@ -6,7 +6,7 @@ function equal(left: string, right: string): boolean {
   return a.length === b.length && timingSafeEqual(a, b);
 }
 const hash = (value: string) => createHash("sha256").update(value).digest("hex");
-export interface WebSession { id: string; expiresAt: number }
+export interface WebSession { id: string; expiresAt: number; accountId?:string }
 
 // Browser access is separate from harness sessions, model credentials and memory.
 export class WebAccess {
@@ -41,9 +41,11 @@ export class WebAccess {
     }
     if (!accepted) throw new Error("Accès refusé ou invitation expirée.");
     this.attempts.delete(address);
-    const data = Buffer.from(JSON.stringify({ id: randomBytes(32).toString("base64url"), expiresAt: now + 24 * 3600_000 })).toString("base64url");
-    const token = `${data}.${this.mac(data)}`;
-    return { token, csrf: this.csrf(token) };
+    return this.issue();
+  }
+  issue(accountId?:string):{token:string;csrf:string}{
+    const data=Buffer.from(JSON.stringify({id:randomBytes(32).toString('base64url'),expiresAt:Date.now()+24*3600_000,...(accountId?{accountId}:{})})).toString('base64url');
+    const token=data+'.'+this.mac(data);return {token,csrf:this.csrf(token)};
   }
   session(token: string): WebSession | undefined {
     try {

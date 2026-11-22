@@ -1,6 +1,6 @@
 # Revue du code et priorités
 
-Point du 21 novembre 2026. État détaillé : [STATUS.md](STATUS.md),
+Point du 22 novembre 2026. État détaillé : [STATUS.md](STATUS.md),
 architecture : [ARCHITECTURE.md](ARCHITECTURE.md), preuves : [TESTING.md](TESTING.md).
 Cette revue distingue les fonctions livrées des qualifications encore partielles.
 
@@ -20,6 +20,17 @@ Cette revue distingue les fonctions livrées des qualifications encore partielle
 | Tâches | Planification durable, concurrence entre fils, pause/run-now, historique, outils chat et réservations atomiques. | Pas de rejeu aveugle d’une occurrence incertaine ; compléments de fréquences/notifications selon besoin. |
 | Interface | Mobile first, configurations unifiées, chat enrichi, fichiers/terminal manuels, formulaires et reçus mémoire. | Parcours Chromium aux quatre largeurs ; appareils physiques et très gros historiques à mesurer. |
 | Consommation | Quotas ChatGPT, données OpenRouter ; soldes et limites Venice avec la clé normale et cache d’une minute. | Historique détaillé Venice réservé par le fournisseur aux clés administrateur ; pas de coût réel systématique par run. |
+
+## Connexion initiale et wallets
+
+Nouveaux installs : compte MCP avant onboarding, clés des trois services attribuées
+et stockées en privé, reconnexion sans rotation. Installation native/portail HTTPS
+qualifiés ; accord opérateur limité à la fixture, navigateur email/mot de passe
+sur vrai PostgreSQL synthétique. Aucun nouveau fournisseur LLM testé dans ce lot.
+Restauration intégrée au service/outils/SDK : fusion vérifiée, autre clé locale,
+activation sans restart ; conflits atomiques et répétition sans doublons testés.
+Payload de sauvegarde immuable conservé pour la compatibilité des anciennes copies.
+Les anciennes installations ne changent pas implicitement d’authentification.
 
 ## Dernier défaut corrigé
 

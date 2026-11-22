@@ -1,3 +1,4 @@
+import {AccountLogin} from './account-login.ts';
 import {historyTools} from "../modules/tools/history/index.ts";
 import {Installation} from './installation.ts';
 import {WalletClient} from '../modules/wallets/unix/index.ts';
@@ -52,6 +53,7 @@ export async function openWebConversations(
   );
   const projectConnectionId=process.env.HARNESS_PROJECTS_MCP_CONNECTION_ID;
   const installation=process.env.HARNESS_INSTALL_CONFIG_FILE?new Installation(process.env.HARNESS_INSTALL_CONFIG_FILE,storage.externalTools):undefined;
+  const accountLogin=installation&&process.env.HARNESS_INSTALL_ID?new AccountLogin(installation,process.env.HARNESS_INSTALL_ID,process.env.HARNESS_ACCOUNT_SERVER_URL,undefined,Number(process.env.HARNESS_ACCOUNT_MAX_PENDING??64)):undefined;
   const searchUrl=process.env.HARNESS_LOCAL_SEARCH_URL;
   if(searchUrl&&!(await externalTools.list()).connections.some(c=>c.url===searchUrl)){
     const draft={id:crypto.randomUUID(),version:0,label:'Recherche web locale',url:searchUrl,auth:{type:'none' as const},enabled:true,timeoutMs:60000};
@@ -154,6 +156,7 @@ export async function openWebConversations(
     assistant,
     skills,
     externalTools,
+    accountLogin,accountRequired:process.env.HARNESS_REQUIRE_ACCOUNT_LOGIN==='1',
     memoryConfigured:!!memoryConnectionId||!remoteMemoryRequired,
     memories: new Memories(memory, projects),
     close: async () => {

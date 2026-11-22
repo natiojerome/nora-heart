@@ -6,6 +6,17 @@ au compte du propriétaire dans le portail MCP, avec une clé distincte par serv
 Elles sont révocables depuis ce portail et restent hors SQL/journal de Heart.
 La base locale conserve les conversations, tâches planifiées, fichiers et réglages.
 
+## Première connexion des nouvelles installations
+
+Compte MCP obligatoire avant le wizard. Portail HTTPS + RFC 8628, puis attribution
+groupée Nora des clés Mémoire/Projets/Vault par UUID d’installation. Vérification
+réelle des outils, fichier privé 0600 et redémarrage suivi. L’utilisateur ne copie
+aucune clé ; la reconnexion garde les mêmes credentials et le même propriétaire.
+Anciens déploiements non migrés implicitement. Voir [INSTALLATION.md](INSTALLATION.md).
+Le stockage approuvé des sauvegardes wallet suit le même principe que la mémoire :
+accessible sans activer le réseau général du modèle. Restauration explicite par
+`wallets.backups` puis `wallets.restore`, fusion locale vérifiée sans exporter de clé.
+
 ## État de la mémoire
 
 La mémoire automatique utilise désormais **le MCP**, sur choix explicite

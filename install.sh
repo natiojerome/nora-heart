@@ -7,7 +7,7 @@ args=("$@")
 for ((i=0;i<$#;i++)); do
   if [[ "${args[i]}" == --path ]]; then destination="${args[i+1]:?Chemin requis}"; fi
   if [[ "${args[i]}" == --path=* ]]; then destination="${args[i]#--path=}"; fi
-  if [[ "${args[i]}" == --help ]]; then echo 'Options : --path /chemin/heart [--address IP | --domain assistant.example.com | --private] [--port 4215] [--password-file /fichier/prive]'; exit 0; fi
+  if [[ "${args[i]}" == --help ]]; then echo 'Options : --path /chemin/heart [--address IP | --domain assistant.example.com | --private] [--account-server https://mcps.natio.re] [--port 4215] [--password-file /fichier/prive]'; exit 0; fi
 done
 command -v apt-get >/dev/null || { echo 'Installateur : Debian/Ubuntu avec systemd requis.' >&2; exit 1; }
 [[ -d /run/systemd/system ]] || { echo 'Un serveur avec systemd actif est requis.' >&2; exit 1; }

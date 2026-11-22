@@ -1,3 +1,4 @@
+import {AccountLoginError,type AccountLogin} from '../../app/account-login.ts';
 import type {Installation} from "../../app/installation.ts";
 import {ExternalCallError} from "../../contracts/external-tools.ts";
 import type {ProjectsWorkspace} from "../../app/projects-workspace.ts";
@@ -25,7 +26,7 @@ import type { TestLab } from "../../app/test-lab.ts";
 import { WebAccess } from "../../app/web-access.ts";
 
 type Lab = Pick<TestLab, "state" | "setKey" | "loginStatus" | "startLogin" | "finishLogin" | "logoutChatGpt" | "models" | "usage" | "capabilities" | "test" | "tests">;
-interface Options { memoryConfigured?:boolean;installation?:Installation;restart?:()=>void; projectsWorkspace?:ProjectsWorkspace; origin: string; access: WebAccess; lab: Lab; assistant?: Assistant; skills?:Skills; tasks?:Tasks; scheduler?:{state():{running:boolean;active:number;ticking:boolean;intervalMs:number;concurrency:number};tick():Promise<void>;stop?():void;start?():void}; conversations?: Conversations; memories?: Memories; maintenanceFile?: string; assetsDirectory?: string; externalTools?:ExternalTools }
+interface Options { accountLogin?:AccountLogin;accountRequired?:boolean; memoryConfigured?:boolean;installation?:Installation;restart?:()=>void; projectsWorkspace?:ProjectsWorkspace; origin: string; access: WebAccess; lab: Lab; assistant?: Assistant; skills?:Skills; tasks?:Tasks; scheduler?:{state():{running:boolean;active:number;ticking:boolean;intervalMs:number;concurrency:number};tick():Promise<void>;stop?():void;start?():void}; conversations?: Conversations; memories?: Memories; maintenanceFile?: string; assetsDirectory?: string; externalTools?:ExternalTools }
 class HttpError extends Error { constructor(readonly status: number, message: string) { super(message); } }
 const safeMessages = new Set(["Réglages de skills invalides.","Limites invalides.","Message requis.","Budget de lot invalide.","Pagination invalide.","Curseur introuvable dans ce fil.",...Object.values(aiSdkErrorMessages),"Formulaire ou réponse invalide. Vérifie les champs.","Demande interactive introuvable.","Réponds au formulaire en attente ou annule-le avant un nouveau message.","Cette demande a déjà reçu une autre réponse.","Une autre demande interactive est en attente.","Historique de la demande interactive incohérent.","Outil interactif indisponible.","Reprise interactive atomique indisponible pour ce stockage.","Modèle du fil modifié ailleurs. Rouvre ses réglages.","Modèle du fil modifié ailleurs ou conversation occupée. Rouvre ses réglages.","Worker YOLO indisponible. Aucun repli implicite.","Réglages par défaut invalides.","Catalogue OpenRouter indisponible. Actualise la liste pour réessayer.","OpenRouter : choisir un identifiant de modèle terminé par :free. Aucun modèle payant autorisé.","Prompt modifié ailleurs ou limite de 100 prompts atteinte. Actualise la liste.","Prompt modifié ailleurs. Actualise la liste.","Une pièce jointe est introuvable. Actualise la liste.","Fichier déjà utilisé ou introuvable. Son historique est conservé.","Profil assistant invalide.", "Profil modifié ailleurs. Actualise avant de réessayer.","Ce fichier ne peut pas être affiché comme image.", "Souvenir invalide : titre, contenu ou type.", "Portée du souvenir invalide.",
   "Souvenir hors du projet courant.", "Ne pas mémoriser de secret.", "Souvenir introuvable.",
@@ -254,9 +255,115 @@ export function createWebServer(options: Options) {
         response.setHeader("Set-Cookie", cookie(result.token));
         json(response, { authenticated: true, csrf: result.csrf }); return;
       }
-      if (url.pathname === "/api/state" && request.method === "GET") {
-        json(response, session ? { authenticated: true, installation:await options.installation?.status(), csrf: options.access.csrf(token), ...await options.lab.state(), assistant: options.assistant ? await options.assistant.get() : null, assistantPresets:options.assistant?.presets()??null, tasksAvailable:!!options.tasks, skillsAvailable:!!options.skills, externalToolsAvailable:!!options.externalTools, conversationsAvailable: !!options.conversations, memoriesAvailable: !!options.memories&&options.memoryConfigured!==false, chatAssetsAvailable: !!options.conversations?.assetsAvailable } : { authenticated: false }); return;
+      const accountState = await options.accountLogin?.status();
+      const accountAllowed =
+        !options.accountRequired ||
+        !!(
+          session?.accountId && session.accountId === accountState?.account?.id
+        );
+      if (
+        options.accountLogin &&
+        url.pathname === "/api/account/start" &&
+        request.method === "POST"
+      ) {
+        if (!accountState?.account && !session)
+          throw new HttpError(
+            403,
+            "Ouvre le lien privé de première connexion fourni par l’installation.",
+          );
+        json(response, await options.accountLogin.start());
+        return;
       }
+      if(options.accountLogin&&url.pathname==='/api/account/poll'&&request.method==='POST'){
+        let paused=false;const resumeScheduler=options.scheduler?.state().running;
+        try{
+          const result=await options.accountLogin.poll((await body(request)).flowId,()=>{
+            if(activeMutations>1||options.conversations?.hasActiveWork()||(options.scheduler?.state().active??0)>0||options.scheduler?.state().ticking)throw new HttpError(409,'Attends la fin du travail avant de connecter les services.');
+            options.scheduler?.stop?.();reconfiguring=true;paused=true;
+          });
+          if(!result.pending){const issued=options.access.issue(result.account!.id);response.setHeader('Set-Cookie',cookie(issued.token));json(response,{...result,csrf:issued.csrf});if(result.restartRequired&&options.restart)options.restart();else{reconfiguring=false;if(paused&&resumeScheduler)options.scheduler?.start?.();}}
+          else json(response,result);return;
+        }catch(error){if(paused){reconfiguring=false;if(resumeScheduler)options.scheduler?.start?.();}throw error instanceof AccountLoginError||error instanceof HttpError?error:new HttpError(503,'Connexion aux services indisponible. Recommence la connexion.');}
+      }
+      if (
+        options.accountLogin &&
+        url.pathname === "/api/account/self-test" &&
+        request.method === "POST"
+      ) {
+        if (
+          !session ||
+          !options.access.checkCsrf(
+            token,
+            String(request.headers["x-csrf-token"] ?? ""),
+          )
+        )
+          throw new HttpError(403, "Accès installation requis.");
+        if (!options.projectsWorkspace)
+          throw new HttpError(503, "Terminal indisponible.");
+        const started = await options.projectsWorkspace.start({
+          command: "node --version",
+          cwd: ".",
+        });
+        let output = await options.projectsWorkspace.output(started.command.id);
+        const deadline = Date.now() + 30000;
+        while (output.command.status === "running" && Date.now() < deadline) {
+          await new Promise((r) => setTimeout(r, 50));
+          output = await options.projectsWorkspace.output(started.command.id);
+        }
+        json(response, {
+          ok:
+            output.command.exitCode === 0 &&
+            /^v24\./.test(output.output.trim()),
+        });
+        return;
+      }
+      if (url.pathname === "/api/state" && request.method === "GET") {
+        const login = options.accountLogin
+          ? {
+              ...accountState,
+              bootstrapReady: !!session || !!accountState?.account,
+            }
+          : undefined;
+        json(
+          response,
+          session && accountAllowed
+            ? {
+                authenticated: true,
+                accountLogin: login,
+                installation: await options.installation?.status(),
+                csrf: options.access.csrf(token),
+                ...(await options.lab.state()),
+                assistant: options.assistant
+                  ? await options.assistant.get()
+                  : null,
+                assistantPresets: options.assistant?.presets() ?? null,
+                tasksAvailable: !!options.tasks,
+                skillsAvailable: !!options.skills,
+                externalToolsAvailable: !!options.externalTools,
+                conversationsAvailable: !!options.conversations,
+                memoriesAvailable:
+                  !!options.memories && options.memoryConfigured !== false,
+                chatAssetsAvailable: !!options.conversations?.assetsAvailable,
+              }
+            : {
+                authenticated: false,
+                accountLogin: login,
+                ...(session
+                  ? {
+                      setupReady:
+                        !!(await options.assistant?.get()) &&
+                        !!options.conversations,
+                    }
+                  : {}),
+              },
+        );
+        return;
+      }
+      if (!accountAllowed)
+        throw new HttpError(
+          401,
+          "Connecte ton compte MCP pour accéder à Heart.",
+        );
       if (!session) throw new HttpError(401, "Connecte-toi pour accéder au laboratoire.");
       if (request.method === "POST" && !options.access.checkCsrf(token, String(request.headers["x-csrf-token"] ?? ""))) throw new HttpError(403, "Session à actualiser.");
       if(options.installation&&url.pathname==='/api/installation/services'){
@@ -452,7 +559,7 @@ export function createWebServer(options: Options) {
     })().catch(error => {
       if (response.destroyed || response.writableEnded) return;
       if(error instanceof ExternalCallError){json(response,{error:error.message},error.code==='NOT_FOUND'?404:error.code==='CONFLICT'?409:error.code==='INVALID'?400:503);return;}
-      const known = error instanceof Error && (/^Lot d’outils trop grand \(\d+ maximum\)\.$/.test(error.message) || /^Message trop long : limite configurée de \d+ caractères\.$/.test(error.message) || error instanceof TaskError || error instanceof SkillError || (["Ce projet est archivé.","Objectif requis.","Identifiant de création invalide."].includes(error.message)||safeMessages.has(error.message)) || error instanceof ChatInputError || error instanceof RecoveryError || error instanceof WorkspaceError || error instanceof ExecutionError || error instanceof ExternalToolError);
+      const known = error instanceof Error && (error instanceof AccountLoginError || /^Lot d’outils trop grand \(\d+ maximum\)\.$/.test(error.message) || /^Message trop long : limite configurée de \d+ caractères\.$/.test(error.message) || error instanceof TaskError || error instanceof SkillError || (["Ce projet est archivé.","Objectif requis.","Identifiant de création invalide."].includes(error.message)||safeMessages.has(error.message)) || error instanceof ChatInputError || error instanceof RecoveryError || error instanceof WorkspaceError || error instanceof ExecutionError || error instanceof ExternalToolError);
       json(response, { error: error instanceof HttpError || known ? error.message : "Action impossible. Vérifie la connexion et réessaie." },
         error instanceof HttpError ? error.status : known ? 400 : 500);
     }).finally(()=>{if(mutation)activeMutations--;});
