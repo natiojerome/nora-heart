@@ -97,7 +97,7 @@ sudo cat /srv/mon-assistant/.heart/config/first-login-url
    Sur une installation déjà liée, utiliser son compte existant : le bouton de
    création n’est plus proposé.
 3. Heart crée les clés distinctes **Mémoire, Projets et Coffre-fort**, vérifie
-   réellement les trois MCP, les enregistre côté serveur en fichier privé 0600,
+   réellement les MCP demandés, les enregistre côté serveur en fichier privé 0600,
    puis redémarre et reprend automatiquement. Aucune clé à recopier.
 4. Choisir nom/avatar, thème, personnalité et fournisseur/modèle/effort par défaut.
    Les autorisations du fournisseur LLM restent propres à ce fournisseur : cette
@@ -233,3 +233,9 @@ Standards réutilisés : [installation Docker](https://docs.docker.com/engine/in
 [distributions Node](https://nodejs.org/dist/), unités systemd et contrats
 HTTP/MCP existants. Aucun orchestrateur propriétaire ni dépendance du core à
 l’installateur.
+
+Mail est inclus dans le scope des nouvelles connexions au compte. Sa clé est
+créée côté portail et conservée dans la configuration privée avec les autres
+clés ; aucune boîte ni signature personnelle n’est importée automatiquement.
+Les configurations historiques sans Mail restent valides. Après connexion,
+ajouter ses comptes et signatures dans l’onglet Mail de mcps.natio.re.

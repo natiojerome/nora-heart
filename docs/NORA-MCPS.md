@@ -190,3 +190,14 @@ inférence, puis 38 avec GPT‑6 Luna medium (11 appels, création projet par le
 et mémoire réelle). Les identités et données QA ont été retirées dans les deux cas.
 PostgreSQL 14→15 et SQLite 2→3 préservent les données ; aucun import des anciennes
 références. Voir STATUS.md pour le déploiement et la publication.
+
+## Mail
+
+`https://mcps.natio.re/mail` avec une clé Mail distincte liée au même utilisateur.
+19 outils MCP : comptes/dossiers, lecture/recherche, identités/signatures,
+brouillons/envoi/rapprochement, export EML et PJ, guide différé. Le portail HTTPS
+configure les comptes IMAP/SMTP et signatures ; Gmail OAuth attend le client Google
+de l’instance. `HARNESS_MAIL_MCP_CONNECTION_ID` relie la connexion au transfert
+binaire `mail.attach_file` / `mail.save_attachment`, sous droits réseau/fichiers
+existants. Nouveau login : scope quatre services, sans rotation à la reconnexion.
+Les installations historiques peuvent conserver leurs trois connexions.

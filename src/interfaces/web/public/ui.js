@@ -657,7 +657,7 @@
     }
   }
   function renderInstallationServices(target){
-    if(state.installation.account){const section=document.createElement('section');section.className='editor-fields';section.append(text('h2','Compte connecté'),text('p',state.installation.account.email),text('p','Mémoire, projets et coffre configurés automatiquement.','field-help'));target.append(section);return;}
+    if(state.installation.account){const section=document.createElement('section');section.className='editor-fields';section.append(text('h2','Compte connecté'),text('p',state.installation.account.email),text('p','Services MCP configurés automatiquement.','field-help'));target.append(section);return;}
 
     const section=document.createElement('section');section.className='editor-fields';const prefix=target.closest('#setup-dialog')?'':'managed-',inputs={};
     section.append(text('h2','Services partagés'));

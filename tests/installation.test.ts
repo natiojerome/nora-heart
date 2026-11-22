@@ -38,6 +38,10 @@ const definitions = [
   "projects_create",
   "vault_create",
   "vault_read",
+  "mail_accounts",
+  "mail_search",
+  "mail_draft_save",
+  "mail_send",
 ].map((name) => ({
   name,
   description: name,
@@ -104,6 +108,23 @@ test("installer MCP onboarding stores private keys separately from catalogue and
   );
   assert.notEqual((await loadInstallation(file)).revision, saved.revision);
   assert.equal((await repo.list()).length, 3);
+  await reloaded.configure({
+    mail: { url: "https://example.com/mail", token: "synthetic-mail-secret" },
+  });
+  assert.deepEqual((await reloaded.status()).services, [
+    "memory",
+    "projects",
+    "vault",
+    "mail",
+  ]);
+  assert.equal(
+    (await loadInstallation(file)).env.HEART_MCP_MAIL_TOKEN,
+    "synthetic-mail-secret",
+  );
+  assert.equal((await repo.list()).length, 4);
+  assert(
+    !JSON.stringify(await reloaded.status()).includes("synthetic-mail-secret"),
+  );
 });
 test("wrong/incompatible services never persist credentials or bindings; configuration parser rejects foreign environment keys", async (t) => {
   const root = await mkdtemp(path.join(tmpdir(), "heart-install-reject-"));
@@ -236,6 +257,7 @@ test("account login keeps device/service secrets out of browser state, binds one
     transport,
   );
   const flow = await login.start("register");
+  assert.equal(new URL(flow.url).origin, "https://mcps.test");
   assert.equal(new URL(flow.url).searchParams.get("screen_hint"), "signup");
   assert(!JSON.stringify(flow).includes("private-device"));
   assert((await login.poll(flow.flowId)).pending);

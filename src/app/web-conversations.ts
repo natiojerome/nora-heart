@@ -1,3 +1,5 @@
+import {HttpMailFiles}from'../modules/mail/http/index.ts';
+import {mailFileTools}from'../modules/tools/mail-files/index.ts';
 import {AccountLogin} from './account-login.ts';
 import {historyTools} from "../modules/tools/history/index.ts";
 import {Installation} from './installation.ts';
@@ -30,7 +32,7 @@ import type { SqlStorageConfig } from "./config.ts";
 import { StructuredMemory } from "../modules/memory/structured/index.ts";
 import { BoundedContext } from "../modules/context/bounded/index.ts";
 import { structuredMemoryTools } from "../modules/tools/memory-structured/index.ts";
-import { fileTools } from "../modules/tools/files/index.ts";
+import { LocalFiles, fileTools } from "../modules/tools/files/index.ts";
 import { Engine } from "../core/engine.ts";
 import { Conversations } from "./conversations.ts";
 import { Memories } from "./memories.ts";
@@ -119,12 +121,17 @@ export async function openWebConversations(
       },policies.memory);
       const selected =
         conversation.fileAccess === "yolo" ? hostExecution : execution;
+      const mailId=process.env.HARNESS_MAIL_MCP_CONNECTION_ID;
+      const mailConnection=mailId?await storage.externalTools.get(mailId):null;
+      const mailEnabled=mailConnection?.enabled&&(conversation.networkAccess||conversation.fileAccess==='yolo')&&conversation.fileAccess!=='none';
+      const mailTransfer=new HttpMailFiles(async write=>{const c=mailId?await storage.externalTools.get(mailId):null;const tool=write?'mail_attachment_upload':'mail_attachment_bytes';if(!c?.enabled||!c.tools.some(t=>t.name===tool)||(write&&!c.allowWrites)||c.auth.type!=='bearer_env')throw Error('Connexion Mail non approuvée pour ce transfert.');const token=process.env[c.auth.envVar];if(!token)throw Error('Connexion Mail indisponible.');return{url:c.url,token};});
       return new Engine(
         storage.sessions,
         [
           ...(await externalTools.toolsFor(conversation,memoryConnectionId?[memoryConnectionId]:[])),
           ...(runSkills?skillTools(runSkills,runSkills.entries):[]),
           ...historyTools(storage.sessions,conversation.id),
+          ...(mailEnabled?mailFileTools(mailTransfer,conversation.fileAccess==='yolo'?hostFiles:(workspace)=>new LocalFiles(workspace),['write','develop','yolo'].includes(conversation.fileAccess??'read'),!!mailConnection?.allowWrites):[]),
           ...(wallets?walletTools(wallets,conversation.fileAccess==='yolo'&&process.env.HARNESS_WALLETS_SIGN_ENABLED==='1',conversation.fileAccess==='yolo'||!!conversation.networkAccess):[]),
           ...fileTools(conversation.fileAccess==='yolo'?hostFiles:undefined,conversation.fileAccess==='yolo'),
           ...(selected

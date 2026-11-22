@@ -89,6 +89,7 @@ export class AccountLogin {
     const data = await this.request("/oauth/device_authorization", {
       client_id: "nora-heart",
       installation_id: this.installationId,
+      scope: "memory projects vault mail",
     });
     if (
       typeof data.device_code !== "string" ||
@@ -155,7 +156,12 @@ export class AccountLogin {
       throw new AccountLoginError(
         "Utilise le compte propriétaire de cette installation.",
       );
-    if (current.account && current.services.length === 3)
+    if (
+      current.account &&
+      ["memory", "projects", "vault"].every((s) =>
+        current.services.includes(s as (typeof current.services)[number]),
+      )
+    )
       return {
         pending: false,
         account: current.account,

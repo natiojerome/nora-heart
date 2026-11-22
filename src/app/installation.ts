@@ -7,7 +7,7 @@ import type {
 } from "../contracts/external-tools.ts";
 import { ExternalTools } from "./external-tools.ts";
 import { connectMcp } from "../modules/tools/mcp/index.ts";
-const services = ["memory", "projects", "vault"] as const;
+const services = ["memory", "projects", "vault", "mail"] as const;
 const tokenName = (name: string) =>
   "HEART_MCP_" + name.toUpperCase() + "_TOKEN";
 const bindingName = (name: string) =>
@@ -128,6 +128,7 @@ export class Installation {
         ],
         projects: ["projects_search", "projects_get", "projects_create"],
         vault: ["vault_create", "vault_read"],
+        mail: ["mail_accounts", "mail_search", "mail_draft_save", "mail_send"],
       };
       const verified = await Promise.all(
         drafts.map(async (draft) => {

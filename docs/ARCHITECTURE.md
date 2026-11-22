@@ -22,7 +22,7 @@ UI `screen_hint=signup` au lien public, sans changer le protocole d’authentifi
 Le portail vérifie toujours lui-même la liste d’emails autorisés ; Heart ne reçoit
 aucun mot de passe d’inscription. Inscription refusée si la machine est déjà liée. La première
 installation est revendiquée par un lien local privé ; le portail authentifie
-l’utilisateur et attribue les trois clés via une extension Nora. Aucun mot de
+l’utilisateur et attribue les clés des services demandés via une extension Nora. Aucun mot de
 passe MCP ni device/access token dans l’état navigateur. Une session Heart liée
 au UUID du compte est requise sur les nouvelles installations ; les connexions
 suivantes n’attribuent pas de nouvelles clés. Auth locale historique préservée.
@@ -1066,3 +1066,24 @@ Pas de secret, de test réseau supplémentaire ni de couplage du core aux module
 Le module terminal joint un curseur de continuation aux sorties partielles de ses
 outils ; ExecutionService et le terminal manuel restent inchangés. Le modèle choisit
 les pages utiles, les permissions du core restent vérifiées pour chaque appel.
+
+## Mail et résultats visuels MCP
+
+`contracts/mail.ts` définit le transfert binaire. `modules/mail/http` transporte
+les fichiers ; `modules/tools/mail-files` relie ce contrat à WorkspaceFiles.
+`app/web-conversations` assemble la connexion Mail approuvée avec les droits
+réseau/fichiers du fil, sans import croisé entre modules. `mail.attach_file`
+transfère un fichier vers Mail, `mail.save_attachment` importe ses octets par UUID
+avec les contrôles atomiques du système de fichiers existant. Pas de base64 dans
+le contexte du modèle pour ces transferts.
+
+Les contrats outil/session offrent une réponse multimédia optionnelle en plus du
+texte historique. L’adaptateur MCP conserve les images même avec structuredContent ;
+le core les garde pour le tour et retire les pixels du journal. Les adaptateurs
+modèle les traduisent par le transport de pièces jointes existant après le lot
+complet des résultats outils. Une source doit être relue lors d’un tour ultérieur.
+Les données d’image restent externes, sans donner d’autorisation utilisateur.
+
+Les nouvelles demandes de compte négocient quatre services (Mail inclus) ; les
+anciennes configurations à trois services restent lisibles et valides. Le portail
+conserve le contrat à trois clés quand le client omet le scope.

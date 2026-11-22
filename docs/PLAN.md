@@ -11,7 +11,7 @@ Installateur GitHub, chemin choisi et premier accès documentés dans
 [INSTALLATION.md](INSTALLATION.md). Première qualification réelle sur installation
 jetable dans un chemin avec espaces ; bootstrap public et reprise validés.
 Accès IP par défaut. Connexion au compte MCP avant le wizard, attribution des
-trois clés et reprise locale des wallets via outil livrées/qualifiées. Dernier
+clés des services négociés et reprise locale des wallets via outil livrées/qualifiées. Dernier
 parcours natif sur hôte existant : compte approuvé par opérateur, vrais MCP,
 chat simulé. Le navigateur email/mot de passe est qualifié sur PostgreSQL isolé. ChatGPT/GPT-6 Luna et OpenRouter/DeepSeek Flash qualifiés avec
 vrais outils/MCP et rappel mémoire dans un autre fil après restart. Le blocage
@@ -252,9 +252,17 @@ un choix explicite du propriétaire ; les écritures MCP autorisées sont désor
 
 ## Raccordement Nora MCPs et mémoire distante livrés
 
-Connexions Mémoire/Coffre-fort/Projets actives ; mémoire automatique désormais MCP.
+Connexions Mémoire/Coffre-fort/Projets/Mail actives ; mémoire automatique désormais MCP.
 Choix explicite « Commencer vide », aucune copie des trois anciens souvenirs.
 Écriture/rappel dans une nouvelle conversation qualifiés avec GPT‑6 Luna réel sur
 un compte MCP de test isolé, puis nettoyage. Données locales conservées, pas de
 migration de conversations. Gestion projet désormais raccordée au MCP comme source
 unique ; artefacts physiques locaux. [Contrat et limites](NORA-MCPS.md).
+
+## Suite après Mail
+
+Mail livré via MCP indépendant et raccordé à Heart ; comptes personnels à connecter
+depuis le portail. Qualifier les fournisseurs personnels (lecture/brouillon avant
+envoi demandé), configurer le client Google si Gmail OAuth est retenu. Les anciens
+clients restent à trois clés ; nouveaux onboardings demandent Mail en plus.
+Les conversations et leur historique restent dans Heart.

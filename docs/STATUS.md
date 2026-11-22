@@ -5,6 +5,21 @@ Socle livré ; la parité complète avec Codex CLI et la qualification de tous l
 fournisseurs restent partielles. Les preuves détaillées sont dans TESTING.md et
 les rapports opérateur privés, pas dans le contexte permanent de l’assistant.
 
+## Mail MCP et pièces jointes
+
+Service `/mail` actif et raccordé au compte propriétaire, 19 outils découverts :
+comptes, dossiers, lecture/recherche, brouillons/envoi, signatures par identité,
+export EML et PJ. Credentials configurés dans le portail HTTPS, pas dans le chat.
+Transferts binaires `mail.attach_file` / `mail.save_attachment` sous droits du fil.
+Images MCP transmises au cerveau, pixels volatils hors journal ; références
+conservées pour relecture. 275 tests, démo SDK et 28 parcours navigateur réussis ;
+GPT‑6 Luna réel a correctement lu une image synthétique issue d’un outil.
+Nouveaux onboardings à quatre clés ; anciennes installations à trois préservées.
+Aucune boîte personnelle encore connectée. Gmail natif attend le client OAuth
+Google de l’instance ; IMAP/SMTP, RLS et secrets chiffrés qualifiés en réel sur
+boîtes synthétiques dans nora-mcps. Prochaine étape : connecter les boîtes et
+signatures au portail, puis qualifier leurs fournisseurs réels sans envoi implicite.
+
 ## Installation indépendante et onboarding
 
 Commande GitHub avec `--path`, Debian 12+/Ubuntu 24.04+ et systemd. Prépare Node,
@@ -15,7 +30,7 @@ Sans domaine, accès direct `http://IP:port` par défaut, détection automatique
 `--address` pour préciser. `--domain` ajoute Caddy/HTTPS ; `--private` réserve le
 tunnel SSH aux installations qui le demandent. Anciens modes réseau préservés.
 Nouvelles installations : connexion au compte MCP obligatoire avant le wizard,
-via portail HTTPS (connexion ou création de compte depuis Heart, email autorisé) ; clés Memory/Projects/Vault créées/vérifiées et stockées en local
+via portail HTTPS (connexion ou création de compte depuis Heart, email autorisé) ; clés Memory/Projects/Vault/Mail créées/vérifiées et stockées en local
 sans copier-coller. Compte lié à l’installation, reconnexion sans rotation des clés.
 Lien privé initial à usage unique ; mot de passe local réservé à l’administration.
 Les déploiements existants gardent leur accès et leurs credentials.

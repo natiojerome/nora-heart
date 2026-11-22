@@ -9,7 +9,7 @@ sont dans [PLAN.md](PLAN.md).
 | --- | --- | --- |
 | Installation publique | Bootstrap GitHub puis installateur Python standard, services systemd natifs par UUID, PostgreSQL/SearXNG Docker privés, Caddy optionnel, chemins relatifs à l’installation. | Une commande dans le dossier choisi, vrai accès hôte en YOLO et cohabitation avec les autres services ; pas de clone de notre runtime privé. |
 | Accès initial | IP de la machine détectée, HTTP sur port annoncé, `--address` pour préciser ; domaine/HTTPS optionnel, `--private` sur demande. Conserver le mode enregistré lors des reprises. | Installer sans domaine ni tunnel obligatoire ; ne pas exposer les anciens déploiements implicitement. HTTP non chiffré explicite, outils internes et SQL toujours privés. |
-| Connexion initiale | Compte MCP avant onboarding ; connexion ou inscription ouverte depuis Heart sur portail HTTPS (liste autorisée côté serveur), RFC 8628, trois clés créées par installation et stockées en privé ; UUID de compte lié à la session locale. Reconnexion sans rotation. | Pas de copier-coller de clés ni de mot de passe MCP via HTTP Heart ; nouveaux installs uniquement, anciens accès conservés. Bootstrap local privé à usage unique. |
+| Connexion initiale | Compte MCP avant onboarding ; connexion ou inscription ouverte depuis Heart sur portail HTTPS (liste autorisée côté serveur), RFC 8628, quatre clés créées par nouvelle installation (trois pour les anciens clients) et stockées en privé ; UUID de compte lié à la session locale. Reconnexion sans rotation. | Pas de copier-coller de clés ni de mot de passe MCP via HTTP Heart ; nouveaux installs uniquement, anciens accès conservés. Bootstrap local privé à usage unique. |
 | Persistance wallet et réseau | Découverte, sauvegarde et reprise utilisent le Vault approuvé indépendamment du réseau des commandes ; écriture exigée pour restaurer. RPC externes toujours contrôlés. | Même distinction que la mémoire distante, sans rendre un accès Internet général nécessaire pour ses données. |
 | Onboarding et services | Persister le cerveau choisi dans les défauts ; vérifier les MCP compatibles avant stockage privé des clés, puis redémarrage suivi. Sans binding, mémoire désactivée sur installation gérée. | Premier accès utilisable, reprise après actualisation, aucune autorité inventée ni mémoire SQL de remplacement implicite. |
 | Wallets et signature | Daemon local indépendant, socket Unix JSON-RPC, clients JS/Python persistants ; EVM via viem et Ed25519 via Node crypto. Solde en cache, RPC explicite ; pas de diffusion automatique. | Signer depuis le code sans inférence, SQL, lecture disque ou délai du serveur MCP. Aucun plafond financier arbitraire ajouté ; accès local par groupe et signature Heart sous YOLO explicitement activé. |
@@ -497,3 +497,14 @@ sans retry HTTP, modèle de repli ni assouplissement des schémas. Traduire un n
 Heart exact actuellement autorisé vers son alias est une réparation locale ;
 les noms voisins et outils non proposés restent refusés. Diagnostic journalisé
 sans valeurs d’arguments ni erreurs SDK brutes.
+
+## Mail indépendant et multimédia outil
+
+Messages, comptes, brouillons, signatures et pièces jointes sont dans le service
+Mail MCP, pas dans la base des conversations Heart. Les credentials sont saisis
+sur le portail HTTPS et chiffrés côté service. Heart transporte les fichiers
+directement, sous les droits du fil ; le modèle reçoit les références. Les blocs
+image MCP utilisent le transport visuel existant, volatils durant le tour afin de
+ne pas gonfler l’historique. Pas de nouveau format fournisseur ou framework.
+Anciennes installations à trois services préservées, Mail négocié explicitement
+par les nouveaux clients. La connexion d’une boîte reste à effectuer par l’utilisateur.

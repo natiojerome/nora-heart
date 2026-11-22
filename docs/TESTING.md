@@ -741,3 +741,19 @@ Consignes d’autonomie déployées après sauvegarde chiffrée et redémarrage 
 Catalogue HTTPS authentifié : nouveau défaut work actif sans override, treize blocs,
 mission/bénéfice utilisateur et absence d’analyses juridiques non demandées vérifiés.
 Santé interne saine. Aucun changement des permissions ou données métier.
+
+## Mail et images des outils — 22 novembre 2026
+
+`pnpm check` : 275 tests ; `pnpm demo:sdk` : succès ; suite navigateur : 28 parcours
+réussis. `mail-files.test.ts` vérifie le transfert HTTP binaire, les permissions
+et les conflits de fichiers. `tool-images.test.ts` couvre un vrai serveur MCP,
+structuredContent + image, un seul appel, l’absence de pixels dans le journal
+et l’ordre des résultats par lot pour AI SDK et ChatGPT. Les cerveaux de ces
+tests sont simulés. Qualification fournisseur supplémentaire réelle : GPT‑6 Luna,
+effort low, a lu 4729 sur fond bleu via un résultat d’outil visuel synthétique.
+Aucun mail personnel envoyé. Le service Mail a ses preuves SQL/IMAPS/SMTPS/OpenBao
+et navigateur dans le dépôt nora-mcps ; Gmail natif réel reste à qualifier.
+
+Boucle moteur réelle supplémentaire : GPT‑6 Luna a appelé une seule fois
+`mail_accounts` sur le MCP de production et confirmé zéro boîte raccordée.
+Aucune inférence simulée pour ce contrôle ; aucun envoi ni lecture de mail personnel.
