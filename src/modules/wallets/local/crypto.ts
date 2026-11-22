@@ -24,6 +24,11 @@ import type {
 export interface PrivateWallet {
   info: WalletInfo;
   secret?: string;
+  creation?: {
+    label: string;
+    networkIds: string[];
+    networks?: WalletNetwork[];
+  };
 }
 export function publicInfo(wallet: PrivateWallet): WalletInfo {
   return {

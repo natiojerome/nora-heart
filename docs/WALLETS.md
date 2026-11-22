@@ -6,6 +6,72 @@ transaction. Heart et les programmes JavaScript/Python utilisent la même socket
 Unix. Aucun port TCP n’est ouvert. Le service actuel est Linux ; le protocole
 permet d’ajouter un autre transport sans changer les données.
 
+## Créer, nommer et sauvegarder
+
+Outils du modèle : `wallets.create`, `wallets.rename`, `wallets.backup_status`,
+`wallets.backup`, en plus de list/assets/sign. Création/renommage utilisent la
+permission d’écriture du fil ; une sauvegarde demandée par le modèle nécessite
+son accès réseau. Signature toujours sous YOLO et activation propriétaire.
+La sauvegarde automatique du coffre est un service d’exploitation indépendant
+du réseau autorisé pour les commandes de la conversation, comme le timer quotidien.
+
+Chaque wallet a un **UUID durable** et un **label modifiable**. L’UUID est fourni
+par le client à la création et conservé pour ses reprises : réutiliser le même
+UUID et la même demande rend le même wallet, sans régénérer de clés. Une demande
+différente avec ce même UUID est refusée. Renommer ne change ni UUID, clé, adresse
+ni identité de création ; des noms identiques restent possibles.
+
+Création EVM ou Ed25519/Solana, par génération cryptographique locale existante
+(viem/Node crypto). Choisir les networkIds retournés par list ; `networks` permet
+d’ajouter explicitement des définitions compatibles sur une installation vide.
+Un réseau existant ne peut pas être remplacé implicitement. EVM utilise CAIP-2
+`eip155:<chainId>`. XRPL/XPR restent en lecture seule dans cette implémentation.
+Aucun RPC ni clé fournie par le modèle n’est nécessaire à la génération ; aucune
+clé privée/seed n’est retournée. Il n’y a ni financement ni diffusion automatique.
+
+```js
+import { randomUUID } from 'node:crypto';
+const request = { id: randomUUID(), label: 'Épargne', family: 'evm',
+  networkIds: ['eip155:8453'] }; // réseau déjà configuré
+// Conserver request.id pour réessayer cette création après une réponse perdue.
+const { wallet, backup } = await client.create(request);
+await client.rename(wallet.id, 'Épargne long terme');
+const verified = await client.requestBackup();
+if (verified.status !== 'verified') throw Error('Reprise distante non vérifiée');
+```
+
+Python : `create(wallet_id, label, family, network_ids, networks=None)`,
+`rename(wallet_id, label)`, `backup()`, `backup_status()`. UUID via `uuid.uuid4()`.
+CLI : `pnpm wallets create` reçoit le JSON sur stdin ; `rename UUID 'Nouveau nom'`,
+`request-backup`, `backup-status` utilisent le daemon, sans ouvrir un second writer.
+Aucun secret dans les arguments. JSON-RPC ajoute `wallets.create`, `wallets.rename`,
+`wallets.backup`, `wallets.backup_status` au protocole déjà livré.
+
+Chaque mutation est sérialisée avec `flock` (util-linux), relit l’état sous verrou,
+valide puis remplace atomiquement le coffre chiffré avec fsync. Un arrêt brutal
+libère le verrou OS, sans PID/TTL à purger. Le daemon est l’autorité en mémoire ;
+les programmes utilisent sa socket. Plusieurs copies ouvertes directement ne
+synchronisent pas automatiquement leurs caches de signature, même si les écritures
+sur disque sont protégées contre les mises à jour perdues.
+
+Création/renommage déclenchent une sauvegarde hors du chemin de signature. Les
+mutations rapprochées sont regroupées ; si la révision évolue pendant l’envoi,
+une copie de la dernière révision est demandée. Le daemon lance un **processus
+séparé** : seul celui-ci charge la clé Vault. Configuration gérée via le fichier
+privé d’installation ; sinon `NORA_WALLETS_BACKUP_ENV_FILE` désigne un fichier
+privé contenant uniquement `NORA_MCPS_VAULT_TOKEN` et éventuellement
+`NORA_WALLETS_BACKUP_URL`. Dans notre déploiement : `/etc/nora-wallets/backup.env`,
+root/groupe du service, 0640 et traversée du dossier réservée au service. Le daemon ne charge pas la clé dans son environnement.
+
+État public : `verified` seulement pour une copie relue et déchiffrée correspondant
+à la révision courante ; sinon `pending`, `stale`, `unconfigured` ou `failed`.
+`revision` désigne le coffre courant, `backedUpRevision` la copie vérifiée, `id`
+l’archive Vault, `verifiedAt` sa date. Les archives et recoveryKey ne passent
+jamais par ces outils. Une panne distante conserve le wallet local et est signalée ;
+il faut une reprise **verified avant de confier des fonds réels** au wallet.
+La restauration reste une commande explicite vers un **nouveau dossier**, sans
+écrasement du coffre actif. Le Vault est une autorité de confiance pour la reprise.
+
 ## Architecture et chemin rapide
 
 `contracts/wallets.ts` définit les données et services neutres.
@@ -111,7 +177,7 @@ with WalletClient('/run/nora-wallets/api.sock') as client:
                                  'Neutral application authentication challenge')
 ```
 
-Méthodes : `list`, `assets(wallet_id, network_id, refresh=False)`,
+Méthodes : `create`, `rename`, `backup`, `backup_status`, `list`, `assets(wallet_id, network_id, refresh=False)`,
 `sign_message`, `sign_typed_data`, `sign_transaction`, `sign_bytes`, `close`.
 Un client Python sérialise ses appels par verrou ; utiliser un client par thread
 si des appels indépendants doivent progresser simultanément.
@@ -120,7 +186,7 @@ si des appels indépendants doivent progresser simultanément.
 
 HTTP `POST /rpc`, `Content-Type: application/json`, socket privée. Exemple :
 `{"jsonrpc":"2.0","id":1,"method":"wallets.list","params":{}}`.
-Méthodes : `wallets.list`, `wallets.assets`, `wallets.sign` ; les paramètres de
+Méthodes de lecture/signature : `wallets.list`, `wallets.assets`, `wallets.sign` ; les paramètres de
 signature sont `{walletId, networkId, kind, payload}`. Même contrat dans les SDK.
 Les réponses portent `result` ou `error`, avec le même identifiant. Pas de batch
 JSON-RPC ni notifications dans cette première version. Les erreurs ne recopient
@@ -336,3 +402,7 @@ n’est nécessaire pour ces contrôles cryptographiques et de transport.
 
 Pas de protocole MCP dans le chemin rapide. Un MCP supplémentaire pour récupérer
 une signature serait inutile ici ; le MCP reste le stockage distant de reprise.
+
+Références de mise en œuvre : [génération de clés viem](https://viem.sh/docs/accounts/local/privateKeyToAccount)
+et [verrous OS flock](https://www.man7.org/linux/man-pages/man1/flock.1.html). Aucun
+algorithme cryptographique propriétaire ni verrou par expiration de PID.

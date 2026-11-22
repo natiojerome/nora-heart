@@ -4,6 +4,7 @@ import path from "node:path";
 import type {
   WalletService,
   WalletSignRequest,
+  WalletCreateRequest,
 } from "../../../contracts/wallets.ts";
 
 /** JSON-RPC 2.0 over a private Unix socket. No TCP listener and no key export. */
@@ -61,6 +62,20 @@ export async function walletSocket(
       if (body.method === "wallets.list") {
         errorCode = -32000;
         result = await service.list();
+      } else if (body.method === "wallets.create") {
+        errorCode = -32000;
+        result = await service.create(p as WalletCreateRequest);
+      } else if (body.method === "wallets.rename") {
+        if (typeof p.walletId !== "string" || typeof p.label !== "string")
+          throw Error("Invalid rename request");
+        errorCode = -32000;
+        result = await service.rename(p.walletId, p.label);
+      } else if (body.method === "wallets.backup") {
+        errorCode = -32000;
+        result = await service.requestBackup();
+      } else if (body.method === "wallets.backup_status") {
+        errorCode = -32000;
+        result = await service.backupStatus();
       } else if (body.method === "wallets.assets") {
         if (
           typeof p.walletId !== "string" ||

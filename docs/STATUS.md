@@ -50,6 +50,24 @@ Proxy Caddy validé séparément par son binaire. Voir [TESTING.md](TESTING.md).
 
 ## Wallets locaux et reprise distante
 
+
+Création/renommage livrés : UUID stable/idempotent, nom modifiable, génération
+locale EVM et Ed25519/Solana, mutations chiffrées atomiques sous verrou OS.
+Outils Heart, SDK JS/Python et CLI/socket raccordés. Sauvegarde automatique par
+processus séparé, état public de la révision courante, vérification distante et
+reprise dans un nouveau dossier. Le signataire ne charge pas le token Vault.
+270 tests : concurrence, reprise après kill, idempotence, persistance, sauvegarde
+en panne, signatures et restauration. Essai réel daemon + Vault : deux wallets
+synthétiques créés/renommés, backup relu, restart et signatures du clone restauré
+vérifiés ; coffre de test et archive distante supprimés. Aucun wallet personnel
+créé pour cet essai, aucun financement ou transfert. Création aussi qualifiée
+par un vrai DeepSeek Flash/OpenRouter via moteur/socket (deux inférences).
+Déployé : sauvegarde du coffre existant vérifiée via la nouvelle API, quatre MCP
+actifs et signataire sans token Vault dans son environnement.
+
+Connexion de recherche commerciale supprimée du catalogue actif ; anciens IDs
+UI renommés et descriptions obsolètes retirées. Recherche locale conservée.
+
 Service Unix séparé livré : inventaire multi-réseaux, cache des actifs, signatures
 EVM (message/typed data/transaction) et Ed25519 Solana hors ligne. Clients persistants
 JavaScript natif et Python standard, outils Heart sous les droits du fil ; signature

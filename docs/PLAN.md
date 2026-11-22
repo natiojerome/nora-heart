@@ -21,7 +21,8 @@ serveur n’est autorisée implicitement par ce plan.
 
 ## Complément livré — Wallet local et sauvegarde MCP
 
-Inventaire, actifs et signatures locales accessibles au code JS/Python et aux
+Création/renommage/idempotence et sauvegarde immédiate vérifiée livrés, sans
+latence réseau sur la signature. Inventaire, actifs et signatures accessibles au code JS/Python et aux
 outils Heart. Sauvegarde réelle sur Vault, clone restauré vérifié puis supprimé ;
 ancien signataire préservé, aucune diffusion. Les signatures EVM/Solana sont
 qualifiées, XPR/XRPL restent en lecture seule. Voir [WALLETS.md](WALLETS.md).
@@ -56,7 +57,7 @@ privé persistant, DOM préservé, styles de gestion et typage JS ciblé.
 Les fichiers, terminal isolé/YOLO et MCP de lecture sont raccordés.
 Les outils manuels ouvrent aussi une racine de projets configurable, sans fil
 technique caché ; le chat conserve ses espaces/droits propres. Recherche web
-locale via SearXNG, sans quota commercial ; Exa désactivé. Preuves dans STATUS.md.
+locale via SearXNG, sans quota commercial ; Recherche commerciale retirée. Preuves dans STATUS.md.
 
 ## Compléments livrés — Mémoire et configuration
 

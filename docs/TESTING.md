@@ -73,6 +73,33 @@ compteurs ChatGPT (collecteur non copié en QA) restent des parcours distincts.
 Les ressources locales de test et les souvenirs de contrôle sont supprimés ;
 aucun nouveau serveur, achat ou rechargement.
 
+## Création et sauvegarde des wallets — 22 novembre 2026
+
+270 tests après ajout de quatre scénarios : création/renommage et reprise
+idempotente par socket JS/Python, clés/adresses/UUID après redémarrage, deux
+writers sans perte, installation vide et réseaux explicites, signature EVM/Ed25519,
+backup en attente/en panne, regroupement des mutations et restauration vérifiée.
+Kill réel du processus sous verrou OS puis nouvelle écriture sans nettoyage PID/TTL.
+
+`pnpm qualify:wallets:create --live --env-file /chemin/prive/vault.env` :
+essai réel sur daemon isolé, deux nouveaux wallets synthétiques EVM/Solana, clés
+générées localement, renommage, backup par processus enfant sur le vrai Vault,
+redémarrage et restauration isolée avec signatures identiques. Le parent signataire
+ne contient pas la clé Vault dans son environnement. Coffre/dossiers et archive
+Vault de test supprimés. Aucun RPC, fonds, diffusion ou crédit LLM pour cet essai.
+Essai distinct avec un vrai DeepSeek Flash via OpenRouter : deux inférences,
+`wallets.create` réellement appelé par le moteur via la socket, UUID/nom/fichier
+chiffré vérifiés, coffre synthétique supprimé. Aucun faux transport fournisseur.
+Benchmark isolé après modification : signature EVM JS p50 0,771 ms, p95 1,239 ms ;
+Python p50 1,103 ms, p95 1,722 ms, 1 000 mesures par client, connexions chaudes.
+Ce sont des mesures locales sans SLA, pas une promesse de latence nulle.
+Sauvegarde du coffre existant relue et vérifiée après déploiement via la nouvelle
+commande socket ; révision courante/sauvegardée identiques, token absent de
+l’environnement du signataire. Catalogue MCP actif : quatre connexions, ancien
+fournisseur commercial absent ; parcours navigateur MCP réussi.
+
+Le timer de sauvegarde du coffre personnel est vérifié avant le déploiement.
+
 ## Wallets locaux — 21 novembre 2026
 
 `pnpm test:wallets` : clés synthétiques et dossiers temporaires, signatures EVM
@@ -560,7 +587,7 @@ rôles réseau/YOLO, révocation et deux lectures dont une annulée. `tests/mcp.
 vérifie l’éditeur, découverte, approbation, CSRF, refus sans réseau et un appel réel
 au serveur jetable depuis le chat ; modèle simulé. Les métadonnées et le dump de la
 table sont testés dans PostgreSQL. [Recherche locale et ChatGPT réels](qualification/self-search/) sont
-qualifiés séparément, pas implicitement par les mocks. Les anciens essais Exa restent historiques. Voir [MCP.md](MCP.md).
+qualifiés séparément, pas implicitement par les mocks. Voir [MCP.md](MCP.md).
 
 `tests/self-search.test.ts` couvre l’absence de coupe implicite des résultats/pages,
 la pagination, les incidents de moteurs, les IP privées/redirections et le serveur

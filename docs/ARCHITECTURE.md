@@ -40,6 +40,14 @@ Node autonome ; Python utilise le même contrat avec sa bibliothèque standard.
 `app/wallets.ts` relie ces implémentations aux commandes et au daemon ;
 `app/web-conversations.ts` raccorde le client aux droits courants des fils.
 Le core et la base de conversations ne connaissent aucune implémentation wallet.
+Création/renommage passent par la même socket et des contrats neutres ; UUID de
+création idempotent distinct du label. Mutations du coffre chiffré sous verrou OS
+flock, relecture/validation et remplacement atomique ; signataires préparés en mémoire.
+La sauvegarde immédiate et son regroupement sont orchestrés par callback injecté
+par app/wallets : processus de backup séparé, seul lecteur du token Vault, sans
+import d’un module concret par un autre. Le statut expose la révision courante
+et celle sauvegardée, jamais l’enveloppe privée. Signature hors de ce chemin.
+
 
 La signature opère en mémoire sans RPC/fichier/MCP ; inventaire et cache sont
 locaux, actualisations explicites avec fraîcheur/portée. Le processus de sauvegarde

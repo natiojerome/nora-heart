@@ -38,6 +38,23 @@ export interface WalletSignRequest {
   kind: "message" | "typedData" | "transaction" | "bytes";
   payload: Json;
 }
+/** id is a client-generated UUID: stable identity and idempotent creation key. */
+export interface WalletCreateRequest {
+  id: string;
+  label: string;
+  family: "evm" | "ed25519";
+  networkIds: string[];
+  /** Explicit new network definitions; existing networks are never overwritten. */
+  networks?: WalletNetwork[];
+}
+export interface WalletBackupStatus {
+  status: "verified" | "pending" | "stale" | "unconfigured" | "failed";
+  revision: string;
+  verifiedAt: string | null;
+  backedUpRevision?: string;
+  id?: string;
+  error?: string;
+}
 export interface WalletSignature {
   walletId: string;
   networkId: string;
@@ -47,6 +64,15 @@ export interface WalletSignature {
   serializedTransaction?: string;
 }
 export interface WalletService {
+  create(
+    request: WalletCreateRequest,
+  ): Promise<{ wallet: WalletInfo; backup: WalletBackupStatus }>;
+  rename(
+    walletId: string,
+    label: string,
+  ): Promise<{ wallet: WalletInfo; backup: WalletBackupStatus }>;
+  requestBackup(): Promise<WalletBackupStatus>;
+  backupStatus(): Promise<WalletBackupStatus>;
   list(): Promise<{
     wallets: WalletInfo[];
     networks: Omit<WalletNetwork, "rpc">[];

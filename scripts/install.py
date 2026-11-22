@@ -251,7 +251,7 @@ def install(options):
     print('Installation ' + identity['id'] + ' dans ' + str(root), flush=True)
     print('Préparation des dépendances système…', flush=True)
     run(['apt-get', 'update', '-qq'])
-    run(['apt-get', 'install', '-y', '-qq', 'ca-certificates', 'curl', 'git', 'python3', 'xz-utils', 'bubblewrap', 'ripgrep', 'acl'], env={**os.environ, 'DEBIAN_FRONTEND': 'noninteractive'})
+    run(['apt-get', 'install', '-y', '-qq', 'ca-certificates', 'curl', 'git', 'python3', 'xz-utils', 'bubblewrap', 'ripgrep', 'acl', 'util-linux'], env={**os.environ, 'DEBIAN_FRONTEND': 'noninteractive'})
     if not shutil.which('docker'):
         with tempfile.TemporaryDirectory(prefix='heart-docker-') as folder:
             script = Path(folder) / 'docker.sh'

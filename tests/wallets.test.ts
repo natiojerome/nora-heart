@@ -4,7 +4,7 @@ import { mkdtemp, readFile, rm, chmod } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { randomBytes, randomUUID, createPublicKey, verify } from "node:crypto";
-import { execFile } from "node:child_process";
+import { execFile, spawn } from "node:child_process";
 import { promisify } from "node:util";
 import {
   recoverMessageAddress,
@@ -206,7 +206,13 @@ test("Heart engine declares actual wallet tools and can sign through IPC without
         calls++;
         assert.deepEqual(
           request.tools.map((t) => t.name),
-          ["wallets.list", "wallets.assets", "wallets.sign"],
+          [
+            "wallets.backup_status",
+            "wallets.backup",
+            "wallets.list",
+            "wallets.assets",
+            "wallets.sign",
+          ],
         );
         const last = request.messages.at(-1);
         if (last?.role === "tool") {
@@ -573,4 +579,298 @@ test("persistent JS/Python clients use the real Unix socket; tools return public
   const broken = new WalletClient(path.join(f.root, "missing.sock"));
   await assert.rejects(broken.list(), /no request retried/);
   broken.close();
+});
+
+test("create/rename through the real socket preserves UUIDs, rejects idempotency conflicts and persists encrypted keys across restart", async (t) => {
+  const f = await fixture(t),
+    socket = path.join(f.root, "manage.sock"),
+    server = await walletSocket(f.service, socket),
+    client = new WalletClient(socket);
+  t.after(async () => {
+    client.close();
+    await server.close();
+  });
+  const id = randomUUID(),
+    request = {
+      id,
+      label: "Épargne principale",
+      family: "evm" as const,
+      networkIds: ["eip155:8453"],
+    };
+  const [one, two] = await Promise.all([
+    client.create(request),
+    client.create(request),
+  ]);
+  assert.deepEqual(one.wallet, two.wallet);
+  assert.equal(
+    (await client.list()).wallets.filter((w) => w.id === id).length,
+    1,
+  );
+  assert.equal(one.backup.status, "unconfigured");
+  await assert.rejects(
+    client.create({ ...request, label: "Different operation" }),
+  );
+  const renamed = await client.rename(id, "Voyages");
+  assert.equal(renamed.wallet.id, id);
+  assert.deepEqual(renamed.wallet.addresses, one.wallet.addresses);
+  assert.equal(
+    (await client.create(request)).wallet.label,
+    "Voyages",
+    "Retry never reverts a later rename.",
+  );
+  const signed = await client.signMessage(
+    id,
+    "eip155:8453",
+    "Creation control",
+  );
+  assert.equal(
+    await recoverMessageAddress({
+      message: "Creation control",
+      signature: signed.signature as Hex,
+    }),
+    one.wallet.addresses[0].address,
+  );
+  const python = await promisify(execFile)("python3", [
+    "-c",
+    "import sys,json;sys.path.insert(0,sys.argv[2]);from nora_wallets import WalletClient; c=WalletClient(sys.argv[1]); w=c.create(sys.argv[3],'Python QA','evm',['eip155:8453']); renamed=c.rename(sys.argv[3],'Python renamed'); print(json.dumps({'id':renamed['wallet']['id'],'label':renamed['wallet']['label'],'backup':c.backup_status()['status']}));c.close()",
+    socket,
+    path.resolve("sdk/wallets/python"),
+    randomUUID(),
+  ]);
+  assert.equal(JSON.parse(python.stdout).label, "Python renamed");
+  const disk = await readFile(path.join(f.directory, "wallets.enc"), "utf8");
+  assert(!disk.includes("Voyages"));
+  assert(!JSON.stringify(one).includes("secret"));
+  const reopened = await LocalWallets.open(f.directory, f.key);
+  try {
+    assert.equal(
+      (await reopened.list()).wallets.find((w) => w.id === id)!.label,
+      "Voyages",
+    );
+    assert.equal(
+      (
+        await reopened.sign({
+          walletId: id,
+          networkId: "eip155:8453",
+          kind: "message",
+          payload: "Creation control",
+        })
+      ).signature,
+      signed.signature,
+    );
+  } finally {
+    reopened.close();
+  }
+});
+
+test("creation supports an empty installation, explicit networks and independent concurrent writers without lost wallets", async (t) => {
+  const f = await fixture(t),
+    other = await LocalWallets.open(f.directory, f.key);
+  t.after(() => other.close());
+  const requests = Array.from({ length: 8 }, (_, i) => ({
+    id: randomUUID(),
+    label: "QA " + i,
+    family: "evm" as const,
+    networkIds: ["eip155:8453"],
+  }));
+  const results = await Promise.all(
+    requests.map((r, i) => (i % 2 ? other : f.service).create(r)),
+  );
+  assert.equal(
+    new Set(results.map((r) => r.wallet.addresses[0].address)).size,
+    requests.length,
+  );
+  const reloaded = await LocalWallets.open(f.directory, f.key);
+  try {
+    assert.equal((await reloaded.list()).wallets.length, 11);
+  } finally {
+    reloaded.close();
+  }
+  const empty = path.join(f.root, "empty");
+  await initializeWalletState(
+    empty,
+    {
+      format: "nora-wallets/v1",
+      id: randomUUID(),
+      revision: randomUUID(),
+      wallets: [],
+      networks: [],
+    },
+    f.key,
+  );
+  const fresh = await LocalWallets.open(empty, f.key);
+  try {
+    const created = await fresh.create({
+      id: randomUUID(),
+      label: "Solana QA",
+      family: "ed25519",
+      networkIds: ["solana:test"],
+      networks: [f.state.networks[1]],
+    });
+    assert.deepEqual(created.wallet.signing, ["bytes"]);
+    const signed = await fresh.sign({
+      walletId: created.wallet.id,
+      networkId: "solana:test",
+      kind: "bytes",
+      payload: "aabb",
+    });
+    const publicKey = createPublicKey({
+      key: Buffer.concat([
+        Buffer.from("302a300506032b6570032100", "hex"),
+        Buffer.from(base58.decode(created.wallet.addresses[0].address)),
+      ]),
+      format: "der",
+      type: "spki",
+    });
+    assert(
+      verify(
+        null,
+        Buffer.from("aabb", "hex"),
+        publicKey,
+        Buffer.from(signed.signature!, "hex"),
+      ),
+    );
+    assert(created.wallet.addresses[0].address);
+    const before = await readFile(path.join(empty, "wallets.enc"), "utf8");
+    await assert.rejects(
+      fresh.create({
+        id: randomUUID(),
+        label: "Wrong family",
+        family: "evm",
+        networkIds: ["solana:test"],
+      }),
+    );
+    assert.equal(
+      await readFile(path.join(empty, "wallets.enc"), "utf8"),
+      before,
+      "Rejected request never commits.",
+    );
+  } finally {
+    fresh.close();
+  }
+});
+
+test("automatic backup coalesces mutations, exposes pending/failure honestly and restores newly generated keys and names", async (t) => {
+  const f = await fixture(t);
+  let release!: () => void,
+    archive: WalletArchive | undefined,
+    calls = 0,
+    fail = false;
+  const gate = new Promise<void>((r) => (release = r)),
+    backupId = randomUUID();
+  const store = {
+    async put(value: WalletArchive) {
+      calls++;
+      archive = structuredClone(value);
+      if (calls === 1) await gate;
+      if (fail) throw Error("Synthetic outage");
+      return { id: backupId, version: calls };
+    },
+    async get() {
+      return structuredClone(archive!);
+    },
+  };
+  const service = await LocalWallets.open(f.directory, f.key, {
+    runBackup: async () => {
+      const snapshot = await LocalWallets.open(f.directory, f.key);
+      try {
+        await snapshot.backup(store);
+        return true;
+      } finally {
+        snapshot.close();
+      }
+    },
+  });
+  t.after(() => service.close());
+  const created = await service.create({
+    id: randomUUID(),
+    label: "Recovery QA",
+    family: "evm",
+    networkIds: ["eip155:8453"],
+  });
+  assert.equal((await service.backupStatus()).status, "pending");
+  await service.sign({
+    walletId: created.wallet.id,
+    networkId: "eip155:8453",
+    kind: "message",
+    payload: "Offline signing while backup pending",
+  });
+  await service.rename(created.wallet.id, "Recovery renamed");
+  release();
+  await service.drain();
+  const status = await service.backupStatus();
+  assert.equal(status.status, "verified");
+  assert(calls >= 2);
+  assert(!JSON.stringify(status).includes("recoveryKey"));
+  const restoredDir = path.join(f.root, "restored-created");
+  await restoreWalletState(restoredDir, archive!);
+  const restored = await LocalWallets.open(
+    restoredDir,
+    Buffer.from(archive!.recoveryKey, "base64"),
+  );
+  try {
+    const wallet = (await restored.list()).wallets.find(
+      (w) => w.id === created.wallet.id,
+    )!;
+    assert.equal(wallet.label, "Recovery renamed");
+    assert.deepEqual(wallet.addresses, created.wallet.addresses);
+    const signature = await restored.sign({
+      walletId: wallet.id,
+      networkId: "eip155:8453",
+      kind: "message",
+      payload: "Restored creation",
+    });
+    assert.equal(
+      await recoverMessageAddress({
+        message: "Restored creation",
+        signature: signature.signature as Hex,
+      }),
+      wallet.addresses[0].address,
+    );
+  } finally {
+    restored.close();
+  }
+  fail = true;
+  await service.rename(created.wallet.id, "Backup outage");
+  await service.drain();
+  assert.equal((await service.backupStatus()).status, "failed");
+  fail = false;
+  assert.equal((await service.requestBackup()).status, "verified");
+});
+
+test("a killed wallet writer releases its OS lock without deleting a PID/TTL lock file", async (t) => {
+  const f = await fixture(t),
+    lockModule = new URL(
+      "../src/modules/wallets/local/lock.ts",
+      import.meta.url,
+    ).href;
+  const child = spawn(
+    process.execPath,
+    [
+      "--import",
+      "tsx",
+      "--input-type=module",
+      "-e",
+      `import{walletWriteLock}from ${JSON.stringify(lockModule)};await walletWriteLock(process.argv[1],async()=>{process.stdout.write('LOCKED');await new Promise(()=>{});});`,
+      f.directory,
+    ],
+    { stdio: ["pipe", "pipe", "pipe"] },
+  );
+  t.after(() => child.kill("SIGKILL"));
+  await new Promise<void>((resolve, reject) => {
+    child.stdout.once("data", () => resolve());
+    child.once("error", reject);
+    child.once("exit", (code) => {
+      if (code !== null) reject(Error("Lock test child exited early"));
+    });
+  });
+  child.kill("SIGKILL");
+  await new Promise<void>((r) => child.once("exit", () => r()));
+  const created = await f.service.create({
+    id: randomUUID(),
+    label: "After crash",
+    family: "evm",
+    networkIds: ["eip155:8453"],
+  });
+  assert.equal(created.wallet.label, "After crash");
 });

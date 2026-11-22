@@ -8,6 +8,7 @@ User=nora-wallets
 Group=nora-wallets
 WorkingDirectory=/projects/nora-heart
 ExecStart=/projects/nora-heart/.tools/node-v24.22.3-linux-x64/bin/node /projects/nora-heart/node_modules/tsx/dist/cli.mjs /projects/nora-heart/src/interfaces/wallets.ts daemon
+Environment=NORA_WALLETS_BACKUP_ENV_FILE=/etc/nora-wallets/backup.env
 LoadCredentialEncrypted=master:/etc/nora-wallets/master.cred
 StateDirectory=nora-wallets
 StateDirectoryMode=0700

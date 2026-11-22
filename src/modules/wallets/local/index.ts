@@ -15,6 +15,7 @@ import {
   rm,
 } from "node:fs/promises";
 import path from "node:path";
+import { isDeepStrictEqual } from "node:util";
 import type {
   WalletService,
   WalletInfo,
@@ -23,7 +24,10 @@ import type {
   WalletSignRequest,
   WalletArchive,
   WalletBackupStore,
+  WalletCreateRequest,
+  WalletBackupStatus,
 } from "../../../contracts/wallets.ts";
+import { walletWriteLock } from "./lock.ts";
 import { collectAssets } from "./assets.ts";
 import {
   publicInfo,
@@ -201,13 +205,18 @@ export class LocalWallets implements WalletService {
     string,
     { value?: WalletAssets; attempt: number; pending?: Promise<WalletAssets> }
   >();
+  private mutations: Promise<unknown> = Promise.resolve();
+  private backupTask?: Promise<WalletBackupStatus>;
+  private backupError?: string;
+  private backupConfigured?: boolean;
   private constructor(
     private readonly directory: string,
-    private readonly state: WalletState,
+    private state: WalletState,
     private readonly key: Buffer,
     private readonly transport: typeof fetch,
     private readonly cacheMs: number,
     private readonly rpcTimeoutMs: number,
+    private readonly runBackup?: () => Promise<boolean>,
   ) {
     for (const w of state.wallets)
       this.signers.set(w.info.id, prepareSigner(w));
@@ -219,6 +228,7 @@ export class LocalWallets implements WalletService {
       fetch?: typeof fetch;
       cacheMs?: number;
       rpcTimeoutMs?: number;
+      runBackup?: () => Promise<boolean>;
     } = {},
   ) {
     const file = path.join(directory, "wallets.enc"),
@@ -233,7 +243,183 @@ export class LocalWallets implements WalletService {
       options.fetch ?? fetch,
       options.cacheMs ?? 30000,
       options.rpcTimeoutMs ?? 10000,
+      options.runBackup,
     );
+  }
+  private mutate<T>(
+    change: (state: WalletState) => Promise<{ value: T; changed: boolean }>,
+  ): Promise<T> {
+    const task = this.mutations.then(() =>
+      walletWriteLock(this.directory, async () => {
+        const state = await unsealWalletState(
+          await readFile(path.join(this.directory, "wallets.enc"), "utf8"),
+          this.key,
+        );
+        const { value, changed } = await change(state);
+        if (changed) {
+          state.revision = randomUUID();
+          const encrypted = sealWalletState(state, this.key);
+          await unsealWalletState(encrypted, this.key);
+          await atomic(path.join(this.directory, "wallets.enc"), encrypted);
+        }
+        this.state = state;
+        this.signers = new Map(
+          state.wallets.map((w) => [w.info.id, prepareSigner(w)]),
+        );
+        return value;
+      }),
+    );
+    this.mutations = task.catch(() => {});
+    return task;
+  }
+  async create(request: WalletCreateRequest) {
+    if (
+      !request ||
+      !/^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(request.id) ||
+      typeof request.label !== "string" ||
+      !request.label.trim() ||
+      !["evm", "ed25519"].includes(request.family) ||
+      !Array.isArray(request.networkIds) ||
+      !request.networkIds.length ||
+      request.networkIds.some((n) => typeof n !== "string") ||
+      new Set(request.networkIds).size !== request.networkIds.length
+    )
+      throw Error(
+        "Valid wallet UUID, label, family and distinct network IDs required.",
+      );
+    if (request.networks !== undefined && !Array.isArray(request.networks))
+      throw Error("Invalid network definitions.");
+    const definitions = [...(request.networks ?? [])].sort((a, b) =>
+      a.id.localeCompare(b.id),
+    );
+    const label = request.label.trim(),
+      ids = [...request.networkIds].sort();
+    const wallet = await this.mutate(async (state) => {
+      const existing = state.wallets.find((w) => w.info.id === request.id);
+      if (existing) {
+        if (
+          !existing.creation ||
+          existing.creation.label !== label ||
+          existing.info.family !== request.family ||
+          JSON.stringify([...existing.creation.networkIds].sort()) !==
+            JSON.stringify(ids) ||
+          !isDeepStrictEqual(
+            [...(existing.creation.networks ?? [])].sort((a, b) =>
+              a.id.localeCompare(b.id),
+            ),
+            definitions,
+          )
+        )
+          throw Error("Wallet creation UUID already used for another request.");
+        return { value: publicInfo(existing), changed: false };
+      }
+      if (request.networks !== undefined && !Array.isArray(request.networks))
+        throw Error("Invalid network definitions.");
+      for (const network of definitions) {
+        if (
+          !network ||
+          typeof network.id !== "string" ||
+          !ids.includes(network.id)
+        )
+          throw Error("New network must be explicitly selected.");
+        const previous = state.networks.find((n) => n.id === network.id);
+        if (previous && !isDeepStrictEqual(previous, network))
+          throw Error(
+            "Existing network configuration differs; no implicit replacement.",
+          );
+        if (!previous) {
+          if (
+            network.family === "evm" &&
+            network.id !== "eip155:" + network.chainId
+          )
+            throw Error("Use the CAIP-2 EVM network ID.");
+          state.networks.push(structuredClone(network));
+        }
+      }
+      const networks = ids.map((id) => state.networks.find((n) => n.id === id));
+      if (
+        networks.some(
+          (n) =>
+            !n ||
+            (request.family === "evm"
+              ? n.family !== "evm"
+              : n.family !== "solana"),
+        )
+      )
+        throw Error(
+          "Select configured compatible networks; EVM and Solana creation supported.",
+        );
+      const secret = newSecret(request.family),
+        address = walletAddress(request.family, secret);
+      const created = {
+        info: {
+          id: request.id,
+          label,
+          family: request.family,
+          addresses: ids.map((networkId) => ({ networkId, address })),
+          signing: [],
+        },
+        secret,
+        creation: {
+          label,
+          networkIds: ids,
+          networks: structuredClone(definitions),
+        },
+      };
+      state.wallets.push(created);
+      return { value: publicInfo(created), changed: true };
+    });
+    let backup = await this.backupStatus();
+    if (backup.status !== "verified") {
+      void this.requestBackup();
+      backup = await this.backupStatus();
+    }
+    return { wallet, backup };
+  }
+  async rename(walletId: string, label: string) {
+    if (typeof label !== "string" || !label.trim())
+      throw Error("Wallet label required.");
+    const wallet = await this.mutate(async (state) => {
+      const w = state.wallets.find((w) => w.info.id === walletId);
+      if (!w) throw Error("Unknown wallet");
+      const changed = w.info.label !== label.trim();
+      w.info.label = label.trim();
+      return { value: publicInfo(w), changed };
+    });
+    let backup = await this.backupStatus();
+    if (backup.status !== "verified") {
+      void this.requestBackup();
+      backup = await this.backupStatus();
+    }
+    return { wallet, backup };
+  }
+  async requestBackup(): Promise<WalletBackupStatus> {
+    if (!this.runBackup) return this.backupStatus();
+    if (!this.backupTask) {
+      this.backupError = undefined;
+      const task = Promise.resolve().then(async () => {
+        try {
+          for (;;) {
+            const revision = this.state.revision;
+            this.backupConfigured = await this.runBackup!();
+            if (!this.backupConfigured || revision === this.state.revision)
+              break;
+          }
+        } catch {
+          this.backupError =
+            "Remote backup failed; wallet remains encrypted locally. Retry explicitly.";
+        } finally {
+          this.backupTask = undefined;
+        }
+        return this.backupStatus();
+      });
+      this.backupTask = task;
+    }
+    return this.backupTask;
+  }
+  async drain() {
+    await this.mutations;
+    await this.backupTask;
   }
   async list() {
     return {
@@ -319,9 +505,10 @@ export class LocalWallets implements WalletService {
       path.join(this.directory, "wallets.enc"),
       "utf8",
     );
+    const snapshot = await unsealWalletState(encrypted, this.key);
     const archive: WalletArchive = {
       format: "nora-wallets-backup/v1",
-      revision: this.state.revision,
+      revision: snapshot.revision,
       encrypted,
       recoveryKey: this.key.toString("base64"),
       sha256: hash(encrypted),
@@ -337,11 +524,11 @@ export class LocalWallets implements WalletService {
       received.encrypted,
       Buffer.from(received.recoveryKey, "base64"),
     );
-    if (restored.revision !== this.state.revision)
+    if (restored.revision !== snapshot.revision)
       throw Error("Remote backup revision mismatch");
     const receipt = {
       ...saved,
-      revision: this.state.revision,
+      revision: snapshot.revision,
       wallets: restored.wallets.length,
       verifiedAt: new Date().toISOString(),
       sha256: archive.sha256,
@@ -352,14 +539,42 @@ export class LocalWallets implements WalletService {
     );
     return receipt;
   }
-  async backupStatus() {
+  async backupStatus(): Promise<WalletBackupStatus> {
+    let receipt: any;
     try {
-      return JSON.parse(
+      receipt = JSON.parse(
         await readFile(path.join(this.directory, "backup.json"), "utf8"),
       );
-    } catch {
-      return { verifiedAt: null };
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code !== "ENOENT")
+        return {
+          status: "failed",
+          revision: this.state.revision,
+          verifiedAt: null,
+          error: "Backup receipt unreadable.",
+        };
     }
+    const verified =
+      receipt?.revision === this.state.revision &&
+      typeof receipt?.verifiedAt === "string";
+    return {
+      status: verified
+        ? "verified"
+        : this.backupTask
+          ? "pending"
+          : this.backupError
+            ? "failed"
+            : !this.runBackup || this.backupConfigured === false
+              ? "unconfigured"
+              : "stale",
+      revision: this.state.revision,
+      verifiedAt: receipt?.verifiedAt ?? null,
+      ...(typeof receipt?.revision === "string"
+        ? { backedUpRevision: receipt.revision }
+        : {}),
+      ...(receipt?.id ? { id: receipt.id } : {}),
+      ...(this.backupError ? { error: this.backupError } : {}),
+    };
   }
   close() {
     this.key.fill(0);

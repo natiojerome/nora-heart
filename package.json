@@ -14,6 +14,7 @@
     "test:wallets": "tsx --test tests/wallets.test.ts",
     "demo:wallets": "tsx tests/benchmark-wallets.ts",
     "qualify:wallets": "tsx tests/live-wallets.ts",
+    "qualify:wallets:create": "tsx tests/live-wallet-creation.ts",
     "demo": "tsx src/interfaces/cli.ts",
     "demo:local": "tsx src/interfaces/cli.ts --config harness.demo.config.json",
     "demo:sdk": "tsx tests/demo-ai-sdk.ts",

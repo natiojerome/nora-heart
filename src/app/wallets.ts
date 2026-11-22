@@ -1,5 +1,9 @@
+import { execFile } from "node:child_process";
+import { promisify } from "node:util";
+import { fileURLToPath } from "node:url";
+import { parseEnv } from "node:util";
 import { readFile } from "node:fs/promises";
-import {loadInstallation} from './installation.ts';
+import { loadInstallation } from "./installation.ts";
 import path from "node:path";
 import { randomUUID } from "node:crypto";
 import {
@@ -33,7 +37,7 @@ async function master() {
     throw Error("Master credential must contain exactly 32 raw bytes");
   return key;
 }
-async function open() {
+async function open(managed = false) {
   const key = await master();
   try {
     const cacheMs = Number(process.env.NORA_WALLETS_CACHE_MS ?? 30000),
@@ -48,6 +52,26 @@ async function open() {
     return await LocalWallets.open(stateDirectory(), key, {
       cacheMs,
       rpcTimeoutMs,
+      ...(managed
+        ? {
+            runBackup: async () => {
+              const result = await promisify(execFile)(
+                process.execPath,
+                [
+                  "--import",
+                  "tsx",
+                  fileURLToPath(
+                    new URL("../interfaces/wallets.ts", import.meta.url),
+                  ),
+                  "backup-if-configured",
+                ],
+                {},
+              );
+              const status = JSON.parse(result.stdout);
+              return status.skipped !== true;
+            },
+          }
+        : {}),
     });
   } finally {
     key.fill(0);
@@ -182,14 +206,63 @@ export async function importWalletCatalog(
   };
 }
 export async function runWalletCommand(command: string, args: string[]) {
-  if(['backup','backup-if-configured','restore'].includes(command)&&process.env.HARNESS_INSTALL_CONFIG_FILE){
-    const saved=await loadInstallation(process.env.HARNESS_INSTALL_CONFIG_FILE);
-    if(saved.env.HEART_MCP_VAULT_TOKEN)process.env.NORA_MCPS_VAULT_TOKEN=saved.env.HEART_MCP_VAULT_TOKEN;
-    if(saved.env.HEART_MCP_VAULT_URL)process.env.NORA_WALLETS_BACKUP_URL=saved.env.HEART_MCP_VAULT_URL;
+  if (
+    ["backup", "backup-if-configured", "restore"].includes(command) &&
+    process.env.NORA_WALLETS_BACKUP_ENV_FILE
+  ) {
+    let contents: string;
+    try {
+      contents = await readFile(
+        process.env.NORA_WALLETS_BACKUP_ENV_FILE,
+        "utf8",
+      );
+    } catch (error) {
+      if (
+        command === "backup-if-configured" &&
+        (error as NodeJS.ErrnoException).code === "ENOENT"
+      )
+        return { skipped: true, reason: "Vault non configuré" };
+      throw error;
+    }
+    const saved = parseEnv(contents);
+    for (const name of ["NORA_MCPS_VAULT_TOKEN", "NORA_WALLETS_BACKUP_URL"])
+      if (saved[name]) process.env[name] = saved[name];
   }
-  if(command==='backup-if-configured'){if(!process.env.NORA_MCPS_VAULT_TOKEN)return {skipped:true,reason:'Vault non configuré'};command='backup';}
-  if(command==='init-empty'){
-    const key=await master();try{await initializeWalletState(stateDirectory(),{format:'nora-wallets/v1',id:randomUUID(),revision:randomUUID(),wallets:[],networks:[]},key);return {initialized:true,wallets:0};}finally{key.fill(0);}
+  if (
+    ["backup", "backup-if-configured", "restore"].includes(command) &&
+    process.env.HARNESS_INSTALL_CONFIG_FILE
+  ) {
+    const saved = await loadInstallation(
+      process.env.HARNESS_INSTALL_CONFIG_FILE,
+    );
+    if (saved.env.HEART_MCP_VAULT_TOKEN)
+      process.env.NORA_MCPS_VAULT_TOKEN = saved.env.HEART_MCP_VAULT_TOKEN;
+    if (saved.env.HEART_MCP_VAULT_URL)
+      process.env.NORA_WALLETS_BACKUP_URL = saved.env.HEART_MCP_VAULT_URL;
+  }
+  if (command === "backup-if-configured") {
+    if (!process.env.NORA_MCPS_VAULT_TOKEN)
+      return { skipped: true, reason: "Vault non configuré" };
+    command = "backup";
+  }
+  if (command === "init-empty") {
+    const key = await master();
+    try {
+      await initializeWalletState(
+        stateDirectory(),
+        {
+          format: "nora-wallets/v1",
+          id: randomUUID(),
+          revision: randomUUID(),
+          wallets: [],
+          networks: [],
+        },
+        key,
+      );
+      return { initialized: true, wallets: 0 };
+    } finally {
+      key.fill(0);
+    }
   }
   if (command === "help")
     return {
@@ -199,6 +272,9 @@ export async function runWalletCommand(command: string, args: string[]) {
         "verify",
         "list",
         "assets <wallet UUID> <network ID> [--refresh]",
+        "create (JSON {id,label,family,networkIds,networks?} on stdin)",
+        "rename <wallet UUID> <new label>",
+        "request-backup",
         "sign (JSON request on stdin)",
         "backup",
         "backup-status",
@@ -226,14 +302,18 @@ export async function runWalletCommand(command: string, args: string[]) {
     return importWalletCatalog(args[0], args[1]);
   }
   if (command === "daemon") {
-    const service = await open(),
+    const service = await open(true),
       server = await walletSocket(service, socketPath(), { mode: 0o660 });
     for (const signal of ["SIGTERM", "SIGINT"] as const)
       process.once(signal, () => {
-        void server.close().finally(() => {
-          service.close();
-          process.exit(0);
-        });
+        void server
+          .close()
+          .catch(() => {})
+          .then(() => service.drain())
+          .finally(() => {
+            service.close();
+            process.exit(0);
+          });
       });
     return { ready: true, socket: socketPath() };
   }
@@ -260,31 +340,30 @@ export async function runWalletCommand(command: string, args: string[]) {
       await store.close();
     }
   }
-  if (command === "backup-status") {
-    const service = await open();
-    try {
-      return await service.backupStatus();
-    } finally {
-      service.close();
-    }
-  }
   const client = new WalletClient(socketPath());
   try {
+    if (command === "backup-status") return await client.backupStatus();
     if (command === "list") return await client.list();
     if (command === "assets") {
       if (!args[0] || !args[1])
         throw Error("assets requires wallet UUID and network ID");
       return await client.assets(args[0], args[1], args.includes("--refresh"));
     }
-    if (command === "sign") {
+    if (command === "rename") {
+      if (!args[0] || !args[1]) throw Error("Wallet UUID and label required");
+      return await client.rename(args[0], args.slice(1).join(" "));
+    }
+    if (command === "request-backup") return await client.requestBackup();
+    if (command === "sign" || command === "create") {
       const chunks = [];
       for await (const c of process.stdin) chunks.push(c);
-      return await client.sign(
-        JSON.parse(Buffer.concat(chunks).toString("utf8")),
-      );
+      const value = JSON.parse(Buffer.concat(chunks).toString("utf8"));
+      return command === "create"
+        ? await client.create(value)
+        : await client.sign(value);
     }
     throw Error(
-      "Commands: init <catalogue> <credentials>, daemon, list, assets <wallet> <network> [--refresh], sign (JSON stdin), backup, backup-status, restore <backup UUID> <new directory>",
+      "Use help for commands: create/rename/list/assets/sign, request-backup/backup-status, init/daemon/backup/restore",
     );
   } finally {
     client.close();

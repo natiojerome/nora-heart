@@ -11,6 +11,7 @@ sont dans [PLAN.md](PLAN.md).
 | Accès initial | IP de la machine détectée, HTTP sur port annoncé, `--address` pour préciser ; domaine/HTTPS optionnel, `--private` sur demande. Conserver le mode enregistré lors des reprises. | Installer sans domaine ni tunnel obligatoire ; ne pas exposer les anciens déploiements implicitement. HTTP non chiffré explicite, outils internes et SQL toujours privés. |
 | Onboarding et services | Persister le cerveau choisi dans les défauts ; vérifier les MCP compatibles avant stockage privé des clés, puis redémarrage suivi. Sans binding, mémoire désactivée sur installation gérée. | Premier accès utilisable, reprise après actualisation, aucune autorité inventée ni mémoire SQL de remplacement implicite. |
 | Wallets et signature | Daemon local indépendant, socket Unix JSON-RPC, clients JS/Python persistants ; EVM via viem et Ed25519 via Node crypto. Solde en cache, RPC explicite ; pas de diffusion automatique. | Signer depuis le code sans inférence, SQL, lecture disque ou délai du serveur MCP. Aucun plafond financier arbitraire ajouté ; accès local par groupe et signature Heart sous YOLO explicitement activé. |
+| Création des wallets | Génération locale EVM/Ed25519, UUID de création idempotent et nom modifiable ; coffre atomique sous verrou OS. Backup immédiat regroupé par processus séparé, état explicite de révision et restauration vers un dossier neuf. | Contrôle des clés/adresses, reprises sans doublons, aucune clé privée dans les réponses. Le token Vault et la latence réseau restent hors du signataire. |
 | Reprise des wallets | Coffre AES-256-GCM local, credential systemd ; sauvegarde par processus séparé dans le MCP Vault existant, archive et clé de récupération, relecture et restauration isolée vérifiées. | Restaurer après perte de la machine sans manipulation de seed par l’utilisateur. Le Vault et ses lecteurs autorisés sont des dépositaires de confiance, sans prétention de chiffrement inaccessible au serveur. Sources et ancien signataire non modifiés. |
 | Langage | TypeScript strict. | Contrats lisibles, écosystème d’agents et contributions accessibles. |
 | Runtime | Node.js 24 LTS, version qualifiée dans `.node-version`. | Dépendances et démos validées sans changer les runtimes des autres applications. |
@@ -149,7 +150,7 @@ au nom du nettoyage documentaire.
 ## Recherche web sans quota commercial
 
 Le 18 novembre, le propriétaire refuse un MCP dont le niveau gratuit est limité
-pour pousser au paiement. Exa est désactivé et retiré du preset actif. Choix courant :
+pour pousser au paiement. Les anciennes connexions commerciales sont retirées. Choix courant :
 SearXNG officiel auto-hébergé et lecteur HTML public derrière notre MCP local, avec
 moteurs publics configurables. Aucun compteur de recherches, crédit ou repli payant
 Heart. CAPTCHA/blocages, pagination des moteurs et ressources serveur/modèle restent
