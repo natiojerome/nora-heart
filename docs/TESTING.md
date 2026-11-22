@@ -8,7 +8,7 @@ loopback et IP privée HTTP non loopback : `isSecureContext` faux, UUID natif ab
 cookies adaptés. Python couvre IPv4/IPv6, modes exclusifs, détection simulée et
 maintien des anciens déploiements privés ; IP publique réellement détectée aussi.
 
-Quatre installations jetables sur un hôte existant, sans nouvelle VM Hetzner :
+Installations jetables sur un hôte existant, sans nouvelle VM Hetzner :
 bootstrap GitHub, Node/SHA-256, pnpm verrouillé, vrai PostgreSQL/systemd, chemins
 avec espaces, wizard mobile/reprise, fichiers, terminal Node 24 protégé et root
 YOLO, recherche déclarée, wallets vides et persistance après redémarrage.
@@ -17,7 +17,7 @@ Relance sans changer UUID, credentials ou coffre, réparation après arrêt wall
 et préservation des configurations privées validées. Caddy validé par son binaire ;
 OS vierge, DNS/ACME public et ARM64 ne sont pas qualifiés par ces essais.
 
-Dernier essai : clés MCP et Venice existantes réutilisées explicitement pour le
+Essai Venice préalable : clés MCP et Venice existantes réutilisées explicitement pour le
 seul test, lues depuis leurs fichiers privés et saisies par navigateur automatisé.
 Pas de récupération automatique par l’installateur, de nouveau compte ou de clé
 créée. Connexions/authentification réelles, catalogue Venice réel, défaut du modèle
@@ -29,22 +29,49 @@ contrôle supprimés après les essais ; aucun projet/secret métier créé ou m
 aucune valeur de secret Vault lue. Le timer wallet a ignoré la sauvegarde, Vault
 n’étant pas encore configuré à son déclenchement ; aucun artefact distant ajouté.
 
-**Qualification LLM incomplète.** Le premier tour réel échoue avant tout outil :
-Venice HTTP 402 « Insufficient USD or Diem balance ». Solde communiqué :
-0,08653047 USD, DIEM et crédits inclus à zéro, `accessPermitted: false`.
-Une requête directe minimale (`max_tokens: 8`) reproduit le refus ; les appels
-ont été arrêtés. Ce n’est pas une validation des outils par Venice. Il reste à
-reprendre avec un accès API réactivé, puis vérifier les outils et le rappel
-mémoire dans un nouveau fil après restart.
+## Fournisseurs réels sur installation indépendante — 22 novembre 2026
 
-`tests/qualify-live-installation.ts` est un scénario opt-in distinct des tests
-hors ligne : vrais services installés, clés privées fournies par chemins de
-fichiers, onboarding mobile, modèle à faible tarif/outils, journal d’exécution,
-fichier physique, mémoire distante et nouveau fil après restart. Il nettoie ses
-souvenirs synthétiques, masque les credentials dans le rapport et refuse un profil
-déjà utilisé. Son chemin complet est préparé/typechecké, **pas encore qualifié**
-après l’étape d’inférence bloquée. L’installer de test et ses services/conteneurs
-sont supprimés après qualification ; aucune inférence simulée ne remplace l’essai.
+Scénario `tests/qualify-live-installation.ts`, opt-in séparé des tests hors ligne :
+
+| Fournisseur | Parcours observé | Résultat |
+| --- | --- | --- |
+| ChatGPT abonnement · `gpt-6-luna` · low | Nouvelle installation GitHub sur IP, onboarding, vrais MCP, fichiers, terminal Node 24, recherche Projets, souvenir distant, restart puis recherche dans un nouveau fil. | Réussi ; dernier essai sans erreur d’outil ni JS. |
+| OpenRouter · `deepseek/deepseek-v4-flash-0731` | Ajout de la clé par Fournisseurs sur la même installation isolée, nouveau défaut, même parcours complet avec nouveaux fils et restart. | Réussi ; dernier essai sans erreur d’outil ni JS. Baisse du compteur partagé : 0,001644954 USD. |
+| Venice · `deepseek-v4-flash-0731` | Onboarding, vrai catalogue/clé, connexions MCP puis premier tour et requête directe minimale `max_tokens: 8`. | Inférence refusée HTTP 402 « Insufficient USD or Diem balance ». |
+
+Le fichier est vérifié sur disque, le terminal doit retourner Node 24 et exit 0,
+l’appel Projets est identifié par son nom canonique calculé depuis la connexion.
+Le souvenir doit être visible via Heart/MCP, puis son code retrouvé dans un nouveau
+fil sans le fournir à nouveau après restart. Les souvenirs synthétiques sont
+supprimés dans `finally`, même si une assertion échoue. Pas de faux transport,
+de faux catalogue ou de faux résultat d’outil dans ces deux qualifications réussies.
+
+L’autorisation ChatGPT courte durée vient explicitement du compte existant,
+transférée par pipe privé au compte système de la QA, sans refresh/id token.
+Le compte source reste géré par son propriétaire et aucun logout/révocation n’est
+lancé au nettoyage. Le test couvre le forfait existant et sa persistance pendant
+la validité du token ; **pas une nouvelle autorisation OAuth ni son renouvellement**.
+Clés OpenRouter/MCP lues depuis les fichiers privés existants, saisies par l’UI,
+sans nouveau compte/clé. Aucun secret dans le rapport ou Git.
+
+Le premier essai ChatGPT a refusé un cwd hors workspace ; le modèle a corrigé
+seul l’appel et la commande a réussi. Le schéma précise désormais le cwd par défaut
+et sa différence avec le dossier d’installation, sans élargir les permissions.
+Les assertions du script ont été corrigées (`terminal.exec` et alias MCP haché),
+ainsi que ses attentes de disponibilité web/authentification après restart : les
+échecs du script ne sont pas présentés comme des validations produit. Les deux
+parcours réussis ci-dessus sont rejoués après ces corrections utiles à leur cas.
+Le scénario accepte `--provider chatgpt|openrouter|venice` ;
+`--existing-qa-profile` réutilise exclusivement le profil de cette QA, pour ajouter
+un fournisseur sans reprovisionner l’hôte ou rejouer artificiellement le wizard.
+
+Venice conserve un solde déclaré de 0,08653047 USD, zéro DIEM/crédit inclus et
+`accessPermitted: false` lors de son essai ; les appels ont été arrêtés. Les
+qualifications ChatGPT/OpenRouter ne prouvent pas que Venice fonctionne.
+Une nouvelle VM/OS vierge, ACME public, ARM64, le renouvellement OAuth et les
+compteurs ChatGPT (collecteur non copié en QA) restent des parcours distincts.
+Les ressources locales de test et les souvenirs de contrôle sont supprimés ;
+aucun nouveau serveur, achat ou rechargement.
 
 ## Wallets locaux — 21 novembre 2026
 

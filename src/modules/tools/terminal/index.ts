@@ -403,7 +403,7 @@ export function terminalTools(
       host ? "Mode YOLO autorisé : commande sur le serveur entier en root, réseau disponible, cwd absolu accepté. Aucune confirmation d’outil supplémentaire requise pour la tâche demandée. Ne demande pas les permissions déjà accordées. Vérifie les résultats. Retourne id, état et première sortie ; terminal.read seulement si running ou more. yieldTimeMs règle l’attente de retour (500 ms par défaut, 0 immédiat), sans arrêter la commande. Aucun timeout imposé." : "Lancer une commande shell dans le projet isolé (Git, recherche rg, tests, scripts, installations). Retourne id, état et première sortie ; terminal.read seulement si running ou more. yieldTimeMs règle l’attente de retour (500 ms par défaut, 0 immédiat). Réseau selon le réglage du propriétaire. Aucun timeout imposé ; timeoutMs facultatif.",
       {
         command: string,
-        cwd: string,
+        cwd: {type:"string",description:host?"Facultatif : répertoire courant sur l’hôte ; chemins absolus acceptés.":"Facultatif : racine de l’espace du fil par défaut. Utiliser '.' ou un sous-dossier ; le dossier d’installation Heart est distinct."},
         timeoutMs: { type: "integer", minimum: 1 },
         yieldTimeMs: integer,
       },

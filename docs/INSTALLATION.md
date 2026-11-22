@@ -198,19 +198,27 @@ redémarrage. Ne pas pointer cet essai vers une installation utilisée : il cré
 des données synthétiques et refuse par défaut un profil déjà configuré.
 Ce test n’est pas une qualification universelle des comptes fournisseurs.
 
-Pour qualifier les vrais services et Venice (appel payant explicite), utiliser une
-installation jetable neuve nommée `/projects/heart live qa-<identifiant>` :
+Pour qualifier un vrai fournisseur et les MCP (inférence explicitement autorisée),
+utiliser une installation jetable neuve nommée `/projects/heart live qa-<identifiant>` :
 
 ```sh
-pnpm qualify:install:live --live --root '/projects/heart live qa-<identifiant>' --venice-key-file /chemin/prive/api-keys.json --mcp-env-file /chemin/prive/mcps.env
+pnpm qualify:install:live --live --provider openrouter --model deepseek/deepseek-v4-flash-0731 --root '/projects/heart live qa-<identifiant>' --api-key-file /chemin/prive/api-keys.json --mcp-env-file /chemin/prive/mcps.env
 ```
 
-Le JSON privé contient la propriété `venice` ; le fichier MCP contient les variables
-`NORA_MCPS_MEMORY_TOKEN`, `NORA_MCPS_PROJECTS_TOKEN`, `NORA_MCPS_VAULT_TOKEN`.
-Ces fichiers sont fournis explicitement par l’opérateur, jamais embarqués dans
-l’installateur. Le scénario ne crée pas de clés ni de crédits. Le dernier essai a
-validé l’onboarding/catalogue/connexions, puis buté sur le refus Venice HTTP 402 ;
-l’exécution des outils par un vrai modèle reste à qualifier. Voir [TESTING.md](TESTING.md).
+`--provider` accepte `chatgpt`, `openrouter`, `venice`. Le JSON privé contient la
+propriété du fournisseur API choisi (`openrouter` ou `venice`) ; le fichier MCP
+contient `NORA_MCPS_MEMORY_TOKEN`, `NORA_MCPS_PROJECTS_TOKEN`, `NORA_MCPS_VAULT_TOKEN`.
+Pour ChatGPT, l’instance de qualification doit déjà disposer de son autorisation
+privée valide ; `--api-key-file` est inutile. L’installateur ne copie pas de session.
+Les fichiers sont fournis explicitement par l’opérateur, jamais embarqués dans
+l’installation. Aucun compte, clé ou crédit créé par le scénario.
+`--existing-qa-profile` permet ensuite de qualifier un autre fournisseur sur cette
+même instance, en refusant tout profil autre que celui de cette QA.
+
+ChatGPT/GPT-6 Luna et OpenRouter/DeepSeek Flash ont passé les vrais appels d’outils,
+la mémoire distante et le rappel dans un nouveau fil après restart. Venice reste
+refusé HTTP 402. La réutilisation explicite d’une autorisation ChatGPT existante
+ne qualifie pas une nouvelle autorisation OAuth. Voir [TESTING.md](TESTING.md).
 
 Standards réutilisés : [installation Docker](https://docs.docker.com/engine/install/ubuntu/),
 [distributions Node](https://nodejs.org/dist/), unités systemd et contrats

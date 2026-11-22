@@ -9,14 +9,15 @@ permissions, avec des cerveaux interchangeables selon besoin et coût.
 
 Installateur GitHub, chemin choisi et premier accès documentés dans
 [INSTALLATION.md](INSTALLATION.md). Première qualification réelle sur installation
-jetable dans un chemin avec espaces ; bootstrap public et reprise validés. Accès direct IP désormais par défaut, domaine optionnel. Le parcours réel MCP
-et onboarding Venice est validé, mais l’inférence renvoie HTTP 402. Priorité :
-reprendre la qualification modèle/outils/rappel après réactivation de l’API Venice.
-Ensuite, qualifier
-la préparation complète sur un nouvel OS/serveur temporaire (les installations
-précédentes utilisaient un hôte existant), le mode domaine/HTTPS avec son propre
-DNS et le chemin ARM64, puis définir le parcours
-explicite de mise à jour/sauvegarde. Ne pas confondre réinstallation et mise à jour.
+jetable dans un chemin avec espaces ; bootstrap public et reprise validés.
+Accès IP par défaut. ChatGPT/GPT-6 Luna et OpenRouter/DeepSeek Flash qualifiés avec
+vrais outils/MCP et rappel mémoire dans un autre fil après restart. Le blocage
+Venice HTTP 402 est indépendant : reprendre ce fournisseur lorsque son accès
+API est réactivé, sans bloquer le développement sur lui.
+Suite : définir le parcours explicite de mise à jour/sauvegarde et sa restauration,
+puis qualifier un OS vierge, HTTPS avec DNS et ARM64 selon les besoins et moyens
+approuvés. Ne pas confondre réinstallation et mise à jour ; aucune création de
+serveur n’est autorisée implicitement par ce plan.
 
 ## Complément livré — Wallet local et sauvegarde MCP
 

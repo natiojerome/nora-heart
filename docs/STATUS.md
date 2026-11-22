@@ -23,24 +23,29 @@ Les nouveaux déploiements n’activent aucune mémoire SQL de remplacement ; m�
 et projets distants demandent leurs connexions. Données métier et ancien runtime
 préservés. Voir [INSTALLATION.md](INSTALLATION.md).
 
-266 tests, démo SDK et cinq parcours navigateur réussis. Quatre installations
-jetables sur l’hôte existant : bootstrap GitHub, chemins avec espaces, web sur IP
-HTTP, PostgreSQL/systemd, fichiers, terminal protégé/root YOLO, reprise et
-persistance. Les essais précédents de chat utilisaient un cerveau simulé.
-Les API navigateur UUID/copie et le rendu mathématique fonctionnent sur IP HTTP.
+266 tests, démo SDK et cinq parcours navigateur de régression réussis. Installations
+jetables sur l’hôte existant : bootstrap GitHub, chemins avec espaces, IP HTTP,
+PostgreSQL/systemd, fichiers, terminal protégé/root YOLO, reprise et persistance.
+Les utilitaires navigateur UUID/copie et les formules fonctionnent sur IP HTTP.
 
-Dernier essai avec les vraies clés, saisies explicitement via le navigateur :
-onboarding Venice, catalogue/prix réels et connexions Mémoire/Projets/Vault prêts.
-Création, lecture, modification et suppression d’un souvenir distant via Heart,
-recherche Projets et recherche de métadonnées Vault vérifiées sans LLM ; secrets
-et mémoire persistent après redémarrage. Souvenirs synthétiques supprimés.
-**Inférence réelle bloquée : Venice renvoie HTTP 402, accès API refusé, malgré
-un solde déclaré de 0,08653047 USD et zéro DIEM/crédit inclus.** Une requête
-minimale confirme le refus. Les outils exécutés par Venice puis le rappel dans
-un nouveau fil restent à qualifier ; aucun succès global n’est déclaré.
+**Qualification réelle réussie sur la dernière installation :**
+- ChatGPT abonnement, `gpt-6-luna`, effort `low` : fichier créé/relu, commande
+  Node 24, recherche Projets MCP, mémoire distante créée, puis retrouvée depuis
+  un nouveau fil après redémarrage. Dernier essai sans erreur d’outil/JavaScript.
+- OpenRouter, `deepseek/deepseek-v4-flash-0731` : même parcours réel réussi après
+  ajout de la clé via Fournisseurs et changement des défauts. Aucun repli de modèle.
+  Baisse observée sur le compte : 0,001644954 USD, compteur partagé (pas une facture
+  isolant formellement cet essai). Dernier essai sans erreur d’outil/JavaScript.
+- Venice : onboarding/catalogue réel et MCP validés ; inférence refusée HTTP 402
+  avec 0,08653047 USD, zéro DIEM/crédit inclus et accès API refusé. Ce seul parcours
+  modèle reste bloqué ; cela ne bloque pas ChatGPT/OpenRouter.
 
-Installations de test supprimées, services historiques sains. Aucun nouveau
-serveur acheté/créé. OS vierge, ACME public et ARM64 restent à qualifier.
+Clés API/MCP réutilisées explicitement depuis les fichiers privés, pas fournies par
+l’installateur. Pour ChatGPT, autorisation courte durée isolée, sans refresh/id token ;
+une nouvelle connexion OAuth et son renouvellement ne sont pas qualifiés ici.
+Mémoire CRUD, recherches Projets et métadonnées Vault également testées directement.
+Souvenirs synthétiques et installations jetables supprimés ; services historiques
+sains. Aucun serveur acheté/créé. OS vierge, ACME public et ARM64 restent à qualifier.
 Proxy Caddy validé séparément par son binaire. Voir [TESTING.md](TESTING.md).
 
 ## Wallets locaux et reprise distante
