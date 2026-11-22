@@ -28,7 +28,9 @@ vides et persistance après redémarrage. Connexions réelles Mémoire/Projets/V
 vérifiées via le navigateur, sans écriture métier ni inférence payante. Commande
 publique GitHub exécutée sur une seconde installation neuve avec espaces :
 onboarding/chat/outils/redémarrage réussis, puis même commande rejouée sans
-changer l’UUID, les credentials ou le coffre. Proxy Caddy validé par son binaire ;
+changer l’UUID, les credentials ou le coffre. Reprise après arrêt volontaire du
+daemon wallet vérifiée, avec autotest terminal ; configurations privées préservées.
+Installations de test supprimées, services historiques sains. Proxy Caddy validé par son binaire ;
 ACME sur DNS public et matériel ARM64 restent à qualifier séparément.
 
 ## Wallets locaux et reprise distante

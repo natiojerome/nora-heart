@@ -54,6 +54,17 @@ def unit_command(args):
 def env_text(values):
     return ''.join(k + '=' + json.dumps(str(v), ensure_ascii=False) + '\n' for k, v in values.items())
 
+def keep_runtime(file, values, binary):
+    if not file.exists():
+        atomic(file,env_text(values))
+        return
+    reader='const fs=require("node:fs"),u=require("node:util");process.stdout.write(JSON.stringify(u.parseEnv(fs.readFileSync(process.argv[1],"utf8"))))'
+    existing=json.loads(run([binary,'-e',reader,file]))
+    keys=['PORT','HARNESS_WEB_HOST','HARNESS_WEB_ORIGIN','HARNESS_DATABASE_URL','HARNESS_STORAGE_DRIVER','HARNESS_WEB_STATE_DIR','HARNESS_CHATGPT_AUTH_DIR','HARNESS_PROJECTS_ROOT','HARNESS_HOST_SOCKET','HARNESS_WALLETS_SOCKET']
+    if any(existing.get(k)!=str(values[k]) for k in keys):
+        raise RuntimeError('Configuration structurelle personnalisée : conserver les données et adapter les services explicitement ; aucun fichier remplacé.')
+    # In particular retain owner-added credentials, password rotation and settings.
+
 def wait_for(check, label, seconds=90):
     deadline = time.monotonic() + seconds
     while time.monotonic() < deadline:
@@ -272,7 +283,7 @@ def install(options):
               'HARNESS_WALLETS_SOCKET':'/run/'+name+'-wallets/api.sock','HARNESS_WALLETS_SIGN_ENABLED':'1',
               'HARNESS_INSTALL_CONFIG_FILE': str(private / 'state/installation.json'), 'HARNESS_REQUIRE_REMOTE_MEMORY': '1', 'HARNESS_LOCAL_SEARCH_URL':'http://127.0.0.1:'+str(identity['searchPort'])+'/mcp'}
     runtime = config / 'runtime.env'
-    atomic(runtime, env_text(values))
+    keep_runtime(runtime,values,binary)
     command = [binary, root / 'node_modules/tsx/dist/cli.mjs']
     wallet_key=config / 'wallet-master.cred'
     if not wallet_key.exists():

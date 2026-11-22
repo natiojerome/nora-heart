@@ -3,7 +3,11 @@ import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 test("installer administration preserves private files, sanitizes failures and exposes usable help", async () => {
   await promisify(execFile)("python3", ["tests/test-installer.py"], {
-    env: { ...process.env, PYTHONDONTWRITEBYTECODE: "1" },
+    env: {
+      ...process.env,
+      PYTHONDONTWRITEBYTECODE: "1",
+      HEART_INSTALL_TEST_NODE: process.execPath,
+    },
   });
 });
 test("scheduled wallet backup skips cleanly before Vault setup without loading a key or calling a server", async () => {

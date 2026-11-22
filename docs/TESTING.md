@@ -21,7 +21,10 @@ Connexions réelles Mémoire/Projets/Vault vérifiées dans la nouvelle interfac
 clés privées saisies par l’opérateur, révision active après redémarrage et mobile
 390 px, sans écriture métier ni inférence payante. Le bootstrap GitHub public est
 exécuté sur une seconde installation vierge : même parcours complet réussi, puis
-relance avec UUID/credentials/coffre inchangés. Le parcours fournisseur puis
+relance avec UUID/credentials/coffre inchangés ; arrêt volontaire du daemon wallet
+puis réparation avec autotest terminal validés. Configurations privées préservées,
+changement de base personnalisé refusé sans écrasement. Les deux installations
+jetables et leurs services/conteneurs ont été retirés. Le parcours fournisseur puis
 modèle/effort est testé dans le navigateur avec catalogue simulé. Domaine/ACME
 public et machine ARM64 restent des parcours distincts, pas prétendument testés
 sur un serveur sans domaine ou sur x86_64. Voir [INSTALLATION.md](INSTALLATION.md).

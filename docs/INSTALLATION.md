@@ -148,7 +148,9 @@ peuvent cohabiter avec leurs données, comptes, services et ports distincts.
 Relancer la **même commande** reprend une installation interrompue avec le même
 UUID, les mêmes mots de passe et données. Une installation déjà prête est vérifiée
 par connexion propriétaire et lecture SQL via l’application ; ses choix ne sont
-pas réinitialisés. Cette commande n’est pas un mécanisme de mise à jour : elle ne
+pas réinitialisés. Les ajouts privés dans `runtime.env` sont conservés ; une
+configuration structurelle personnalisée (base, chemins, sockets, origine) est
+refusée plutôt qu’écrasée pendant une réparation. Cette commande n’est pas un mécanisme de mise à jour : elle ne
 fait pas de `git reset`, ne tire pas une nouvelle version sur un dépôt existant,
 ne supprime pas de base et ne déplace pas une installation.
 
