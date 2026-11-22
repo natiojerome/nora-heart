@@ -69,6 +69,17 @@ def health(url):
     with urllib.request.urlopen(url, timeout=3) as response:
         return response.status == 200
 
+def units_active(identity):
+    units=[identity['unit']+suffix for suffix in ['-web.service','-host.service','-search.service','-wallets.service','-wallets-backup.timer']]
+    result=subprocess.run(['systemctl','is-active',*units],capture_output=True,text=True)
+    return result.stdout.split()==['active']*len(units)
+
+def socket_ready(file):
+    with socket.socket(socket.AF_UNIX,socket.SOCK_STREAM) as connection:
+        connection.settimeout(2)
+        connection.connect(file)
+    return True
+
 def verify_web(identity, credentials, public=False):
     origin=identity['origin']
     endpoint=origin if public else 'http://127.0.0.1:'+str(identity['port'])
@@ -80,6 +91,25 @@ def verify_web(identity, credentials, public=False):
     with urllib.request.urlopen(request,timeout=5) as response:
         state=json.load(response)
     return state.get('authenticated') and state.get('assistant') is not None and state.get('conversationsAvailable') and state.get('installation',{}).get('available')
+
+def check_terminal(identity, credentials):
+    endpoint='http://127.0.0.1:'+str(identity['port'])
+    headers={'Host':urllib.parse.urlparse(identity['origin']).netloc,'Origin':identity['origin'],'Content-Type':'application/json'}
+    with urllib.request.urlopen(urllib.request.Request(endpoint+'/api/login',data=json.dumps({'password':credentials['password']}).encode(),headers=headers),timeout=5) as response:
+        headers['Cookie']=response.headers['Set-Cookie'].split(';')[0]
+        headers['x-csrf-token']=json.load(response)['csrf']
+    with urllib.request.urlopen(urllib.request.Request(endpoint+'/api/projects-root/commands',data=json.dumps({'command':'node --version','cwd':'.'}).encode(),headers=headers),timeout=10) as response:
+        command=json.load(response)['command']
+    deadline=time.monotonic()+30
+    while time.monotonic()<deadline:
+        with urllib.request.urlopen(urllib.request.Request(endpoint+'/api/projects-root/commands/'+command['id'],headers=headers),timeout=5) as response:
+            result=json.load(response)
+        if result['command']['status']!='running':
+            if result['command']['exitCode']!=0 or not result['output'].strip().startswith('v24.'):
+                raise RuntimeError('Terminal protégé indisponible : vérifier les namespaces/AppArmor. Données conservées.')
+            return
+        time.sleep(0.1)
+    raise RuntimeError('Vérification terminal en attente ; aucune installation déclarée prête.')
 
 def ensure_node(root):
     version = (root / '.node-version').read_text().strip()
@@ -153,7 +183,7 @@ def install(options):
         raise RuntimeError('Une autre URL/port est déjà enregistré ; pas de modification implicite.')
     name = identity['unit']
     if identity['phase'] == 'ready':
-        try: healthy=verify_web(identity,json.loads((config/'secrets.json').read_text()),public=bool(identity['domain']))
+        try: healthy=units_active(identity) and health('http://127.0.0.1:'+str(identity['enginePort'])+'/') and verify_web(identity,json.loads((config/'secrets.json').read_text()),public=bool(identity['domain']))
         except Exception: healthy=False
         if healthy:
             print('Installation existante saine, comptes et données conservés.')
@@ -278,7 +308,8 @@ def install(options):
     service(root,name+'-search',name,[*command,root/'src/interfaces/search.ts'],search_env,writes=[private/'state'])
     service(root, name + '-web', name, [*command, root / 'src/interfaces/web.ts'], runtime, writes=[private / 'state', private / 'auth', root / 'projects'], after=[name + '-host.service',name+'-search.service',name+'-wallets.service'])
     # AppArmor user-namespace permission required on Ubuntu 24.04; don't replace a host profile.
-    if shutil.which('apparmor_parser') and not Path('/etc/apparmor.d/heart-bwrap').exists():
+    restricted_userns=Path('/proc/sys/kernel/apparmor_restrict_unprivileged_userns')
+    if restricted_userns.exists() and restricted_userns.read_text().strip()=='1' and shutil.which('apparmor_parser') and not Path('/etc/apparmor.d/heart-bwrap').exists():
         shutil.copyfile(root / 'deploy/heart-bwrap.apparmor', '/etc/apparmor.d/heart-bwrap')
         run(['apparmor_parser', '-r', '/etc/apparmor.d/heart-bwrap'])
     if identity['domain']:
@@ -293,6 +324,12 @@ def install(options):
     run(['systemctl', 'enable', '--now', name + '-host.service',name+'-search.service',name+'-wallets.service',name+'-wallets-backup.timer', name + '-web.service'])
     wait_for(lambda: health('http://127.0.0.1:' + str(identity['port']) + '/healthz'), 'Interface web')
     wait_for(lambda:verify_web(identity,credentials),'Connexion propriétaire et stockage')
+    wait_for(lambda:units_active(identity),'Services de l’installation')
+    wait_for(lambda:health('http://127.0.0.1:'+str(identity['enginePort'])+'/'),'Moteur de recherche local')
+    wait_for(lambda:socket_ready(values['HARNESS_HOST_SOCKET']),'Worker hôte')
+    wait_for(lambda:socket_ready(values['HARNESS_WALLETS_SOCKET']),'Wallets locaux')
+    print('Vérification du terminal protégé Node 24…',flush=True)
+    check_terminal(identity,credentials)
     if identity['domain']:
         print('Vérification HTTPS et certificat (DNS du domaine requis)…',flush=True)
         wait_for(lambda:verify_web(identity,credentials,public=True),'HTTPS public / DNS / certificat')

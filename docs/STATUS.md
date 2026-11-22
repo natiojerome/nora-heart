@@ -21,12 +21,15 @@ Les nouveaux déploiements n’activent aucune mémoire SQL de remplacement ; m�
 et projets distants demandent leurs connexions. Données métier et ancien runtime
 préservés. Voir [INSTALLATION.md](INSTALLATION.md).
 
-266 tests et deux parcours navigateur de régression ; installation jetable réelle
+266 tests et trois parcours navigateur de régression ; installation jetable réelle
 dans un chemin avec espaces : onboarding/reprise mobile, fichiers, terminal Node 24
 protégé et root YOLO, chat simulé avec vrai PostgreSQL, recherche déclarée, wallets
 vides et persistance après redémarrage. Connexions réelles Mémoire/Projets/Vault
-vérifiées via le navigateur, sans appel métier ni inférence payante. La commande
-publique GitHub fait l’objet d’une dernière qualification indépendante.
+vérifiées via le navigateur, sans écriture métier ni inférence payante. Commande
+publique GitHub exécutée sur une seconde installation neuve avec espaces :
+onboarding/chat/outils/redémarrage réussis, puis même commande rejouée sans
+changer l’UUID, les credentials ou le coffre. Proxy Caddy validé par son binaire ;
+ACME sur DNS public et matériel ARM64 restent à qualifier séparément.
 
 ## Wallets locaux et reprise distante
 

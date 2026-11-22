@@ -9,8 +9,7 @@ permissions, avec des cerveaux interchangeables selon besoin et coût.
 
 Installateur GitHub, chemin choisi et premier accès documentés dans
 [INSTALLATION.md](INSTALLATION.md). Première qualification réelle sur installation
-jetable dans un chemin avec espaces ; dernière vérification du bootstrap public
-et de la reprise en cours. Suite utile : qualifier le mode domaine/HTTPS sur un
+jetable dans un chemin avec espaces ; bootstrap public et reprise validés. Suite utile : qualifier le mode domaine/HTTPS sur un
 nouveau serveur avec son propre DNS et le chemin ARM64, puis définir le parcours
 explicite de mise à jour/sauvegarde. Ne pas confondre réinstallation et mise à jour.
 

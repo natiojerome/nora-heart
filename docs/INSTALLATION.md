@@ -57,6 +57,10 @@ configurée. Le tunnel permet de faire l’onboarding avant d’ajouter un domai
   sauvegarder et vérifier immédiatement avant utilisation ; voir [WALLETS.md](WALLETS.md).
 - Caddy et ses données de certificats si `--domain` est demandé.
 
+Avant de déclarer l’installation prête, le script contrôle les services, sockets,
+connexion propriétaire/SQL et exécute `node --version` dans le terminal protégé.
+Il ne se contente pas de créer les fichiers de configuration.
+
 Les services redémarrent au démarrage du serveur. Le web utilise un compte système
 propre à l’installation ; le worker YOLO est root mais ses droits ne s’appliquent
 qu’aux conversations où le propriétaire choisit YOLO. Les nouveaux fils démarrent
@@ -166,7 +170,10 @@ les anciens services Nora ne sont pas copiés.
 
 ## Vérifications et sources
 
-`pnpm check`, `pnpm demo:sdk` et `tests/web.e2e.ts` couvrent les régressions.
+`pnpm check`, `pnpm demo:sdk`, `tests/web.e2e.ts`, `tests/sqlite-web.e2e.ts`
+et `tests/onboarding.e2e.ts` couvrent les régressions. Le dernier contrôle vérifie
+le parcours fournisseur → modèle/effort → défauts, avec catalogue simulé et aucun
+appel commercial.
 `tests/installation.test.ts` vérifie les connexions/credentials, compatibilité,
 concurrence, reprise et absence de clés dans les métadonnées. Les tests Python
 vérifient les fichiers privés et les diagnostics sans secrets.

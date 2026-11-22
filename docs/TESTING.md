@@ -2,7 +2,7 @@
 
 ## Installation indépendante — 22 novembre 2026
 
-266 tests, démo SDK et deux parcours navigateur de régression. Nouveaux tests de
+266 tests, démo SDK et trois parcours navigateur de régression. Nouveaux tests de
 configuration MCP : vérification des outils attendus avant enregistrement,
 credentials privés séparés des schémas, versions/identifiants conservés,
 concurrence/reprise et rejet des variables d’environnement étrangères. Tests
@@ -19,8 +19,10 @@ les échecs de sélecteurs du script QA ne sont pas comptés comme validations.
 
 Connexions réelles Mémoire/Projets/Vault vérifiées dans la nouvelle interface,
 clés privées saisies par l’opérateur, révision active après redémarrage et mobile
-390 px, sans outil métier ni inférence payante. Le bootstrap GitHub public et
-la relance sans réinitialisation sont en dernière qualification. Domaine/ACME
+390 px, sans écriture métier ni inférence payante. Le bootstrap GitHub public est
+exécuté sur une seconde installation vierge : même parcours complet réussi, puis
+relance avec UUID/credentials/coffre inchangés. Le parcours fournisseur puis
+modèle/effort est testé dans le navigateur avec catalogue simulé. Domaine/ACME
 public et machine ARM64 restent des parcours distincts, pas prétendument testés
 sur un serveur sans domaine ou sur x86_64. Voir [INSTALLATION.md](INSTALLATION.md).
 
