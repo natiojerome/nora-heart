@@ -23,24 +23,25 @@ Les nouveaux déploiements n’activent aucune mémoire SQL de remplacement ; m�
 et projets distants demandent leurs connexions. Données métier et ancien runtime
 préservés. Voir [INSTALLATION.md](INSTALLATION.md).
 
-266 tests et cinq parcours navigateur de régression ; installation jetable réelle
-dans un chemin avec espaces : onboarding/reprise mobile, fichiers, terminal Node 24
-protégé et root YOLO, chat simulé avec vrai PostgreSQL, recherche déclarée, wallets
-vides et persistance après redémarrage. Connexions réelles Mémoire/Projets/Vault
-vérifiées via le navigateur, sans écriture métier ni inférence payante. Commande
-publique GitHub exécutée sur une seconde installation neuve avec espaces :
-onboarding/chat/outils/redémarrage réussis, puis même commande rejouée sans
-changer l’UUID, les credentials ou le coffre. Reprise après arrêt volontaire du
-daemon wallet vérifiée, avec autotest terminal ; configurations privées préservées.
-Tests navigateur sur IP privée HTTP non loopback : onboarding, défauts, UUID/copie
-et initialisation mathématique sans API réservée à HTTPS. Les deux installations
-vierges précédentes ont été testées sur un hôte existant, pas sur une nouvelle
-VM Hetzner ; préparation d’un OS vierge encore à qualifier.
-Troisième installation jetable en HTTP sur IP privée : parcours complet PostgreSQL,
-onboarding, fichiers, terminal protégé/YOLO, chat simulé et restart réussis ; reprise
-sans préciser à nouveau l’adresse conserve le mode IP et les données.
-Installations de test supprimées, services historiques sains. Proxy Caddy validé par son binaire ;
-ACME sur DNS public et matériel ARM64 restent à qualifier séparément.
+266 tests, démo SDK et cinq parcours navigateur réussis. Quatre installations
+jetables sur l’hôte existant : bootstrap GitHub, chemins avec espaces, web sur IP
+HTTP, PostgreSQL/systemd, fichiers, terminal protégé/root YOLO, reprise et
+persistance. Les essais précédents de chat utilisaient un cerveau simulé.
+Les API navigateur UUID/copie et le rendu mathématique fonctionnent sur IP HTTP.
+
+Dernier essai avec les vraies clés, saisies explicitement via le navigateur :
+onboarding Venice, catalogue/prix réels et connexions Mémoire/Projets/Vault prêts.
+Création, lecture, modification et suppression d’un souvenir distant via Heart,
+recherche Projets et recherche de métadonnées Vault vérifiées sans LLM ; secrets
+et mémoire persistent après redémarrage. Souvenirs synthétiques supprimés.
+**Inférence réelle bloquée : Venice renvoie HTTP 402, accès API refusé, malgré
+un solde déclaré de 0,08653047 USD et zéro DIEM/crédit inclus.** Une requête
+minimale confirme le refus. Les outils exécutés par Venice puis le rappel dans
+un nouveau fil restent à qualifier ; aucun succès global n’est déclaré.
+
+Installations de test supprimées, services historiques sains. Aucun nouveau
+serveur acheté/créé. OS vierge, ACME public et ARM64 restent à qualifier.
+Proxy Caddy validé séparément par son binaire. Voir [TESTING.md](TESTING.md).
 
 ## Wallets locaux et reprise distante
 

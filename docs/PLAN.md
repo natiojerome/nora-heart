@@ -9,7 +9,10 @@ permissions, avec des cerveaux interchangeables selon besoin et coût.
 
 Installateur GitHub, chemin choisi et premier accès documentés dans
 [INSTALLATION.md](INSTALLATION.md). Première qualification réelle sur installation
-jetable dans un chemin avec espaces ; bootstrap public et reprise validés. Accès direct IP désormais par défaut, domaine optionnel. Suite utile : qualifier
+jetable dans un chemin avec espaces ; bootstrap public et reprise validés. Accès direct IP désormais par défaut, domaine optionnel. Le parcours réel MCP
+et onboarding Venice est validé, mais l’inférence renvoie HTTP 402. Priorité :
+reprendre la qualification modèle/outils/rappel après réactivation de l’API Venice.
+Ensuite, qualifier
 la préparation complète sur un nouvel OS/serveur temporaire (les installations
 précédentes utilisaient un hôte existant), le mode domaine/HTTPS avec son propre
 DNS et le chemin ARM64, puis définir le parcours

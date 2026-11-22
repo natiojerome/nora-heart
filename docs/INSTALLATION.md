@@ -198,6 +198,20 @@ redémarrage. Ne pas pointer cet essai vers une installation utilisée : il cré
 des données synthétiques et refuse par défaut un profil déjà configuré.
 Ce test n’est pas une qualification universelle des comptes fournisseurs.
 
+Pour qualifier les vrais services et Venice (appel payant explicite), utiliser une
+installation jetable neuve nommée `/projects/heart live qa-<identifiant>` :
+
+```sh
+pnpm qualify:install:live --live --root '/projects/heart live qa-<identifiant>' --venice-key-file /chemin/prive/api-keys.json --mcp-env-file /chemin/prive/mcps.env
+```
+
+Le JSON privé contient la propriété `venice` ; le fichier MCP contient les variables
+`NORA_MCPS_MEMORY_TOKEN`, `NORA_MCPS_PROJECTS_TOKEN`, `NORA_MCPS_VAULT_TOKEN`.
+Ces fichiers sont fournis explicitement par l’opérateur, jamais embarqués dans
+l’installateur. Le scénario ne crée pas de clés ni de crédits. Le dernier essai a
+validé l’onboarding/catalogue/connexions, puis buté sur le refus Venice HTTP 402 ;
+l’exécution des outils par un vrai modèle reste à qualifier. Voir [TESTING.md](TESTING.md).
+
 Standards réutilisés : [installation Docker](https://docs.docker.com/engine/install/ubuntu/),
 [distributions Node](https://nodejs.org/dist/), unités systemd et contrats
 HTTP/MCP existants. Aucun orchestrateur propriétaire ni dépendance du core à

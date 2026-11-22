@@ -9,6 +9,7 @@
   },
   "scripts": {
     "qualify:install": "tsx tests/qualify-installation.ts",
+    "qualify:install:live": "tsx tests/qualify-live-installation.ts",
     "wallets": "tsx src/interfaces/wallets.ts",
     "test:wallets": "tsx --test tests/wallets.test.ts",
     "demo:wallets": "tsx tests/benchmark-wallets.ts",

@@ -2,44 +2,49 @@
 
 ## Installation indépendante — 22 novembre 2026
 
-266 tests, démo SDK et cinq parcours navigateur de régression.
-Onboarding également sur IP privée non loopback en HTTP : `isSecureContext` faux,
-`crypto.randomUUID` absent, 1 000 UUID v4 uniques, copie de texte Unicode par
-secours, initialisation des formules et cookies de session adaptés. Configuration
-réseau Python : IPv4/IPv6, modes exclusifs, détection métadonnées/routage simulée
-et maintien des anciens déploiements privés.
-Les installations vierges décrites ci-dessous utilisent un hôte existant,
-pas une nouvelle VM Hetzner ; installation depuis un OS vierge non qualifiée.
-Qualification supplémentaire sur une troisième installation en HTTP/IP privée :
-PostgreSQL/systemd réels, wizard mobile, fichiers, terminal protégé/YOLO, chat
-simulé, restart et relance sans options réseau validés. Détection de l’IP publique
-également vérifiée sur l’hôte réel ; aucune nouvelle VM créée pour cet essai.
- Nouveaux tests de
-configuration MCP : vérification des outils attendus avant enregistrement,
-credentials privés séparés des schémas, versions/identifiants conservés,
-concurrence/reprise et rejet des variables d’environnement étrangères. Tests
-Python des écritures privées et des diagnostics ; sauvegarde wallet non
-configurée ignorée proprement, sans lecture de clé ni appel serveur.
+266 tests, démo SDK et cinq parcours navigateur réussis. Onboarding testé sur
+loopback et IP privée HTTP non loopback : `isSecureContext` faux, UUID natif absent,
+1 000 UUID v4 uniques, copie Unicode de secours, initialisation mathématique et
+cookies adaptés. Python couvre IPv4/IPv6, modes exclusifs, détection simulée et
+maintien des anciens déploiements privés ; IP publique réellement détectée aussi.
 
-Installation réelle isolée dans un chemin contenant des espaces : téléchargement
-Node et SHA-256, pnpm verrouillé, vrai PostgreSQL et services systemd, onboarding
-mobile repris après actualisation, défaut du cerveau conservé, fichiers/terminal
-protégé Node 24, exécution root YOLO, chat simulé avec vrai moteur/SQL, recherche
-déclarée, wallets vides et redémarrage avec persistance. Les premiers essais ont
-révélé des permissions de volume et particularités de chemins systemd corrigées ;
-les échecs de sélecteurs du script QA ne sont pas comptés comme validations.
+Quatre installations jetables sur un hôte existant, sans nouvelle VM Hetzner :
+bootstrap GitHub, Node/SHA-256, pnpm verrouillé, vrai PostgreSQL/systemd, chemins
+avec espaces, wizard mobile/reprise, fichiers, terminal Node 24 protégé et root
+YOLO, recherche déclarée, wallets vides et persistance après redémarrage.
+Les essais de chat réussis dans ce périmètre utilisent un fournisseur simulé.
+Relance sans changer UUID, credentials ou coffre, réparation après arrêt wallet
+et préservation des configurations privées validées. Caddy validé par son binaire ;
+OS vierge, DNS/ACME public et ARM64 ne sont pas qualifiés par ces essais.
 
-Connexions réelles Mémoire/Projets/Vault vérifiées dans la nouvelle interface,
-clés privées saisies par l’opérateur, révision active après redémarrage et mobile
-390 px, sans écriture métier ni inférence payante. Le bootstrap GitHub public est
-exécuté sur une seconde installation vierge : même parcours complet réussi, puis
-relance avec UUID/credentials/coffre inchangés ; arrêt volontaire du daemon wallet
-puis réparation avec autotest terminal validés. Configurations privées préservées,
-changement de base personnalisé refusé sans écrasement. Les deux installations
-jetables et leurs services/conteneurs ont été retirés. Le parcours fournisseur puis
-modèle/effort est testé dans le navigateur avec catalogue simulé. Domaine/ACME
-public et machine ARM64 restent des parcours distincts, pas prétendument testés
-sur un serveur sans domaine ou sur x86_64. Voir [INSTALLATION.md](INSTALLATION.md).
+Dernier essai : clés MCP et Venice existantes réutilisées explicitement pour le
+seul test, lues depuis leurs fichiers privés et saisies par navigateur automatisé.
+Pas de récupération automatique par l’installateur, de nouveau compte ou de clé
+créée. Connexions/authentification réelles, catalogue Venice réel, défaut du modèle
+`deepseek-v4-flash-0731` et effort `none` persistés depuis l’onboarding sur IP.
+Lecture/création/modification d’un souvenir via l’API Heart, relecture indépendante
+par le MCP Memory, recherche Projets et recherche de métadonnées Vault réellement
+exécutées. Redémarrage avec bindings/cerveau/souvenir conservés. Souvenirs de
+contrôle supprimés après les essais ; aucun projet/secret métier créé ou modifié,
+aucune valeur de secret Vault lue. Le timer wallet a ignoré la sauvegarde, Vault
+n’étant pas encore configuré à son déclenchement ; aucun artefact distant ajouté.
+
+**Qualification LLM incomplète.** Le premier tour réel échoue avant tout outil :
+Venice HTTP 402 « Insufficient USD or Diem balance ». Solde communiqué :
+0,08653047 USD, DIEM et crédits inclus à zéro, `accessPermitted: false`.
+Une requête directe minimale (`max_tokens: 8`) reproduit le refus ; les appels
+ont été arrêtés. Ce n’est pas une validation des outils par Venice. Il reste à
+reprendre avec un accès API réactivé, puis vérifier les outils et le rappel
+mémoire dans un nouveau fil après restart.
+
+`tests/qualify-live-installation.ts` est un scénario opt-in distinct des tests
+hors ligne : vrais services installés, clés privées fournies par chemins de
+fichiers, onboarding mobile, modèle à faible tarif/outils, journal d’exécution,
+fichier physique, mémoire distante et nouveau fil après restart. Il nettoie ses
+souvenirs synthétiques, masque les credentials dans le rapport et refuse un profil
+déjà utilisé. Son chemin complet est préparé/typechecké, **pas encore qualifié**
+après l’étape d’inférence bloquée. L’installer de test et ses services/conteneurs
+sont supprimés après qualification ; aucune inférence simulée ne remplace l’essai.
 
 ## Wallets locaux — 21 novembre 2026
 
