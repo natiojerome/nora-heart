@@ -5,6 +5,18 @@ Socle livré ; la parité complète avec Codex CLI et la qualification de tous l
 fournisseurs restent partielles. Les preuves détaillées sont dans TESTING.md et
 les rapports opérateur privés, pas dans le contexte permanent de l’assistant.
 
+## Cohérence des capacités
+
+Libellés et icônes partagés pour les connexions et leurs outils, regroupement
+compact/repliable par service, titres français pour les outils intégrés et noms
+techniques dans le détail. Onglets Outils / Skills / Connexions MCP. Les noms
+personnalisés, snapshots approuvés, UUID et permissions restent inchangés. La
+mémoire distante n’est plus présentée comme un outil intégré. 278 tests et démo
+SDK réussis, régressions navigateur ciblées et suite complète documentées dans
+TESTING.md. Quatre boîtes du propriétaire préparées côté Mail, avec identités et
+signatures ; état `pending` tant que les credentials ne sont pas saisis et validés.
+Aucune boîte présentée comme connectée et aucun mail envoyé lors de ce chantier.
+
 ## Mail MCP et pièces jointes
 
 Service `/mail` actif et raccordé au compte propriétaire, 19 outils découverts :
@@ -12,10 +24,10 @@ comptes, dossiers, lecture/recherche, brouillons/envoi, signatures par identité
 export EML et PJ. Credentials configurés dans le portail HTTPS, pas dans le chat.
 Transferts binaires `mail.attach_file` / `mail.save_attachment` sous droits du fil.
 Images MCP transmises au cerveau, pixels volatils hors journal ; références
-conservées pour relecture. 275 tests, démo SDK et 28 parcours navigateur réussis ;
+conservées pour relecture. 278 tests, démo SDK et 28 parcours navigateur réussis ;
 GPT‑6 Luna réel a correctement lu une image synthétique issue d’un outil.
 Nouveaux onboardings à quatre clés ; anciennes installations à trois préservées.
-Aucune boîte personnelle encore connectée. Gmail natif attend le client OAuth
+Quatre boîtes personnelles préparées, en attente de credentials : aucune connectée. Gmail natif attend le client OAuth
 Google de l’instance ; IMAP/SMTP, RLS et secrets chiffrés qualifiés en réel sur
 boîtes synthétiques dans nora-mcps. Prochaine étape : connecter les boîtes et
 signatures au portail, puis qualifier leurs fournisseurs réels sans envoi implicite.

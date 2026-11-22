@@ -201,3 +201,11 @@ de l’instance. `HARNESS_MAIL_MCP_CONNECTION_ID` relie la connexion au transfer
 binaire `mail.attach_file` / `mail.save_attachment`, sous droits réseau/fichiers
 existants. Nouveau login : scope quatre services, sans rotation à la reconnexion.
 Les installations historiques peuvent conserver leurs trois connexions.
+
+Comptes préparés : l’état explicite `pending` distingue une configuration sans
+credentials d’une boîte connectée. Les accès existants de Natio Connect ne sont
+pas exportés par ses outils ; le portail Mail reçoit les identifiants privés.
+Pour Gmail en IMAP/SMTP, utiliser un mot de passe d’application Google lorsque
+disponible (validation en deux étapes nécessaire), pas le mot de passe normal.
+Google OAuth reste une autre voie, après configuration du client d’instance.
+La connexion du plugin Gmail de ChatGPT n’est pas un credential exportable Heart.

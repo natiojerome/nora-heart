@@ -314,7 +314,7 @@ try {
   memorySnapshotReady = true;
   const connections = await get("/api/external-tools");
   const projects = connections.connections.find(
-    (c: any) => c.label === "Services · projects",
+    (c: any) => c.tools.some((tool:any)=>tool.name==="projects_search"),
   );
   assert(projects?.tools.some((t: any) => t.name === "projects_search"));
   report.realServices = ready.installation.services;

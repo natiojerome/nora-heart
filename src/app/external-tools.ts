@@ -1,3 +1,9 @@
+import {
+  connectionDisplayName,
+  connectionIcon,
+  toolDisplayName,
+  toolPresentation,
+} from "./capability-labels.ts";
 import { ExternalCallError } from "../contracts/external-tools.ts";
 import type { Json } from "../contracts/json.ts";
 import { randomUUID, createHash } from "node:crypto";
@@ -142,6 +148,9 @@ export class ExternalTools {
     return {
       connections: (await this.repository.list()).map((connection) => ({
         ...connection,
+        displayName: connectionDisplayName(connection),
+        icon: connectionIcon(connection),
+        tools: connection.tools.map(toolPresentation),
         health: this.health.get(connection.id) ?? {
           status: connection.enabled ? "unchecked" : "disabled",
         },
@@ -150,12 +159,15 @@ export class ExternalTools {
     };
   }
   async discover(body: Record<string, unknown>) {
+    return { tools: (await this.discoverTools(body)).map(toolPresentation) };
+  }
+  private async discoverTools(body: Record<string, unknown>) {
     const connection = config(body);
     let session: ExternalToolSession | undefined;
     try {
       session = await this.connect(connection);
       this.health.set(connection.id, { status: "connected" });
-      return { tools: session.definitions };
+      return session.definitions;
     } catch {
       this.health.set(connection.id, { status: "unavailable" });
       throw new ExternalToolError(
@@ -187,7 +199,7 @@ export class ExternalTools {
     const definitions = reusable
       ? previous.tools
       : names.length
-        ? (await this.discover(body)).tools
+        ? await this.discoverTools(body)
         : [];
     const tools = names.map((name) =>
       definitions.find((tool) => tool.name === name),
@@ -300,7 +312,8 @@ export class ExternalTools {
     };
     return {
       name: externalToolName(connection.id, definition.name),
-      title: connection.label + " · " + (definition.title || definition.name),
+      title:
+        connectionDisplayName(connection) + " · " + toolDisplayName(definition),
       description: `${connection.label} — ${definition.name}. Outil distant ${definition.readOnlyHint === false ? "d’écriture" : "de lecture"} approuvé.${connection.transient ? " Arguments et résultats sensibles disponibles pour ce tour seulement ; ne les recopie pas dans le chat ou la mémoire." : ""} ${definition.description}`,
       parameters: definition.inputSchema,
       permission:

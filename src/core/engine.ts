@@ -125,7 +125,7 @@ export class Engine {
       const available = provider.supportsTools === false ? [] : [...this.tools.values()].filter(t => options.permissions.has(t.permission));
       const availableNames = new Set(available.map(tool => tool.name));
       const inventory = "\nInventaire effectif des outils pour cet envoi (source : moteur Heart ; remplace toute ancienne liste dans l’historique) : "
-        + (available.length ? available.map(tool => tool.name+(tool.title?" ("+tool.title+")":"")).join(", ") : "aucun") + "."
+        + (available.length ? available.map(tool => tool.name).join(", ") : "aucun") + "."
         + (provider.supportsTools === false ? " Modèle sans prise en charge des appels d’outils." : " Schémas joints ; alias fournisseur = noms Heart décrits.")
         + " Appelle les noms techniques, présente les libellés. Droits du fil distincts des capacités. Heart exécute les appels séquentiellement. Vérifie les accès/programmes avant de conclure.";
       const toolTitles=Object.fromEntries(available.filter(tool=>tool.title).map(tool=>[tool.name,tool.title!]));

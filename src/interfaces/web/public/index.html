@@ -1005,7 +1005,7 @@ Liste les fichiers de l’espace de test et explique ce que tu as trouvé.</text
             <nav class="settings-tabs capabilities-tabs" aria-label="Types de capacités"><div class="settings-tabs-inner" role="tablist" aria-label="Capacités">
               <button id="capabilities-tab-tools" type="button" role="tab" data-capabilities-tab="tools" aria-controls="capabilities-tools" aria-selected="true">Outils</button>
               <button id="capabilities-tab-skills" type="button" role="tab" data-capabilities-tab="skills" aria-controls="capabilities-skills" aria-selected="false" tabindex="-1">Skills</button>
-              <button id="capabilities-tab-connections" type="button" role="tab" data-capabilities-tab="connections" aria-controls="capabilities-connections" aria-selected="false" tabindex="-1">Connexions</button>
+              <button id="capabilities-tab-connections" type="button" role="tab" data-capabilities-tab="connections" aria-controls="capabilities-connections" aria-selected="false" tabindex="-1">Connexions MCP</button>
             </div></nav>
             <div id="capabilities-tools" class="settings-pane" role="tabpanel" aria-labelledby="capabilities-tab-tools">
               <section class="panel" aria-labelledby="mcp-tools-title">
@@ -1018,10 +1018,10 @@ Liste les fichiers de l’espace de test et explique ce que tu as trouvé.</text
                 <article class="panel"><h2>Fichiers</h2><p>Lire, créer et modifier les fichiers dans la racine des projets.</p><button id="capabilities-files" class="button secondary" type="button">Ouvrir les fichiers</button></article>
                 <article class="panel"><h2>Terminal</h2><p>Exécuter des commandes dans la racine des projets, sans ouvrir de discussion.</p><button id="capabilities-terminal" class="button secondary" type="button">Ouvrir le terminal</button></article>
                 <article class="panel"><h2>Historique du fil</h2><p>L’assistant peut relire les messages originaux de sa discussion, même après compression.</p><a class="button secondary" href="#conversations">Voir les discussions</a></article>
-                <article class="panel"><h2>Mémoire</h2><p>Retrouver et conserver les informations utiles entre les discussions.</p><a href="#memories">Gérer les souvenirs</a></article>
+
                 <article class="panel"><h2>Tâches</h2><p>Planifier un travail et retrouver ses résultats.</p><a href="#automations">Gérer les tâches</a></article>
               </div>
-              <p class="field-help">Les outils de recherche et de lecture web figurent ci-dessus lorsqu’une connexion les fournit. Les formulaires sont intégrés à Heart. La liste exacte des outils autorisés est visible dans le contexte de chaque discussion.</p>
+              <p class="field-help">Les outils de recherche et de lecture web figurent ci-dessus lorsqu’une connexion les fournit. La mémoire et les projets partagés sont fournis par leurs connexions MCP. Les formulaires sont intégrés à Heart. La liste exacte des outils autorisés est visible dans le contexte de chaque discussion.</p>
             </div>
             <div id="capabilities-skills" class="settings-pane" role="tabpanel" aria-labelledby="capabilities-tab-skills" hidden>
             <section id="skills-section" class="panel skills-panel" aria-labelledby="skills-title">
@@ -1031,8 +1031,8 @@ Liste les fichiers de l’espace de test et explique ce que tu as trouvé.</text
             </div>
             <div id="capabilities-connections" class="settings-pane" role="tabpanel" aria-labelledby="capabilities-tab-connections" hidden>
               <section class="panel mcp-panel">
-                <header class="mcp-panel-heading"><h2>Services externes</h2><div class="mcp-panel-actions"><button id="mcp-refresh" type="button" class="icon-button" data-icon="refresh" aria-label="Actualiser les connexions" title="Actualiser"></button></div></header>
-                <p class="field-help">Des services qui ajoutent des outils via MCP. Lecture seule pour le moment ; accès réseau requis dans la discussion.</p>
+                <header class="mcp-panel-heading"><h2>Connexions MCP</h2><div class="mcp-panel-actions"><button id="mcp-refresh" type="button" class="icon-button" data-icon="refresh" aria-label="Actualiser les connexions" title="Actualiser"></button></div></header>
+                <p class="field-help">Chaque connexion MCP fournit des outils. Lecture et écriture suivent tes autorisations et les droits de la discussion.</p>
                 <p id="mcp-list-status" role="status" aria-live="polite"></p>
                 <div id="mcp-connections" class="mcp-connections"></div><p id="mcp-empty" class="field-help">Aucune connexion configurée.</p>
                 <button id="mcp-local-search" class="button secondary" type="button">Configurer la recherche locale</button>

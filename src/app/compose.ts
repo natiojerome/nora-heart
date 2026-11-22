@@ -1,3 +1,4 @@
+import {presentTools} from "./capability-labels.ts";
 import {taskTools} from "../modules/tools/tasks/index.ts";
 import {Calendar} from "../modules/scheduling/calendar/index.ts";
 import {Scheduler} from "../modules/scheduling/runner/index.ts";
@@ -101,10 +102,10 @@ export async function compose(config: Config): Promise<Application> {
     const selectedMemory = memoryModules[config.modules.memory](storage);
     await mkdir(config.workspace, { recursive: true });
     return {
-      engine: new Engine(storage.sessions, [
+      engine: new Engine(storage.sessions, presentTools([
         ...fileTools(),
         ...selectedMemory.tools,
-      ]),
+      ])),
       model,
       instanceId: storage.instanceId,
       close: () => storage.close(),

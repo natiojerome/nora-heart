@@ -1,3 +1,4 @@
+import {serviceLabels} from "../src/app/capability-labels.ts";
 /** Operator command. Keys stay in private env files; only connection IDs/counts are reported. */
 import {readFile} from 'node:fs/promises';
 import {parseEnv} from 'node:util';
@@ -11,9 +12,10 @@ Object.assign(process.env,env);const config=webStorageConfig(env);if(!config)thr
 const storage=await openSqlStorage(config);try{
  const manager=new ExternalTools(storage.externalTools,(connection,signal)=>connectMcp(connection,{env,signal}));
  const existing=(await manager.list()).connections;const report=[];
- for(const [service,label] of [['memory','Mémoire partagée'],['vault','Coffre-fort'],['projects','Projets partagés']]){
+ for(const service of ['memory','vault','projects','mail']){
+  if(service==='mail'&&!env.NORA_MCPS_MAIL_TOKEN)continue;
   const url='https://mcps.natio.re/'+service;const found=existing.filter(item=>item.url===url);if(found.length>1)throw Error('Connexions en double : résoudre avant raccordement.');
-  const old=found[0];const draft={id:old?.id??randomUUID(),version:old?.version??0,label:'Nora MCPs · '+label,url,auth:{type:'bearer_env',envVar:'NORA_MCPS_'+service.toUpperCase()+'_TOKEN'},enabled:true,allowWrites:true,transient:service==='vault',timeoutMs:60000};
+  const old=found[0];const draft={id:old?.id??randomUUID(),version:old?.version??0,label:serviceLabels[service],url,auth:{type:'bearer_env',envVar:'NORA_MCPS_'+service.toUpperCase()+'_TOKEN'},enabled:true,allowWrites:true,transient:service==='vault',timeoutMs:60000};
   const discovered=await manager.discover(draft);const saved=(await manager.save({...draft,toolNames:discovered.tools.map(tool=>tool.name),refreshDefinitions:true})).connection;
   report.push({service,connectionId:saved.id,tools:saved.tools.length,enabled:saved.enabled,allowWrites:saved.allowWrites,transient:saved.transient===true});
  }

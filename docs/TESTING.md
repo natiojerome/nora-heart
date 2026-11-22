@@ -757,3 +757,29 @@ et navigateur dans le dépôt nora-mcps ; Gmail natif réel reste à qualifier.
 Boucle moteur réelle supplémentaire : GPT‑6 Luna a appelé une seule fois
 `mail_accounts` sur le MCP de production et confirmé zéro boîte raccordée.
 Aucune inférence simulée pour ce contrôle ; aucun envoi ni lecture de mail personnel.
+
+## Cohérence des capacités et préparation Mail
+
+278 tests (`pnpm check`) et démo SDK réussis. Les nouveaux tests vérifient que
+les libellés ne modifient ni identité, callback, permission, snapshot approuvé ni
+contrôle de catalogue. Le test MCP navigateur couvre aussi deux groupes repliés
+et quatre largeurs 320/390/820/1440 px. Skills et fichiers/terminal sans fil restent
+fonctionnels dans les parcours ciblés ; dernière suite complète : 28 parcours.
+Les cerveaux des régressions sont simulés, aucune inférence payante dans ce lot.
+
+Mail : préparation testée sur PostgreSQL isolé, idempotence, isolation A/B et
+refus d’exécuter sans credentials. La fixture de présentation du portail vérifie
+les états À connecter, les champs préremplis, le lien privé de saisie Gmail et les
+largeurs 320/390/768/1440 px ; elle ne qualifie aucun fournisseur. En production,
+seuls les réglages/identités/signatures ont été préparés : pas d’accès IMAP/SMTP,
+pas d’export de secret Natio Connect ni d’envoi. Quatre états `pending` confirmés
+par le MCP réel depuis Heart.
+
+La qualification a révélé une surcharge du petit contexte 8192 de la fixture
+SQLite par la répétition des titres dans l’inventaire injecté. Suppression de ce
+doublon, conservation des noms/descriptions et des titres dans le journal, puis
+régression SQLite + pièces jointes/relance/arrêt réussie.
+
+Vérification déployée : groupes Mémoire/Projets/Coffre-fort/Mail/Recherche web,
+éditeur reprenant le même libellé, skill Revue de code disponible, quatre largeurs,
+aucune erreur JavaScript. Aucune inférence ni émission d’e-mail dans ce contrôle.

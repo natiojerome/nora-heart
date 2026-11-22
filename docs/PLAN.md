@@ -266,3 +266,7 @@ depuis le portail. Qualifier les fournisseurs personnels (lecture/brouillon avan
 envoi demandé), configurer le client Google si Gmail OAuth est retenu. Les anciens
 clients restent à trois clés ; nouveaux onboardings demandent Mail en plus.
 Les conversations et leur historique restent dans Heart.
+
+Les quatre comptes mail préparés attendent la saisie sécurisée des credentials.
+Après cela : test authentification, dossiers et lecture ciblée sans marquer lu,
+puis brouillon uniquement si demandé ; aucun envoi de qualification implicite.

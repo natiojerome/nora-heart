@@ -65,7 +65,7 @@
         (tool.readOnlyHint === false && !get("mcp-writes").checked) || busy;
       const copy = node("span");
       copy.append(
-        node("strong", tool.title || tool.name),
+        node("strong", tool.displayName || tool.title || tool.name),
         node("small", tool.name),
       );
       if (tool.description)
@@ -97,7 +97,7 @@
     get("mcp-dialog-title").textContent = current.version
       ? "Connexion MCP"
       : "Ajouter une connexion MCP";
-    get("mcp-label").value = current.label || "";
+    get("mcp-label").value = current.displayName || current.label || "";
     get("mcp-url").value = current.url || "";
     get("mcp-auth").value = current.auth.type;
     get("mcp-env").value = current.auth.envVar || "";
@@ -118,11 +118,11 @@
     const summary = node("summary"),
       copy = node("span", null, "mcp-tool-heading");
     copy.append(
-      node("strong", tool.title || tool.name),
+      node("strong", tool.displayName || tool.title || tool.name),
       node(
         "small",
         sourceLink
-          ? connection.label +
+          ? (connection.displayName || connection.label) +
               " · MCP" +
               (connection.enabled ? "" : " · Désactivée")
           : "MCP · " + tool.name,
@@ -146,7 +146,7 @@
     if (sourceLink) {
       const source = node(
         "button",
-        "Configurer : " + connection.label,
+        "Configurer : " + (connection.displayName || connection.label),
         "text-button",
       );
       source.type = "button";
@@ -156,15 +156,59 @@
     detail.append(summary, body);
     return detail;
   }
+  const ordered = () =>
+    [...records].sort(
+      (a, b) =>
+        Number(b.enabled) - Number(a.enabled) ||
+        (a.displayName || a.label).localeCompare(
+          b.displayName || b.label,
+          "fr",
+        ),
+    );
   function renderTools() {
     const target = get("mcp-tools-list");
+    const previousGroups = [...target.querySelectorAll(".mcp-tool-group")];
+    const expanded = new Set(
+      previousGroups
+        .filter((group) => group.open)
+        .map((group) => group.dataset.connectionId),
+    );
     target.replaceChildren();
-    for (const connection of [...records].sort(
-      (a, b) => Number(b.enabled) - Number(a.enabled),
-    )) {
+    for (const connection of ordered()) {
+      if (!connection.tools.length) continue;
+      const group = node("details", null, "mcp-tool-group");
+      group.open =
+        expanded.has(connection.id) ||
+        (!previousGroups.length &&
+          records.filter((c) => c.tools.length).length === 1);
+      group.dataset.connectionId = connection.id;
+      const heading = node("summary", null, "mcp-tool-group-heading"),
+        icon = node("span", null, "mcp-connection-icon");
+      icon.dataset.icon = connection.icon || "tools";
+      const copy = node("div");
+      copy.append(
+        node("h3", connection.displayName || connection.label),
+        node(
+          "small",
+          connection.tools.length +
+            (connection.tools.length === 1 ? " outil · " : " outils · ") +
+            (connection.enabled ? "Connexion activée" : "Désactivée"),
+        ),
+      );
+      const arrow = node("span");
+      arrow.dataset.icon = "chevron-down";
+      heading.append(icon, copy, arrow);
+      group.append(heading);
       for (const tool of connection.tools)
-        target.append(toolRow(connection, tool, true));
+        group.append(toolRow(connection, tool, true));
+      if (connection.tools.some((tool) => tool.name === "memory_search")) {
+        const link = node("a", "Gérer les souvenirs", "text-button");
+        link.href = "#memories";
+        group.append(link);
+      }
+      target.append(group);
     }
+    window.heartIcons?.render(target);
     if (!target.childElementCount)
       target.append(
         node(
@@ -177,14 +221,19 @@
   function render() {
     const target = get("mcp-connections");
     target.replaceChildren();
-    for (const connection of records) {
+    for (const connection of ordered()) {
       const card = node("article", null, "mcp-connection"),
         icon = node("span", null, "mcp-connection-icon");
-      icon.dataset.icon = "web";
+      icon.dataset.icon = connection.icon || "tools";
       const copy = node("div", null, "mcp-connection-copy");
       copy.append(
-        node("strong", connection.label),
-        node("small", new URL(connection.url).host),
+        node("strong", connection.displayName || connection.label),
+        node(
+          "small",
+          "MCP · " +
+            new URL(connection.url).host +
+            new URL(connection.url).pathname,
+        ),
       );
       const state = connection.enabled
         ? connection.health?.status === "connected"
@@ -209,7 +258,8 @@
       const button = node("button", null, "icon-button");
       button.type = "button";
       button.dataset.icon = "settings";
-      button.title = "Configurer " + connection.label;
+      button.title =
+        "Configurer " + (connection.displayName || connection.label);
       button.setAttribute("aria-label", button.title);
       button.onclick = () => open(connection);
       card.append(icon, copy, button);

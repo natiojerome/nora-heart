@@ -263,6 +263,14 @@ test(
       assert(
         (await page.textContent(".mcp-connection"))?.includes("Désactivé"),
       );
+      await externalTools.save({id:randomUUID(),version:0,label:"Second service",url:remote.url,auth:{type:"none"},enabled:true,allowWrites:true,timeoutMs:10000,toolNames:["search"]});
+      await page.goto(origin+"/#tools");await page.reload();
+      await page.waitForSelector("#mcp-tools-list .mcp-tool-group");
+      assert.equal(await page.locator("#mcp-tools-list .mcp-tool-group").count(),2);
+      assert.equal(await page.locator("#mcp-tools-list .mcp-tool-group[open]").count(),0);
+      await page.locator("#mcp-tools-list .mcp-tool-group > summary").first().click();
+      assert(await page.locator("#mcp-tools-list .mcp-tool-group[open] [data-mcp-tool]").isVisible());
+      for(const width of [320,390,820,1440]){await page.setViewportSize({width,height:900});assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));}
       assert.deepEqual(errors, []);
       await mkdir("docs/qualification/mcp", { recursive: true });
       await writeFile(

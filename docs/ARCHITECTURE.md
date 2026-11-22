@@ -1087,3 +1087,30 @@ Les données d’image restent externes, sans donner d’autorisation utilisateu
 Les nouvelles demandes de compte négocient quatre services (Mail inclus) ; les
 anciennes configurations à trois services restent lisibles et valides. Le portail
 conserve le contrat à trois clés quand le client omet le scope.
+
+## Noms et organisation des capacités
+
+`app/capability-labels.ts` contient les libellés de présentation, pas un second
+catalogue d’outils : seuls les outils réellement assemblés/découverts sont affichés.
+Les anciennes étiquettes automatiques sont présentées en noms courts (Mémoire,
+Projets, Coffre-fort, Mail, Recherche web), les noms personnalisés sont conservés.
+Les titres explicites des serveurs restent prioritaires. `ExternalTools.list` et
+la découverte ajoutent des champs de vue, séparés des snapshots approuvés bruts ;
+le stockage, les comparaisons et l’exécution ne reçoivent pas ces champs.
+`presentTools` applique les titres aux outils intégrés dans compose et dans le web.
+
+Capacités garde trois vues : Outils, Skills et Connexions MCP. Les outils distants
+sont regroupés par connexion avec nom, icône et état communs aux deux vues ;
+plusieurs groupes sont repliés initialement et leur ouverture est conservée lors
+d’une actualisation. Les noms techniques sont consultables dans le détail.
+Les cartes des outils intégrés sont des raccourcis d’interface ; la mémoire
+distante n’y figure plus. Le snapshot du moteur reste la source des droits du fil.
+
+Noms internes `famille.action`, noms MCP distants conservés, identités UUID stables.
+Skills au format Agent Skills (`SKILL.md`, noms de paquet avec tirets) ; modules
+sous `src/modules/<famille>/<nom>`, transport et logique distincts. Aucune migration
+d’ID, de souvenirs, de clés ou d’historique pour changer une étiquette.
+
+Les titres de présentation sont journalisés avec `run.started.toolTitles` et
+`tool.started.title`, mais ne doublent pas l’inventaire textuel injecté. Les noms
+canoniques et descriptions/schema complets restent transmis au fournisseur.

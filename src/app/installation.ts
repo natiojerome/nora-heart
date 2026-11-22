@@ -1,3 +1,4 @@
+import { serviceLabels } from "./capability-labels.ts";
 import { readFile, mkdir, open, rename, rm } from "node:fs/promises";
 import path from "node:path";
 import { randomUUID } from "node:crypto";
@@ -101,7 +102,7 @@ export class Installation {
         drafts.push({
           id,
           version: old?.version ?? 0,
-          label: "Services · " + s,
+          label: serviceLabels[s],
           url: value.url,
           auth: { type: "bearer_env" as const, envVar: tokenName(s) },
           enabled: true,

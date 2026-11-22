@@ -137,3 +137,14 @@ test('a model without tool calling receives an empty inventory and cannot execut
   await assert.rejects(readFile(path.join(f.workspace,'forbidden.txt')));
   assert.deepEqual(((await f.store.read('session')).find(event=>event.type==='run.started')!.data as {tools:string[]}).tools,[]);
 }));
+
+test('display titles stay in UI journal without duplicating the model tool inventory',async()=>fixture(async f=>{
+ const engine=new Engine(f.store,fileTools().map(tool=>({...tool,title:"Libellé de présentation "+tool.name})));
+ await engine.run({...options(f.workspace,{id:"labels",async generate(request){
+  assert(!request.instructions.includes("Libellé de présentation"));
+  assert(request.instructions.includes(request.tools.map(tool=>tool.name).join(", ")));
+  return{content:"Prêt",toolCalls:[]};
+ }}),permissions:new Set(["files.read"])});
+ const start=(await f.store.read("session")).find(event=>event.type==='run.started')!;
+ assert.equal((start.data as any).toolTitles['files.list'],'Libellé de présentation files.list');
+}));

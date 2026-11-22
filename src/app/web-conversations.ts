@@ -1,3 +1,4 @@
+import {presentTools} from "./capability-labels.ts";
 import {HttpMailFiles}from'../modules/mail/http/index.ts';
 import {mailFileTools}from'../modules/tools/mail-files/index.ts';
 import {AccountLogin} from './account-login.ts';
@@ -127,7 +128,7 @@ export async function openWebConversations(
       const mailTransfer=new HttpMailFiles(async write=>{const c=mailId?await storage.externalTools.get(mailId):null;const tool=write?'mail_attachment_upload':'mail_attachment_bytes';if(!c?.enabled||!c.tools.some(t=>t.name===tool)||(write&&!c.allowWrites)||c.auth.type!=='bearer_env')throw Error('Connexion Mail non approuvée pour ce transfert.');const token=process.env[c.auth.envVar];if(!token)throw Error('Connexion Mail indisponible.');return{url:c.url,token};});
       return new Engine(
         storage.sessions,
-        [
+        presentTools([
           ...(await externalTools.toolsFor(conversation,memoryConnectionId?[memoryConnectionId]:[])),
           ...(runSkills?skillTools(runSkills,runSkills.entries):[]),
           ...historyTools(storage.sessions,conversation.id),
@@ -145,7 +146,7 @@ export async function openWebConversations(
           ...(memoryConnectionId||!remoteMemoryRequired?structuredMemoryTools(scoped, conversation.projectId ?? null):[]),
           ...interactionTools(),
           ...tasksTools(tasks,conversation.id),
-        ],
+        ]),
         runSkills?runSkills.context(new BoundedContext(storage.sessions, scoped,instructionValue(blocks,"compression"),policies)):new BoundedContext(storage.sessions, scoped,instructionValue(blocks,"compression"),policies),
         conversation.selection?.provider === "demo" || (!memoryConnectionId&&remoteMemoryRequired) ? undefined : new MemoryReview(scoped, conversation.projectId ?? null, instructionValue(blocks,"memoryPolicy"),instructionValue(blocks,"memoryReview")),
       );

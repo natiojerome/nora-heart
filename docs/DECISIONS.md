@@ -34,7 +34,7 @@ sont dans [PLAN.md](PLAN.md).
 | Performance web | GET identiques simultanés mutualisés sans cache privé persistant, SVG inchangés conservés, lectures indépendantes parallèles, réconciliation DOM sans écritures inchangées, bulles réutilisées, ETag revalidé pour les seuls assets publics. | Réduire le travail et les transferts mesurés sans ajouter de framework ; données API privées no-store et nouveau déploiement vérifié à chaque ouverture. Protocole dans PERFORMANCE.md. |
 | Sortie API web | Valeurs par défaut du fournisseur/SDK sans plafond implicite Heart de 1024 tokens ; budgets explicites CLI/tests conservés. | Éviter de tronquer les réponses et formulaires longs ; erreurs bornées distinctes et persistantes sans exposer la réponse brute. Limites natives et estimation de contexte toujours applicables. |
 | Racine des projets | `<installation>/projects`, surcharge absolue `HARNESS_PROJECTS_ROOT` au démarrage. Espace manuel indépendant des conversations, fichiers/terminal depuis Capacités ; dans le chat, espace UUID inchangé. | Fonctionner sans ouvrir de fil, conserver les droits modèle, éviter conversation cachée ou déplacement implicite de données. Racine sauvegardée et droit systemd ciblé. |
-| Présentation des capacités | Trois onglets : Outils intégrés, Skills, Connexions externes. Ajout contextuel aux connexions ; un skill autorisé est « Disponible ». Outils MCP et connexion source visibles dans les deux sens, depuis le snapshot approuvé commun. | Distinguer actions, méthodes et services ; expliquer le chargement progressif sans laisser croire qu’un skill ajoute des droits ou reste chargé. |
+| Présentation des capacités | Trois onglets : Outils, Skills, Connexions MCP. Ajout contextuel aux connexions ; un skill autorisé est « Disponible ». Outils MCP et connexion source visibles dans les deux sens, depuis le snapshot approuvé commun. | Distinguer actions, méthodes et services ; expliquer le chargement progressif sans laisser croire qu’un skill ajoute des droits ou reste chargé. |
 | Entretien frontend | Extractions par responsabilité, checkJs/JSDoc et Prettier de développement ciblés ; cascade CSS préservée. | Réduire le couplage et les opérations redondantes progressivement, sans nouvelle stack ou framework. |
 | Validation | JSON Schema et Ajv dans le module AI SDK. | Schémas échangeables, arguments contrôlés sans coercition ni valeurs implicites ; autres fournisseurs responsables de leur validation. |
 | Stockage SQL | Contrat complet SqlStorageConnection ; PostgreSQL avec pg et SQLite avec node:sqlite, sélection explicite CLI/web. | Même conformité des repositories ; dialectes/migrations/verrous propres aux modules, aucun SQL ni ORM imposé au core. PostgreSQL reste le backend de production actuel. |
@@ -508,3 +508,17 @@ image MCP utilisent le transport visuel existant, volatils durant le tour afin d
 ne pas gonfler l’historique. Pas de nouveau format fournisseur ou framework.
 Anciennes installations à trois services préservées, Mail négocié explicitement
 par les nouveaux clients. La connexion d’une boîte reste à effectuer par l’utilisateur.
+
+## Cohérence des capacités
+
+Libellés courts en français, mêmes noms et icônes entre la connexion et ses outils.
+Les noms personnalisés et titres explicites des serveurs restent la référence.
+Le dictionnaire de présentation complète uniquement les titres manquants ; il ne
+déclare ni outil ni permission. Snapshots MCP approuvés bruts, UUID et noms
+techniques inchangés. Outils regroupés/repliables par source, Skills séparés des
+actions, et Connexions MCP clairement nommées. Aucun framework ni déplacement
+artificiel des modules déjà conformes aux frontières.
+
+Les libellés d’affichage restent dans le journal/UI ; l’inventaire injecté au
+modèle liste les noms canoniques, avec les descriptions complètes dans les schémas.
+Éviter de dupliquer les titres dans le prompt préserve les petits contextes.
