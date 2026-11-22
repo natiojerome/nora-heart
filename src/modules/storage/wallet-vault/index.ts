@@ -69,6 +69,39 @@ export class VaultWalletBackups implements WalletBackupStore {
       throw Error("Invalid wallet backup");
     return archive;
   }
+  async list(): Promise<
+    import("../../../contracts/wallets.ts").WalletBackupInfo[]
+  > {
+    const items: import("../../../contracts/wallets.ts").WalletBackupInfo[] =
+        [],
+      seen = new Set<string>();
+    let cursor: string | undefined;
+    do {
+      const page = await this.call("vault_search", {
+        query: "nora-wallets",
+        limit: 100,
+        ...(cursor ? { cursor } : {}),
+      });
+      if (!Array.isArray(page.items)) throw Error("Invalid backup catalogue");
+      for (const item of page.items)
+        if (
+          typeof item.uri === "string" &&
+          item.uri.startsWith("urn:nora-wallets:backup:")
+        )
+          items.push({
+            id: item.id,
+            revision: item.uri.slice("urn:nora-wallets:backup:".length),
+            label: item.label,
+            createdAt: item.createdAt,
+          });
+      cursor = page.nextCursor ?? undefined;
+      if (cursor) {
+        if (seen.has(cursor)) throw Error("Invalid backup cursor");
+        seen.add(cursor);
+      }
+    } while (cursor);
+    return items;
+  }
   async close() {
     await this.client?.close();
     this.client = undefined;

@@ -9,9 +9,11 @@ permet d’ajouter un autre transport sans changer les données.
 ## Créer, nommer et sauvegarder
 
 Outils du modèle : `wallets.create`, `wallets.rename`, `wallets.backup_status`,
-`wallets.backup`, en plus de list/assets/sign. Création/renommage utilisent la
-permission d’écriture du fil ; une sauvegarde demandée par le modèle nécessite
-son accès réseau. Signature toujours sous YOLO et activation propriétaire.
+`wallets.backup`, `wallets.backups` et `wallets.restore`, en plus de list/assets/sign.
+Créer, renommer ou restaurer exige l’écriture du fil ; lister les sauvegardes
+exige la lecture. Sauvegarde/reprise utilisent le stockage Vault approuvé, comme
+la mémoire distante, indépendamment du bouton réseau des commandes. Les RPC
+externes d’actifs restent soumis au réseau. Signature sous YOLO et activation propriétaire.
 La sauvegarde automatique du coffre est un service d’exploitation indépendant
 du réseau autorisé pour les commandes de la conversation, comme le timer quotidien.
 
@@ -41,7 +43,8 @@ if (verified.status !== 'verified') throw Error('Reprise distante non vérifiée
 ```
 
 Python : `create(wallet_id, label, family, network_ids, networks=None)`,
-`rename(wallet_id, label)`, `backup()`, `backup_status()`. UUID via `uuid.uuid4()`.
+`rename(wallet_id, label)`, `backup()`, `backup_status()`, `backups()`,
+`restore(backup_id)`. UUID via `uuid.uuid4()`.
 CLI : `pnpm wallets create` reçoit le JSON sur stdin ; `rename UUID 'Nouveau nom'`,
 `request-backup`, `backup-status` utilisent le daemon, sans ouvrir un second writer.
 Aucun secret dans les arguments. JSON-RPC ajoute `wallets.create`, `wallets.rename`,
@@ -69,8 +72,9 @@ root/groupe du service, 0640 et traversée du dossier réservée au service. Le 
 l’archive Vault, `verifiedAt` sa date. Les archives et recoveryKey ne passent
 jamais par ces outils. Une panne distante conserve le wallet local et est signalée ;
 il faut une reprise **verified avant de confier des fonds réels** au wallet.
-La restauration reste une commande explicite vers un **nouveau dossier**, sans
-écrasement du coffre actif. Le Vault est une autorité de confiance pour la reprise.
+La restauration fait partie du service local et des outils du modèle. Elle ajoute
+les wallets vérifiés au coffre actif sans effacer les existants. Le Vault est une
+autorité de confiance pour la reprise.
 
 ## Architecture et chemin rapide
 
@@ -178,7 +182,7 @@ with WalletClient('/run/nora-wallets/api.sock') as client:
 ```
 
 Méthodes : `create`, `rename`, `backup`, `backup_status`, `list`, `assets(wallet_id, network_id, refresh=False)`,
-`sign_message`, `sign_typed_data`, `sign_transaction`, `sign_bytes`, `close`.
+`backups`, `restore`, `sign_message`, `sign_typed_data`, `sign_transaction`, `sign_bytes`, `close`.
 Un client Python sérialise ses appels par verrou ; utiliser un client par thread
 si des appels indépendants doivent progresser simultanément.
 
@@ -275,7 +279,9 @@ Commandes `pnpm wallets ...` :
 | `assets <wallet UUID> <network ID> [--refresh]` | Cache ou lecture RPC |
 | `sign` | Requête JSON lue sur stdin, résultat de signature |
 | `backup`, `backup-status` | Sauvegarde vérifiée ou dernier reçu |
-| `restore <backup UUID> <nouveau dossier>` | Restauration isolée, refuse l’écrasement |
+| `backups` | Métadonnées des sauvegardes du compte Vault |
+| `restore <backup UUID>` | Fusion vérifiée dans le coffre actif, sans redémarrage |
+| `restore <backup UUID> <nouveau dossier>` | Ancien mode opérateur isolé, refuse l’écrasement |
 
 Le format d’import accepte un catalogue `chains`/`wallets` de l’ancien signataire :
 réseaux avec `rpc`, `native`, `decimals`, `chainId` numérique pour EVM et éventuels
@@ -315,25 +321,34 @@ authentification GCM vérifiée et les clés/adresses/signatures revalidées ava
 revérifie la copie quotidiennement, sans LLM. Sur une nouvelle importation ou
 évolution future du coffre, exécuter `backup` avant de considérer la reprise prête.
 
-Pour restaurer :
+Pour restaurer depuis Heart :
 
-1. Retrouver l’UUID du reçu ou rechercher le tag `nora-wallets` dans son Vault.
-2. Avec le token Vault configuré, lancer `pnpm wallets restore <UUID> <nouveau dossier>`.
-   Un dossier existant est toujours refusé ; aucune installation active n’est remplacée.
-3. Le dossier est privé (0700) et contient `wallets.enc` et `recovery.key` (0600).
-   Dans cet environnement isolé, définir `NORA_WALLETS_STATE` et
-   `NORA_WALLETS_KEY_FILE`, puis lancer `pnpm wallets verify`.
-4. Pour une installation restaurée, convertir `recovery.key` en credential
-   systemd `master` avec `systemd-creds encrypt`, installer le coffre dans le
-   nouveau répertoire d’état et supprimer la clé temporaire privée.
-5. Démarrer le daemon restauré sur sa propre socket, tester un challenge neutre,
-   puis changer explicitement le raccordement de l’application. Ne jamais écraser
-   le coffre en service pendant ce contrôle.
+1. Se connecter au compte MCP pendant la première configuration. La clé Vault
+   est fournie automatiquement, comme celles Mémoire et Projets.
+2. L’assistant appelle `wallets.backups` : UUID/date/révision des archives du
+   compte, sans lire les valeurs secrètes ni prétendre lister son contenu.
+3. Il appelle `wallets.restore({backupId})` pour la sauvegarde choisie. Le daemon
+   fait lire l’archive par un processus enfant ; clé et archive passent uniquement
+   par un pipe privé, jamais dans les arguments/résultats du modèle ou stdout.
+4. Le service vérifie SHA-256, AES-GCM, cohérence clés/adresses et révision, puis
+   fusionne sous verrou OS et rechiffre avec **la clé locale actuelle**. UUID et
+   clés sont conservés ; les noms locaux déjà modifiés sont préservés. Même UUID
+   avec une autre clé/adresse ou identité réseau incompatible : aucune écriture.
+5. Les signataires sont actifs immédiatement. Une répétition n’ajoute pas de
+   doublon ; la sauvegarde du coffre fusionné est programmée et son état exposé.
 
-Une sauvegarde ne prouve pas la restauration : le scénario de qualification
-effectue réellement ces opérations et supprime son clone isolé. Les sauvegardes
-distantes de ce module couvrent ses wallets, pas les journaux/intentions de
-l’ancien signataire, ni les conversations Heart.
+JavaScript : `await client.backups()` puis `await client.restore(backupId)`.
+Python : `client.backups()` puis `client.restore(backup_id)`.
+CLI optionnelle : `pnpm wallets backups`, `pnpm wallets restore <UUID>`.
+Aucune conversion de credential ni manipulation manuelle de clé requise.
+L’ancien mode `restore <UUID> <nouveau dossier>` reste disponible pour une preuve
+opérateur hors ligne ; il ne remplace ni ne raccorde automatiquement le coffre actif.
+
+Une sauvegarde ne prouve pas la restauration : la qualification réelle récupère
+deux wallets synthétiques dans un coffre neuf avec une **autre clé locale**, signe
+et vérifie les challenges, répète sans doublon puis nettoie ses archives.
+Les sauvegardes de ce module ne couvrent ni les conversations Heart ni les journaux
+de l’ancien signataire. Aucun wallet personnel n’est restauré implicitement.
 
 ## Qualification et performances
 

@@ -26,6 +26,8 @@ import type {
   WalletBackupStore,
   WalletCreateRequest,
   WalletBackupStatus,
+  WalletBackupInfo,
+  WalletRestoreResult,
 } from "../../../contracts/wallets.ts";
 import { walletWriteLock } from "./lock.ts";
 import { collectAssets } from "./assets.ts";
@@ -217,6 +219,10 @@ export class LocalWallets implements WalletService {
     private readonly cacheMs: number,
     private readonly rpcTimeoutMs: number,
     private readonly runBackup?: () => Promise<boolean>,
+    private readonly recovery?: {
+      list: () => Promise<{ available: boolean; items: WalletBackupInfo[] }>;
+      read: (id: string) => Promise<WalletArchive>;
+    },
   ) {
     for (const w of state.wallets)
       this.signers.set(w.info.id, prepareSigner(w));
@@ -229,6 +235,10 @@ export class LocalWallets implements WalletService {
       cacheMs?: number;
       rpcTimeoutMs?: number;
       runBackup?: () => Promise<boolean>;
+      recovery?: {
+        list: () => Promise<{ available: boolean; items: WalletBackupInfo[] }>;
+        read: (id: string) => Promise<WalletArchive>;
+      };
     } = {},
   ) {
     const file = path.join(directory, "wallets.enc"),
@@ -244,6 +254,7 @@ export class LocalWallets implements WalletService {
       options.cacheMs ?? 30000,
       options.rpcTimeoutMs ?? 10000,
       options.runBackup,
+      options.recovery,
     );
   }
   private mutate<T>(
@@ -416,6 +427,88 @@ export class LocalWallets implements WalletService {
       this.backupTask = task;
     }
     return this.backupTask;
+  }
+  async backups() {
+    return this.recovery
+      ? this.recovery.list()
+      : { available: false, items: [] };
+  }
+  async restore(backupId: string): Promise<WalletRestoreResult> {
+    if (
+      !this.recovery ||
+      !/^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(backupId)
+    )
+      throw Error("Configured Vault and backup UUID required.");
+    const archive = await this.recovery.read(backupId);
+    if (
+      archive.format !== "nora-wallets-backup/v1" ||
+      hash(archive.encrypted) !== archive.sha256
+    )
+      throw Error("Backup integrity mismatch");
+    const recoveryKey = Buffer.from(archive.recoveryKey, "base64");
+    let source: WalletState;
+    try {
+      source = await unsealWalletState(archive.encrypted, recoveryKey);
+    } finally {
+      recoveryKey.fill(0);
+    }
+    if (source.revision !== archive.revision)
+      throw Error("Backup revision mismatch");
+    const result = await this.mutate(async (state) => {
+      let restored = 0,
+        existing = 0,
+        changed = false;
+      for (const n of source.networks) {
+        const old = state.networks.find((v) => v.id === n.id);
+        if (!old) {
+          state.networks.push(structuredClone(n));
+          changed = true;
+        } else if (old.family !== n.family || old.chainId !== n.chainId)
+          throw Error("Network identity conflict; restore not committed.");
+      }
+      for (const wallet of source.wallets) {
+        const old = state.wallets.find((w) => w.info.id === wallet.info.id);
+        if (!old) {
+          state.wallets.push(structuredClone(wallet));
+          restored++;
+          changed = true;
+          continue;
+        }
+        if (
+          old.secret !== wallet.secret ||
+          old.info.family !== wallet.info.family
+        )
+          throw Error("Wallet UUID/key conflict; restore not committed.");
+        for (const address of wallet.info.addresses) {
+          const current = old.info.addresses.find(
+            (a) => a.networkId === address.networkId,
+          );
+          if (current && current.address !== address.address)
+            throw Error("Wallet address conflict; restore not committed.");
+          if (!current) {
+            old.info.addresses.push({ ...address });
+            changed = true;
+          }
+        }
+        existing++;
+      }
+      return {
+        value: {
+          restored,
+          existing,
+          walletIds: source.wallets.map((w) => w.info.id),
+          sourceRevision: source.revision,
+          verified: true as const,
+        },
+        changed,
+      };
+    });
+    let backup = await this.backupStatus();
+    if (backup.status !== "verified") {
+      void this.requestBackup();
+      backup = await this.backupStatus();
+    }
+    return { ...result, backup };
   }
   async drain() {
     await this.mutations;

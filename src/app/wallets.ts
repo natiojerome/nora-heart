@@ -1,7 +1,9 @@
-import { execFile } from "node:child_process";
+import { execFile, spawn } from "node:child_process";
 import { promisify } from "node:util";
 import { fileURLToPath } from "node:url";
 import { parseEnv } from "node:util";
+import { fstatSync, writeFileSync } from "node:fs";
+import type { Readable } from "node:stream";
 import { readFile } from "node:fs/promises";
 import { loadInstallation } from "./installation.ts";
 import path from "node:path";
@@ -37,6 +39,44 @@ async function master() {
     throw Error("Master credential must contain exactly 32 raw bytes");
   return key;
 }
+const walletEntry = () =>
+  fileURLToPath(new URL("../interfaces/wallets.ts", import.meta.url));
+async function recoveryWorker(command: string, backupId?: string) {
+  const metadata = command === "_backups";
+  const child = spawn(
+    process.execPath,
+    [
+      "--import",
+      "tsx",
+      walletEntry(),
+      command,
+      ...(backupId ? [backupId] : []),
+    ],
+    {
+      stdio: [
+        "ignore",
+        metadata ? "pipe" : "ignore",
+        "ignore",
+        metadata ? "ignore" : "pipe",
+      ],
+    },
+  );
+  const chunks: Buffer[] = [];
+  const stream = (metadata ? child.stdout : child.stdio[3]) as Readable;
+  stream.on("data", (chunk) => chunks.push(Buffer.from(chunk)));
+  await new Promise<void>((resolve, reject) => {
+    stream.once("error", () => reject(Error("Recovery pipe unavailable.")));
+    child.once("error", () => reject(Error("Recovery worker unavailable.")));
+    child.once("close", (code) =>
+      code === 0
+        ? resolve()
+        : reject(
+            Error("Recovery rejected; check backup ownership and integrity."),
+          ),
+    );
+  });
+  return JSON.parse(Buffer.concat(chunks).toString("utf8"));
+}
 async function open(managed = false) {
   const key = await master();
   try {
@@ -54,6 +94,10 @@ async function open(managed = false) {
       rpcTimeoutMs,
       ...(managed
         ? {
+            recovery: {
+              list: () => recoveryWorker("_backups"),
+              read: (id: string) => recoveryWorker("_read-recovery", id),
+            },
             runBackup: async () => {
               const result = await promisify(execFile)(
                 process.execPath,
@@ -206,10 +250,12 @@ export async function importWalletCatalog(
   };
 }
 export async function runWalletCommand(command: string, args: string[]) {
-  if (
-    ["backup", "backup-if-configured", "restore"].includes(command) &&
-    process.env.NORA_WALLETS_BACKUP_ENV_FILE
-  ) {
+  const remoteCommand =
+    ["backup", "backup-if-configured", "_backups", "_read-recovery"].includes(
+      command,
+    ) ||
+    (command === "restore" && !!args[1]);
+  if (remoteCommand && process.env.NORA_WALLETS_BACKUP_ENV_FILE) {
     let contents: string;
     try {
       contents = await readFile(
@@ -218,20 +264,19 @@ export async function runWalletCommand(command: string, args: string[]) {
       );
     } catch (error) {
       if (
-        command === "backup-if-configured" &&
+        ["backup-if-configured", "_backups"].includes(command) &&
         (error as NodeJS.ErrnoException).code === "ENOENT"
       )
-        return { skipped: true, reason: "Vault non configuré" };
+        return command === "_backups"
+          ? { available: false, items: [] }
+          : { skipped: true, reason: "Vault non configuré" };
       throw error;
     }
     const saved = parseEnv(contents);
     for (const name of ["NORA_MCPS_VAULT_TOKEN", "NORA_WALLETS_BACKUP_URL"])
       if (saved[name]) process.env[name] = saved[name];
   }
-  if (
-    ["backup", "backup-if-configured", "restore"].includes(command) &&
-    process.env.HARNESS_INSTALL_CONFIG_FILE
-  ) {
+  if (remoteCommand && process.env.HARNESS_INSTALL_CONFIG_FILE) {
     const saved = await loadInstallation(
       process.env.HARNESS_INSTALL_CONFIG_FILE,
     );
@@ -244,6 +289,28 @@ export async function runWalletCommand(command: string, args: string[]) {
     if (!process.env.NORA_MCPS_VAULT_TOKEN)
       return { skipped: true, reason: "Vault non configuré" };
     command = "backup";
+  }
+  if (command === "_backups") {
+    if (!process.env.NORA_MCPS_VAULT_TOKEN)
+      return { available: false, items: [] };
+    const store = backups();
+    try {
+      return { available: true, items: await store.list() };
+    } finally {
+      await store.close();
+    }
+  }
+  if (command === "_read-recovery") {
+    if (!args[0] || !(fstatSync(3).isFIFO() || fstatSync(3).isSocket()))
+      throw Error("Private recovery pipe required.");
+    const store = backups();
+    try {
+      const archive = await store.get(args[0]);
+      writeFileSync(3, JSON.stringify(archive));
+      return { provided: true };
+    } finally {
+      await store.close();
+    }
   }
   if (command === "init-empty") {
     const key = await master();
@@ -278,7 +345,9 @@ export async function runWalletCommand(command: string, args: string[]) {
         "sign (JSON request on stdin)",
         "backup",
         "backup-status",
-        "restore <backup UUID> <NEW directory>",
+        "backups",
+        "restore <backup UUID> (merge into active local store)",
+        "restore <backup UUID> <NEW directory> (offline recovery)",
       ],
       documentation: "docs/WALLETS.md",
     };
@@ -327,7 +396,7 @@ export async function runWalletCommand(command: string, args: string[]) {
       await store.close();
     }
   }
-  if (command === "restore") {
+  if (command === "restore" && args[1]) {
     if (!args[0] || !args[1])
       throw Error("restore requires backup UUID and a NEW directory");
     const store = backups();
@@ -342,6 +411,11 @@ export async function runWalletCommand(command: string, args: string[]) {
   }
   const client = new WalletClient(socketPath());
   try {
+    if (command === "backups") return await client.backups();
+    if (command === "restore") {
+      if (!args[0]) throw Error("Backup UUID required.");
+      return await client.restore(args[0]);
+    }
     if (command === "backup-status") return await client.backupStatus();
     if (command === "list") return await client.list();
     if (command === "assets") {

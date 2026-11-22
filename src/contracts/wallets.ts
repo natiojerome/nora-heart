@@ -63,7 +63,23 @@ export interface WalletSignature {
   signature?: string;
   serializedTransaction?: string;
 }
+export interface WalletBackupInfo {
+  id: string;
+  revision: string;
+  label: string;
+  createdAt: string;
+}
+export interface WalletRestoreResult {
+  restored: number;
+  existing: number;
+  walletIds: string[];
+  sourceRevision: string;
+  verified: true;
+  backup: WalletBackupStatus;
+}
 export interface WalletService {
+  backups(): Promise<{ available: boolean; items: WalletBackupInfo[] }>;
+  restore(backupId: string): Promise<WalletRestoreResult>;
   create(
     request: WalletCreateRequest,
   ): Promise<{ wallet: WalletInfo; backup: WalletBackupStatus }>;

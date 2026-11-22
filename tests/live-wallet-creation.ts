@@ -184,6 +184,54 @@ try {
     signature.signature,
   );
   report.restartKeysAndNamesPreserved = true;
+  await stop();
+  const newKey = randomBytes(32);
+  env.NORA_WALLETS_STATE = path.join(root, "new-machine");
+  env.NORA_WALLETS_KEY_FILE = path.join(root, "new-master");
+  await writeFile(env.NORA_WALLETS_KEY_FILE, newKey, { mode: 0o600 });
+  await initializeWalletState(
+    env.NORA_WALLETS_STATE,
+    {
+      format: "nora-wallets/v1",
+      id: randomUUID(),
+      revision: randomUUID(),
+      wallets: [],
+      networks: [],
+    },
+    newKey,
+  );
+  newKey.fill(0);
+  await start();
+  assert.equal((await client.list()).wallets.length, 0);
+  assert((await client.backups()).items.some((item) => item.id === backup.id));
+  const recovered = await client.restore(backup.id);
+  revisions.add(recovered.backup.revision);
+  assert(recovered.verified);
+  assert.equal(recovered.restored, 2);
+  assert.deepEqual((await client.list()).wallets, listed.wallets);
+  assert.equal(
+    (
+      await client.signMessage(
+        evm.wallet.id,
+        "eip155:8453",
+        "Neutral creation verification",
+      )
+    ).signature,
+    signature.signature,
+  );
+  assert.equal(
+    (await client.signBytes(sol.wallet.id, "solana:mainnet", "010203"))
+      .signature,
+    ed.signature,
+  );
+  assert.equal((await client.restore(backup.id)).restored, 0);
+  assert.equal((await client.requestBackup()).status, "verified");
+  await stop();
+  await start();
+  assert.deepEqual((await client.list()).wallets, listed.wallets);
+  report.toolRestoreIntoNewActiveStoreWithDifferentMaster = true;
+  report.privateRecoveryPipe = true;
+
   const archive = await store.get(backup.id);
   await restoreWalletState(path.join(root, "restored"), archive);
   const restored = await LocalWallets.open(

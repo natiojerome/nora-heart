@@ -11,6 +11,34 @@ export function walletTools(
   const ids = { walletId: { type: "string" }, networkId: { type: "string" } };
   return [
     {
+      name: "wallets.backups",
+      title: "Sauvegardes de wallets disponibles",
+      permission: "files.read" as const,
+      description:
+        "Retrouver les sauvegardes de wallets du compte Vault : UUID, date et révision, sans clé privée. Sur une nouvelle installation, consulter avant de recréer un wallet déjà existant. Choisir une sauvegarde puis utiliser wallets.restore.",
+      parameters: {
+        type: "object" as const,
+        properties: {},
+        additionalProperties: false,
+      },
+      execute: async () => JSON.stringify(await service.backups()),
+    },
+    {
+      name: "wallets.restore",
+      title: "Restaurer les wallets localement",
+      permission: "files.write" as const,
+      description:
+        "Restaurer une sauvegarde choisie dans wallets.backups vers le coffre local et activer les signataires après vérification cryptographique. Fusion par UUID, sans supprimer ni remplacer les clés existantes ; conflit = aucun changement. Pas de clé privée dans le chat, pas de commande manuelle ni redémarrage. Préserver les noms locaux déjà modifiés.",
+      parameters: {
+        type: "object" as const,
+        required: ["backupId"],
+        additionalProperties: false,
+        properties: { backupId: { type: "string", format: "uuid" } },
+      },
+      execute: async (args: any) =>
+        JSON.stringify(await service.restore(args.backupId)),
+    },
+    {
       name: "wallets.create",
       title: "Créer un wallet local",
       permission: "files.write",
@@ -101,23 +129,21 @@ export function walletTools(
       },
       execute: async () => JSON.stringify(await service.backupStatus()),
     },
-    ...(allowNetwork
-      ? [
-          {
-            name: "wallets.backup",
-            title: "Sauvegarder les wallets",
-            permission: "files.read" as const,
-            description:
-              "Demander et attendre une sauvegarde chiffrée et sa vérification sur le Vault configuré. Retourne uniquement un reçu/état, aucune clé. Pas de restauration destructive de l’installation.",
-            parameters: {
-              type: "object" as const,
-              properties: {},
-              additionalProperties: false,
-            },
-            execute: async () => JSON.stringify(await service.requestBackup()),
-          },
-        ]
-      : []),
+    ...[
+      {
+        name: "wallets.backup",
+        title: "Sauvegarder les wallets",
+        permission: "files.read" as const,
+        description:
+          "Demander et attendre une sauvegarde chiffrée et sa vérification sur le Vault configuré. Retourne uniquement un reçu/état, aucune clé. Pas de restauration destructive de l’installation.",
+        parameters: {
+          type: "object" as const,
+          properties: {},
+          additionalProperties: false,
+        },
+        execute: async () => JSON.stringify(await service.requestBackup()),
+      },
+    ],
     {
       name: "wallets.list",
       title: "Wallets locaux",

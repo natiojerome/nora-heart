@@ -88,6 +88,12 @@ export class WalletClient {
   signBytes(walletId, networkId, hexBytes) {
     return this.sign({ walletId, networkId, kind: "bytes", payload: hexBytes });
   }
+  backups() {
+    return this.call("wallets.backups");
+  }
+  restore(backupId) {
+    return this.call("wallets.restore", { backupId });
+  }
   create(request) {
     return this.call("wallets.create", request);
   }

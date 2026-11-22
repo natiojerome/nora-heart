@@ -11,6 +11,8 @@ export class WalletClient implements WalletService {
     options?: { timeoutMs?: number; maxSockets?: number },
   );
   call(method: string, params?: unknown): Promise<unknown>;
+  backups(): ReturnType<WalletService["backups"]>;
+  restore(backupId: string): ReturnType<WalletService["restore"]>;
   create(
     request: import("../../../contracts/wallets.ts").WalletCreateRequest,
   ): ReturnType<WalletService["create"]>;

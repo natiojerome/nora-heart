@@ -42,6 +42,12 @@ class WalletClient:
     def list(self):
         return self.call("wallets.list")
 
+    def backups(self):
+        return self.call('wallets.backups')
+
+    def restore(self, backup_id):
+        return self.call('wallets.restore', backupId=backup_id)
+
     def create(self, wallet_id, label, family, network_ids, networks=None):
         params = dict(id=wallet_id, label=label, family=family, networkIds=network_ids)
         if networks is not None:

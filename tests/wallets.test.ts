@@ -207,6 +207,7 @@ test("Heart engine declares actual wallet tools and can sign through IPC without
         assert.deepEqual(
           request.tools.map((t) => t.name),
           [
+            "wallets.backups",
             "wallets.backup_status",
             "wallets.backup",
             "wallets.list",
@@ -873,4 +874,93 @@ test("a killed wallet writer releases its OS lock without deleting a PID/TTL loc
     networkIds: ["eip155:8453"],
   });
   assert.equal(created.wallet.label, "After crash");
+});
+
+test("restore through socket merges verified keys without restart, keeps local names and rejects conflicts atomically", async (t) => {
+  const source = await fixture(t),
+    target = await fixture(t);
+  let archive: WalletArchive | undefined;
+  const backupId = randomUUID(),
+    store = {
+      async put(value: WalletArchive) {
+        archive = structuredClone(value);
+        return { id: backupId, version: 1 };
+      },
+      async get() {
+        return structuredClone(archive!);
+      },
+    };
+  await source.service.backup(store);
+  const service = await LocalWallets.open(target.directory, target.key, {
+    recovery: {
+      list: async () => ({
+        available: true,
+        items: [
+          {
+            id: backupId,
+            revision: archive!.revision,
+            label: "QA backup",
+            createdAt: new Date().toISOString(),
+          },
+        ],
+      }),
+      read: async (id) => {
+        if (id !== backupId) throw Error("Not owned");
+        return structuredClone(archive!);
+      },
+    },
+  });
+  const server = await walletSocket(
+      service,
+      path.join(target.root, "restore.sock"),
+    ),
+    client = new WalletClient(path.join(target.root, "restore.sock"));
+  t.after(async () => {
+    client.close();
+    await server.close();
+    await service.drain();
+    service.close();
+  });
+  assert.equal((await client.backups()).items[0].id, backupId);
+  const restored = await client.restore(backupId);
+  assert(restored.verified);
+  assert.equal(restored.restored, 3);
+  assert.equal((await client.list()).wallets.length, 6);
+  const result = await client.signMessage(
+    source.id,
+    "eip155:8453",
+    "Restored live signer",
+  );
+  assert.equal(
+    await recoverMessageAddress({
+      message: "Restored live signer",
+      signature: result.signature as Hex,
+    }),
+    source.state.wallets[0].info.addresses[0].address,
+  );
+  await client.rename(source.id, "Local preserved");
+  assert.equal((await client.restore(backupId)).restored, 0);
+  assert.equal(
+    (await client.list()).wallets.find((w) => w.id === source.id)!.label,
+    "Local preserved",
+  );
+  await assert.rejects(client.restore(randomUUID()));
+  const before = await readFile(
+    path.join(target.directory, "wallets.enc"),
+    "utf8",
+  );
+  const conflicting = structuredClone(source.state);
+  conflicting.wallets[0].info.id = target.id;
+  const { sealWalletState } =
+    await import("../src/modules/wallets/local/index.ts");
+  archive!.encrypted = sealWalletState(conflicting, source.key);
+  archive!.sha256 = (await import("node:crypto"))
+    .createHash("sha256")
+    .update(archive!.encrypted)
+    .digest("hex");
+  await assert.rejects(client.restore(backupId));
+  assert.equal(
+    await readFile(path.join(target.directory, "wallets.enc"), "utf8"),
+    before,
+  );
 });

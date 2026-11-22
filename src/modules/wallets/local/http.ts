@@ -62,6 +62,13 @@ export async function walletSocket(
       if (body.method === "wallets.list") {
         errorCode = -32000;
         result = await service.list();
+      } else if (body.method === "wallets.backups") {
+        errorCode = -32000;
+        result = await service.backups();
+      } else if (body.method === "wallets.restore") {
+        if (typeof p.backupId !== "string") throw Error("Backup UUID required");
+        errorCode = -32000;
+        result = await service.restore(p.backupId);
       } else if (body.method === "wallets.create") {
         errorCode = -32000;
         result = await service.create(p as WalletCreateRequest);
