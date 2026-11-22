@@ -5,6 +5,27 @@ assemble les implémentations au démarrage. La mémoire est un module, pas un
 composant imposé du core. Voir [STATUS.md](STATUS.md) pour les limites livrées et
 [PLAN.md](PLAN.md) pour la suite.
 
+## Installation et configuration initiale
+
+`install.sh` clone le dépôt dans un chemin neuf ; `scripts/install.py` prépare
+les dépendances et les unités systemd par UUID. Les services restent natifs pour
+le terminal hôte ; PostgreSQL/SearXNG et le proxy optionnel utilisent Docker.
+Ports privés, chemins explicites et données sous `<installation>/.heart` ; aucun
+identifiant métier dérivé du dossier ni import des services existants.
+
+`app/installation.ts` vérifie les endpoints/credentials MCP, conserve les secrets
+dans un fichier privé et les références/schémas dans le repository existant.
+L’entrée web charge uniquement les références d’environnement autorisées avant
+la composition. Un changement applique les autorités au redémarrage, sans double
+écriture ni repli ; le navigateur attend la révision active et reprend le wizard.
+La configuration refuse les travaux actifs et suspend le scheduler pendant le
+changement. Aucun mécanisme d’installation ou secret de compte dans le core.
+
+La composition gérée signale une mémoire non configurée, omet ses outils/revue et
+ne branche pas le repository SQL. Le choix d’un cerveau pendant l’onboarding est
+persisté dans les défauts réutilisés par les nouveaux fils. Les installations et
+fixtures existantes sans configuration gérée conservent leur assemblage explicite.
+
 ## Wallets : service local, stockage de reprise distant
 
 `contracts/wallets.ts` sépare WalletService et WalletBackupStore.

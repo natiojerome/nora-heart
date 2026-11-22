@@ -20,6 +20,22 @@ A simulated provider is not evidence that a real integration works.
 
 ## Quick start
 
+Install on a Debian 12+/Ubuntu 24.04+ server, choosing your directory:
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/natiojerome/nora-heart/main/install.sh | sudo bash -s -- --path /srv/my-assistant
+```
+
+Add `--domain assistant.example.com` for automatic HTTPS (DNS must point to the
+server, ports 80/443 available). Without a domain, access stays private through
+the SSH tunnel printed by the installer. PostgreSQL, local tools and services
+are prepared automatically. First login opens onboarding; connect your own model
+provider and MCP services. No shared credentials or wallets are supplied.
+See [installation and onboarding](docs/INSTALLATION.md) for prerequisites,
+permanent password retrieval, restart/resume and data locations.
+
+For development:
+
 Use Node.js 24 and pnpm 12.15.0. Linux terminal/development checks need Bubblewrap
 and ripgrep; see [development setup](docs/DEVELOPMENT.md).
 

@@ -1,5 +1,29 @@
 # Tester les modules
 
+## Installation indépendante — 22 novembre 2026
+
+266 tests, démo SDK et deux parcours navigateur de régression. Nouveaux tests de
+configuration MCP : vérification des outils attendus avant enregistrement,
+credentials privés séparés des schémas, versions/identifiants conservés,
+concurrence/reprise et rejet des variables d’environnement étrangères. Tests
+Python des écritures privées et des diagnostics ; sauvegarde wallet non
+configurée ignorée proprement, sans lecture de clé ni appel serveur.
+
+Installation réelle isolée dans un chemin contenant des espaces : téléchargement
+Node et SHA-256, pnpm verrouillé, vrai PostgreSQL et services systemd, onboarding
+mobile repris après actualisation, défaut du cerveau conservé, fichiers/terminal
+protégé Node 24, exécution root YOLO, chat simulé avec vrai moteur/SQL, recherche
+déclarée, wallets vides et redémarrage avec persistance. Les premiers essais ont
+révélé des permissions de volume et particularités de chemins systemd corrigées ;
+les échecs de sélecteurs du script QA ne sont pas comptés comme validations.
+
+Connexions réelles Mémoire/Projets/Vault vérifiées dans la nouvelle interface,
+clés privées saisies par l’opérateur, révision active après redémarrage et mobile
+390 px, sans outil métier ni inférence payante. Le bootstrap GitHub public et
+la relance sans réinitialisation sont en dernière qualification. Domaine/ACME
+public et machine ARM64 restent des parcours distincts, pas prétendument testés
+sur un serveur sans domaine ou sur x86_64. Voir [INSTALLATION.md](INSTALLATION.md).
+
 ## Wallets locaux — 21 novembre 2026
 
 `pnpm test:wallets` : clés synthétiques et dossiers temporaires, signatures EVM

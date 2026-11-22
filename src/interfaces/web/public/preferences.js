@@ -90,7 +90,7 @@
     if(provider!=='demo'&&!modelId){message('Choisis un modèle.',true);return;}
     const defaults={selection:{provider,modelId,contextWindow:Math.min(model?.contextWindow||Number(get('defaults-capacity').value)||32768,2000000),capacitySource:model?.contextWindow?'catalog':'configured',...(get('defaults-effort').value?{reasoningEffort:get('defaults-effort').value}:{})},fileAccess:get('defaults-access').value,networkAccess:get('defaults-network').checked};
     defaultsSaving=true;
-    try{const result=await post('/api/conversation-defaults',{version:settingsVersion,baseDefaults:saved,defaults});settingsVersion=result.version;saved=result.defaults;if(result.profile)state.assistant=result.profile;else state.assistant={...state.assistant,version:result.version,settings:{...state.assistant.settings,conversationDefaults:result.defaults}};window.heartUI?.sync();window.heartPreferences.sync();get('defaults-dialog').close();message('Valeurs par défaut enregistrées.');}
+    try{const result=await post('/api/conversation-defaults',{version:settingsVersion,baseDefaults:saved,defaults});settingsVersion=result.version;saved=result.defaults;if(result.profile)state.assistant=result.profile;else state.assistant={...state.assistant,version:result.version,settings:{...state.assistant.settings,conversationDefaults:result.defaults}};window.heartUI?.sync();window.heartPreferences.sync();get('defaults-dialog').close();message('Valeurs par défaut enregistrées.');window.heartUI?.resumeOnboarding();}
     catch(error){message(errorText(error),true);if(String(error.message).includes('ailleurs'))get('defaults-model-status').textContent='Réglages modifiés ailleurs. Ferme puis rouvre cette fenêtre avant de réessayer.';}
     finally{defaultsSaving=false;}
   });

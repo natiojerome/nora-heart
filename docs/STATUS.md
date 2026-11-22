@@ -1,9 +1,32 @@
 # État et reprise
 
-Point du 21 novembre 2026. Lire aussi ARCHITECTURE.md, DECISIONS.md et PLAN.md.
+Point du 22 novembre 2026. Lire aussi ARCHITECTURE.md, DECISIONS.md et PLAN.md.
 Socle livré ; la parité complète avec Codex CLI et la qualification de tous les
 fournisseurs restent partielles. Les preuves détaillées sont dans TESTING.md et
 les rapports opérateur privés, pas dans le contexte permanent de l’assistant.
+
+## Installation indépendante et onboarding
+
+Commande GitHub avec `--path`, Debian 12+/Ubuntu 24.04+ et systemd. Prépare Node,
+pnpm, PostgreSQL privé, migrations, web, fichiers/terminal, worker hôte YOLO,
+recherche locale et coffre wallet vide. Services/ports/comptes isolés par UUID,
+données privées dans le dossier choisi, sans importer notre installation.
+`--domain` ajoute Caddy/HTTPS si DNS et ports sont prêts ; sans domaine, boucle
+locale et tunnel SSH. Mot de passe permanent privé, reprise sans réinitialisation.
+
+Onboarding : identité/thème/personnalité, fournisseur et modèle/effort par défaut
+réellement enregistrés, simulation explicite, connexions MCP vérifiées depuis le
+navigateur. Credentials en fichier privé, schémas en SQL, restart suivi et reprise.
+Les nouveaux déploiements n’activent aucune mémoire SQL de remplacement ; mémoire
+et projets distants demandent leurs connexions. Données métier et ancien runtime
+préservés. Voir [INSTALLATION.md](INSTALLATION.md).
+
+266 tests et deux parcours navigateur de régression ; installation jetable réelle
+dans un chemin avec espaces : onboarding/reprise mobile, fichiers, terminal Node 24
+protégé et root YOLO, chat simulé avec vrai PostgreSQL, recherche déclarée, wallets
+vides et persistance après redémarrage. Connexions réelles Mémoire/Projets/Vault
+vérifiées via le navigateur, sans appel métier ni inférence payante. La commande
+publique GitHub fait l’objet d’une dernière qualification indépendante.
 
 ## Wallets locaux et reprise distante
 

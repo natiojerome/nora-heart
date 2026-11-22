@@ -564,6 +564,7 @@ $("api-key-form").addEventListener("submit", async (event) => {
     $("api-key-dialog").close();
     state.api={...state.api,[provider]:true};renderState();
     message('Connexion '+names[provider]+' enregistrée.');
+    window.heartUI?.resumeOnboarding();
   } catch {
     message(
       "La clé n’a pas pu être enregistrée. Vérifie l’accès au serveur et réessaie.",

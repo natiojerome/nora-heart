@@ -1,4 +1,5 @@
 import { readFile } from "node:fs/promises";
+import {loadInstallation} from './installation.ts';
 import path from "node:path";
 import { randomUUID } from "node:crypto";
 import {
@@ -181,6 +182,15 @@ export async function importWalletCatalog(
   };
 }
 export async function runWalletCommand(command: string, args: string[]) {
+  if(['backup','backup-if-configured','restore'].includes(command)&&process.env.HARNESS_INSTALL_CONFIG_FILE){
+    const saved=await loadInstallation(process.env.HARNESS_INSTALL_CONFIG_FILE);
+    if(saved.env.HEART_MCP_VAULT_TOKEN)process.env.NORA_MCPS_VAULT_TOKEN=saved.env.HEART_MCP_VAULT_TOKEN;
+    if(saved.env.HEART_MCP_VAULT_URL)process.env.NORA_WALLETS_BACKUP_URL=saved.env.HEART_MCP_VAULT_URL;
+  }
+  if(command==='backup-if-configured'){if(!process.env.NORA_MCPS_VAULT_TOKEN)return {skipped:true,reason:'Vault non configuré'};command='backup';}
+  if(command==='init-empty'){
+    const key=await master();try{await initializeWalletState(stateDirectory(),{format:'nora-wallets/v1',id:randomUUID(),revision:randomUUID(),wallets:[],networks:[]},key);return {initialized:true,wallets:0};}finally{key.fill(0);}
+  }
   if (command === "help")
     return {
       commands: [

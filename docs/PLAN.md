@@ -1,9 +1,18 @@
 # Plan courant
 
-Point du 21 novembre 2026, après qualification de Venice, compteurs et reprise des appels invalides. Finalité conservée : une
+Point du 22 novembre 2026, après installation indépendante et onboarding. Finalité conservée : une
 assistante quotidienne dont le propriétaire contrôle moteur, données, outils et
 permissions, avec des cerveaux interchangeables selon besoin et coût.
 [STATUS.md](STATUS.md) décrit le livré ; les lots 1 et 2 sont livrés ; le lot 3 est qualifié sur un scénario réel ciblé. [REVIEW.md](REVIEW.md) donne les écarts constatés.
+
+## Installation indépendante
+
+Installateur GitHub, chemin choisi et premier accès documentés dans
+[INSTALLATION.md](INSTALLATION.md). Première qualification réelle sur installation
+jetable dans un chemin avec espaces ; dernière vérification du bootstrap public
+et de la reprise en cours. Suite utile : qualifier le mode domaine/HTTPS sur un
+nouveau serveur avec son propre DNS et le chemin ARM64, puis définir le parcours
+explicite de mise à jour/sauvegarde. Ne pas confondre réinstallation et mise à jour.
 
 ## Complément livré — Wallet local et sauvegarde MCP
 

@@ -228,6 +228,8 @@ test(
         await context.request.get(origin + "/api/state")
       ).json();
       assert.equal(savedSetup.assistant.settings.name, "Elios");
+      assert.equal(savedSetup.assistant.settings.conversationDefaults.selection.provider,'demo');
+      assert.equal(savedSetup.assistant.settings.conversationDefaults.selection.modelId,'demo');
       assert.equal(savedSetup.assistant.settings.personalityInstructions,installPersonality);
       assert.match(savedSetup.assistant.settings.avatarPackId,/^[0-9a-f-]{36}$/);
       await page.evaluate(()=>location.hash='settings-assistant');await page.click('#edit-assistant');await page.waitForSelector('#assistant-dialog[open]');

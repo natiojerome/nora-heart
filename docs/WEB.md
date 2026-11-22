@@ -1,5 +1,11 @@
 # Interface web privée
 
+Pour installer une nouvelle instance depuis GitHub avec le chemin de son choix,
+utiliser [INSTALLATION.md](INSTALLATION.md). Les anciens scripts `deploy-web.sh`
+et `deploy-postgres.py` restent des recettes opérateur du serveur historique ;
+ils ne sont pas le nouvel installateur portable et ne doivent pas être copiés
+avec ses comptes, chemins ou secrets.
+
 La première intégration des maquettes est décrite dans [UI.md](UI.md) :
 Accueil, Discussions, Projets, Mémoire, Plus et setup en cinq étapes.
 Les modèles se configurent dans Modèles & connexions ou depuis le sélecteur

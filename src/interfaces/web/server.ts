@@ -1,3 +1,4 @@
+import type {Installation} from "../../app/installation.ts";
 import {ExternalCallError} from "../../contracts/external-tools.ts";
 import type {ProjectsWorkspace} from "../../app/projects-workspace.ts";
 import {TaskError} from "../../contracts/tasks.ts";
@@ -24,7 +25,7 @@ import type { TestLab } from "../../app/test-lab.ts";
 import { WebAccess } from "../../app/web-access.ts";
 
 type Lab = Pick<TestLab, "state" | "setKey" | "loginStatus" | "startLogin" | "finishLogin" | "logoutChatGpt" | "models" | "usage" | "capabilities" | "test" | "tests">;
-interface Options { projectsWorkspace?:ProjectsWorkspace; origin: string; access: WebAccess; lab: Lab; assistant?: Assistant; skills?:Skills; tasks?:Tasks; scheduler?:{state():{running:boolean;active:number;ticking:boolean;intervalMs:number;concurrency:number};tick():Promise<void>}; conversations?: Conversations; memories?: Memories; maintenanceFile?: string; assetsDirectory?: string; externalTools?:ExternalTools }
+interface Options { memoryConfigured?:boolean;installation?:Installation;restart?:()=>void; projectsWorkspace?:ProjectsWorkspace; origin: string; access: WebAccess; lab: Lab; assistant?: Assistant; skills?:Skills; tasks?:Tasks; scheduler?:{state():{running:boolean;active:number;ticking:boolean;intervalMs:number;concurrency:number};tick():Promise<void>;stop?():void;start?():void}; conversations?: Conversations; memories?: Memories; maintenanceFile?: string; assetsDirectory?: string; externalTools?:ExternalTools }
 class HttpError extends Error { constructor(readonly status: number, message: string) { super(message); } }
 const safeMessages = new Set(["Réglages de skills invalides.","Limites invalides.","Message requis.","Budget de lot invalide.","Pagination invalide.","Curseur introuvable dans ce fil.",...Object.values(aiSdkErrorMessages),"Formulaire ou réponse invalide. Vérifie les champs.","Demande interactive introuvable.","Réponds au formulaire en attente ou annule-le avant un nouveau message.","Cette demande a déjà reçu une autre réponse.","Une autre demande interactive est en attente.","Historique de la demande interactive incohérent.","Outil interactif indisponible.","Reprise interactive atomique indisponible pour ce stockage.","Modèle du fil modifié ailleurs. Rouvre ses réglages.","Modèle du fil modifié ailleurs ou conversation occupée. Rouvre ses réglages.","Worker YOLO indisponible. Aucun repli implicite.","Réglages par défaut invalides.","Catalogue OpenRouter indisponible. Actualise la liste pour réessayer.","OpenRouter : choisir un identifiant de modèle terminé par :free. Aucun modèle payant autorisé.","Prompt modifié ailleurs ou limite de 100 prompts atteinte. Actualise la liste.","Prompt modifié ailleurs. Actualise la liste.","Une pièce jointe est introuvable. Actualise la liste.","Fichier déjà utilisé ou introuvable. Son historique est conservé.","Profil assistant invalide.", "Profil modifié ailleurs. Actualise avant de réessayer.","Ce fichier ne peut pas être affiché comme image.", "Souvenir invalide : titre, contenu ou type.", "Portée du souvenir invalide.",
   "Souvenir hors du projet courant.", "Ne pas mémoriser de secret.", "Souvenir introuvable.",
@@ -181,6 +182,7 @@ export function createWebServer(options: Options) {
     }
   }
   }
+  let reconfiguring=false;
   const json = (response: ServerResponse, value: unknown, status = 200) => {
     if(response.destroyed||response.writableEnded)return;
     response.writeHead(status, { "content-type": "application/json; charset=utf-8" }); response.end(JSON.stringify(value));
@@ -238,6 +240,7 @@ export function createWebServer(options: Options) {
       if (request.method !== "GET" && request.method !== "POST") throw new HttpError(405, "Méthode refusée.");
       if (request.method === "POST" && request.headers.origin !== origin) throw new HttpError(403, "Origine refusée.");
       if(request.method==='POST'){
+        if(reconfiguring)throw new HttpError(503,'Configuration des services en cours. Réessaie dans un instant.');
         if(options.maintenanceFile&&existsSync(options.maintenanceFile))throw new HttpError(503,'Sauvegarde en cours. Réessaie dans un instant.');
         activeMutations++;mutation=true;
       }
@@ -251,10 +254,17 @@ export function createWebServer(options: Options) {
         json(response, { authenticated: true, csrf: result.csrf }); return;
       }
       if (url.pathname === "/api/state" && request.method === "GET") {
-        json(response, session ? { authenticated: true, csrf: options.access.csrf(token), ...await options.lab.state(), assistant: options.assistant ? await options.assistant.get() : null, assistantPresets:options.assistant?.presets()??null, tasksAvailable:!!options.tasks, skillsAvailable:!!options.skills, externalToolsAvailable:!!options.externalTools, conversationsAvailable: !!options.conversations, memoriesAvailable: !!options.memories, chatAssetsAvailable: !!options.conversations?.assetsAvailable } : { authenticated: false }); return;
+        json(response, session ? { authenticated: true, installation:await options.installation?.status(), csrf: options.access.csrf(token), ...await options.lab.state(), assistant: options.assistant ? await options.assistant.get() : null, assistantPresets:options.assistant?.presets()??null, tasksAvailable:!!options.tasks, skillsAvailable:!!options.skills, externalToolsAvailable:!!options.externalTools, conversationsAvailable: !!options.conversations, memoriesAvailable: !!options.memories&&options.memoryConfigured!==false, chatAssetsAvailable: !!options.conversations?.assetsAvailable } : { authenticated: false }); return;
       }
       if (!session) throw new HttpError(401, "Connecte-toi pour accéder au laboratoire.");
       if (request.method === "POST" && !options.access.checkCsrf(token, String(request.headers["x-csrf-token"] ?? ""))) throw new HttpError(403, "Session à actualiser.");
+      if(options.installation&&url.pathname==='/api/installation/services'){
+        if(request.method==='GET'){json(response,await options.installation.status());return;}
+        if(activeMutations>1||options.conversations?.hasActiveWork()||(options.scheduler?.state().active??0)>0||options.scheduler?.state().ticking)throw new HttpError(409,'Attendre la fin du travail en cours avant de reconfigurer les services.');
+        const resumeScheduler=options.scheduler?.state().running;options.scheduler?.stop?.();reconfiguring=true;
+        try{const result=await options.installation.configure(await body(request));json(response,result);if(options.restart)options.restart();else {reconfiguring=false;if(resumeScheduler)options.scheduler?.start?.();}}
+        catch{if(resumeScheduler)options.scheduler?.start?.();reconfiguring=false;throw new HttpError(400,'Connexion aux services impossible. Vérifie les URL et les clés ; aucune clé affichée.');}return;
+      }
       if(options.assistant&&url.pathname==='/api/conversation-defaults'){
         if(request.method==='GET'){json(response,await options.assistant.defaults());return;}
         if(request.method!=='POST')throw new HttpError(405,'Méthode non autorisée.');
@@ -298,6 +308,7 @@ export function createWebServer(options: Options) {
         if(request.method==='POST'&&url.pathname==='/api/external-tools/discover'){json(response,await options.externalTools.discover(await body(request,Number.POSITIVE_INFINITY)));return;}
         if(request.method==='POST'&&url.pathname==='/api/external-tools'){json(response,await options.externalTools.save(await body(request,Number.POSITIVE_INFINITY)));return;}
       }
+      if(options.memoryConfigured===false&&url.pathname.startsWith('/api/memories'))throw new HttpError(409,'Connecte le service Mémoire dans Capacités → Connexions → Services partagés.');
       if (options.memories) {
         const match = url.pathname.match(/^\/api\/memories\/([0-9a-f-]{36})(\/(status|revisions))?$/i);
         if (request.method === "GET" && url.pathname === "/api/memories") { json(response, await options.memories.list()); return; }

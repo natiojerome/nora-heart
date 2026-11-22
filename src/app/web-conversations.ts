@@ -1,4 +1,5 @@
 import {historyTools} from "../modules/tools/history/index.ts";
+import {Installation} from './installation.ts';
 import {WalletClient} from '../modules/wallets/unix/index.ts';
 import {walletTools} from '../modules/tools/wallets/index.ts';
 import {HostFiles} from '../modules/tools/host-files/index.ts';
@@ -50,6 +51,13 @@ export async function openWebConversations(
     (connection, signal) => connectMcp(connection, { signal }),
   );
   const projectConnectionId=process.env.HARNESS_PROJECTS_MCP_CONNECTION_ID;
+  const installation=process.env.HARNESS_INSTALL_CONFIG_FILE?new Installation(process.env.HARNESS_INSTALL_CONFIG_FILE,storage.externalTools):undefined;
+  const searchUrl=process.env.HARNESS_LOCAL_SEARCH_URL;
+  if(searchUrl&&!(await externalTools.list()).connections.some(c=>c.url===searchUrl)){
+    const draft={id:crypto.randomUUID(),version:0,label:'Recherche web locale',url:searchUrl,auth:{type:'none' as const},enabled:true,timeoutMs:60000};
+    const snapshot=await externalTools.discover(draft);
+    await externalTools.save({...draft,toolNames:snapshot.tools.map(t=>t.name),refreshDefinitions:true});
+  }
   const projects:ProjectRepository=projectConnectionId?new McpProjectsRepository((name,args)=>externalTools.callApproved(projectConnectionId,name,args)):projectRepository??{
     async create(){throw new ExternalToolError("MCP Projects : configure la connexion avant de créer un projet.");},
     async get(){return null;},
@@ -61,7 +69,10 @@ export async function openWebConversations(
   const aliasFile=process.env.HARNESS_MEMORY_MCP_ALIASES_FILE;
   const aliases:Record<string,string>=aliasFile?JSON.parse(readFileSync(aliasFile,'utf8')):{};
   if(!aliases||Array.isArray(aliases)||Object.entries(aliases).some(([a,b])=>!(/^[a-f0-9-]{36}$/i.test(a)&&typeof b==='string'&&/^[a-f0-9-]{36}$/i.test(b))))throw new Error('Correspondances de mémoire MCP invalides.');
-  const memoryRepository=memoryConnectionId?new McpMemoryRepository((name,args)=>externalTools.callApproved(memoryConnectionId,name,args),aliases):storage.structuredMemories;
+  const remoteMemoryRequired=process.env.HARNESS_REQUIRE_REMOTE_MEMORY==='1';
+  const memoryRepository=memoryConnectionId?new McpMemoryRepository((name,args)=>externalTools.callApproved(memoryConnectionId,name,args),aliases):remoteMemoryRequired?{
+    supportsRestore:false,async create(){throw Error('Connecter le service Mémoire dans la configuration initiale.');},async get(){return null;},async list(){return [];},async replace(){throw Error('Connecter le service Mémoire dans la configuration initiale.');},async revisions(){return [];},
+  }:storage.structuredMemories;
   const memory = new StructuredMemory(memoryRepository, {
     source: { type: "manual" },
   });
@@ -71,7 +82,7 @@ export async function openWebConversations(
       })
     : undefined;
   const hostSocket = process.env.HARNESS_HOST_SOCKET;
-  const hostExecution = hostSocket && existsSync(hostSocket)
+  const hostExecution = hostSocket
     ? new HostExecutionClient(hostSocket) : undefined;
   const hostFiles = (workspace:string,signal?:AbortSignal) => {
     if(!hostExecution || !hostSocket)throw new Error('Worker YOLO indisponible. Aucun repli implicite.');
@@ -94,7 +105,7 @@ export async function openWebConversations(
     displayName: lab.displayName,
     configuration: async () => {
       const profile=await assistant.get();
-      return {instructions:profile.presentationInstructions+"\nRuntime de CE fil fourni par Heart : instance="+storage.instanceId+" ; conversations locales="+config.driver+" ; mémoire="+(memoryConnectionId?"MCP":config.driver)+" ; projets="+(projectConnectionId?"MCP":projectRepository?"repository injecté":"non configurés")+" ; code="+path.resolve(import.meta.dirname,"../..")+". Prime sur exemples et autres processus.",overrides:profile.settings.instructionOverrides??{},policies:profile.effectivePolicies,skills:await skills.capture(profile.settings.skillOverrides)};
+      return {instructions:profile.presentationInstructions+"\nRuntime de CE fil fourni par Heart : instance="+storage.instanceId+" ; conversations locales="+config.driver+" ; mémoire="+(memoryConnectionId?"MCP":remoteMemoryRequired?"non configurée":config.driver)+" ; projets="+(projectConnectionId?"MCP":projectRepository?"repository injecté":"non configurés")+" ; code="+path.resolve(import.meta.dirname,"../..")+". Prime sur exemples et autres processus.",overrides:profile.settings.instructionOverrides??{},policies:profile.effectivePolicies,skills:await skills.capture(profile.settings.skillOverrides)};
     },
     model: (selection) => lab.model({ ...selection }),
     capabilities: (provider, id) => lab.capabilities(provider, id),
@@ -122,12 +133,12 @@ export async function openWebConversations(
                 conversation.fileAccess === "yolo",
               )
             : []),
-          ...structuredMemoryTools(scoped, conversation.projectId ?? null),
+          ...(memoryConnectionId||!remoteMemoryRequired?structuredMemoryTools(scoped, conversation.projectId ?? null):[]),
           ...interactionTools(),
           ...tasksTools(tasks,conversation.id),
         ],
         runSkills?runSkills.context(new BoundedContext(storage.sessions, scoped,instructionValue(blocks,"compression"),policies)):new BoundedContext(storage.sessions, scoped,instructionValue(blocks,"compression"),policies),
-        conversation.selection?.provider === "demo" ? undefined : new MemoryReview(scoped, conversation.projectId ?? null, instructionValue(blocks,"memoryPolicy"),instructionValue(blocks,"memoryReview")),
+        conversation.selection?.provider === "demo" || (!memoryConnectionId&&remoteMemoryRequired) ? undefined : new MemoryReview(scoped, conversation.projectId ?? null, instructionValue(blocks,"memoryPolicy"),instructionValue(blocks,"memoryReview")),
       );
     },
   });
@@ -136,12 +147,14 @@ export async function openWebConversations(
   tasks=new Tasks(storage.tasks,calendar,storage.conversations,taskExecution,undefined,storage.sessions);
   return {
     conversations,
+    installation,
     projectsWorkspace,
     tasks,
     scheduler,
     assistant,
     skills,
     externalTools,
+    memoryConfigured:!!memoryConnectionId||!remoteMemoryRequired,
     memories: new Memories(memory, projects),
     close: async () => {
       wallets?.close();

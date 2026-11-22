@@ -175,6 +175,7 @@ export class Conversations {
     const conversations=rows.slice(0,limit).map(conversation=>({...conversation,work:this.workState(conversation)}));
     return {conversations,nextCursor:rows.length>limit?Buffer.from(JSON.stringify(conversations.at(-1)!.position??{at:conversations.at(-1)!.updatedAt,id:conversations.at(-1)!.id})).toString("base64url"):null};
   }
+  hasActiveWork(){return this.busy.size>0||this.active.size>0;}
   async work(){
     const {conversations}=await this.list();
     for(const id of this.active.keys())if(!conversations.some(c=>c.id===id)){const conversation=await this.options.repository.get(id);if(conversation)conversations.push({...conversation,work:this.workState(conversation)});}

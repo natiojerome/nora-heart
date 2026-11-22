@@ -316,6 +316,11 @@
     window.heartChat?.layout();
   }
   function sync() {
+    if(state.authenticated&&state.installation?.available&&!el('manage-installation-services')){
+      const button=text('button','','icon-button');button.id='manage-installation-services';button.type='button';button.dataset.icon='settings';button.title='Configurer les services partagés';button.setAttribute('aria-label',button.title);
+      button.onclick=()=>{let dialog=el('installation-dialog');if(!dialog){dialog=document.createElement('dialog');dialog.id='installation-dialog';dialog.className='editor-dialog';dialog.setAttribute('aria-label','Services partagés');document.body.append(dialog);}dialog.replaceChildren();const content=document.createElement('div');content.className='editor-scroll';renderInstallationServices(content);const close=text('button','Fermer','button secondary');close.type='button';close.onclick=()=>dialog.close();dialog.append(content,close);dialog.showModal();};
+      el('mcp-add').parentNode.append(button);paintIcons();
+    }
     if (!state.authenticated) {
       window.heartChat?.reset();
       window.heartInstructions?.reset();
@@ -473,7 +478,7 @@
       "Quel univers pour ton espace ?",
       "Comment aimerais-tu échanger ?",
       "Connecter un fournisseur",
-      "Tout est prêt.",
+      state.installation?.available?"Vérifier la configuration":"Tout est prêt.",
     ];
     target.append(text("h1", headings[step]));
     if (step === 0) {
@@ -598,8 +603,9 @@
           setupError(e);
         }
       });
-      const provider = selectedProvider();
-      const available = provider !== "demo" && modelAvailable();
+      const chosen=profile.settings.conversationDefaults?.selection;
+      const provider = chosen?.provider||selectedProvider();
+      const available = provider !== "demo" && (chosen?!!(provider==='chatgpt'?state.chatgpt?.connected:state.api?.[provider]):modelAvailable());
       if (available) {
         const use = text(
           "button",
@@ -609,6 +615,7 @@
         use.type = "button";
         use.addEventListener("click", async () => {
           try {
+            if(chosen)await applyConversationSelection(chosen);
             await saveDraft(5, false);
             step = 5;
             showStep();
@@ -618,7 +625,9 @@
         });
         actions.append(use);
       }
-      actions.append(connect, demo);
+      const choose=text('button','Choisir le modèle et l’effort','button secondary');choose.type='button';
+      choose.onclick=async()=>{try{await saveDraft(4,false);el('setup-dialog').close();location.hash='settings-conversations';setTimeout(()=>el('edit-conversation-defaults').click(),0);}catch(e){setupError(e);}};
+      actions.append(connect, choose, demo);
       target.append(actions);
     }
     if (step === 5) {
@@ -634,7 +643,7 @@
           "p",
           `Thème : ${{ light: "Clair", night: "Nocturne", sage: "Sauge", graphite: "Graphite", system: "Système" }[draft.theme]}`,
         ),
-        text("p", `Cerveau : ${names[selectedProvider()]}`),
+        text("p", `Cerveau : ${names[draft.conversationDefaults?.selection?.provider||selectedProvider()]}${draft.conversationDefaults?.selection?.modelId?' · '+draft.conversationDefaults.selection.modelId:''}`),
       );
       target.append(
         summary,
@@ -644,13 +653,51 @@
           "setup-subtitle",
         ),
       );
+      if(state.installation?.available)renderInstallationServices(target);
     }
+  }
+  function renderInstallationServices(target){
+    const section=document.createElement('section');section.className='editor-fields';const prefix=target.closest('#setup-dialog')?'':'managed-',inputs={};
+    section.append(text('h2','Services partagés'));
+    section.append(text('p','Mémoire, projets et coffre restent sur ton serveur MCP. Connecte-les ici ou configure-les plus tard.','field-help'));
+    const configured=state.installation.services||[];
+    if(configured.length)section.append(text('p','Connectés : '+configured.join(', '),'field-help'));
+    const base=document.createElement('input');base.id=prefix+'install-services-url';base.type='url';base.value='https://mcps.natio.re';base.autocomplete='url';
+    const label=text('label','Serveur MCP');label.htmlFor=base.id;section.append(label,base);
+    for(const [name,title] of [['memory','Clé Mémoire'],['projects','Clé Projets'],['vault','Clé Coffre-fort']]){
+      const input=document.createElement('input');input.id=prefix+'install-key-'+name;inputs[name]=input;input.type='password';input.autocomplete='new-password';input.placeholder=configured.includes(name)?'Déjà connecté · laisser vide pour conserver':'Facultatif';
+      const label=text('label',title);label.htmlFor=input.id;section.append(label,input);
+    }
+    const status=text('p','','field-help');status.id=prefix+'install-services-status';status.setAttribute('role','status');status.setAttribute('aria-live','polite');
+    const connect=text('button','Connecter et vérifier','button secondary');connect.type='button';connect.id=prefix+'install-services-connect';
+    connect.onclick=async()=>{
+      connect.disabled=true;el('setup-next').disabled=true;el('setup-back').disabled=true;status.textContent='Vérification des connexions…';section.setAttribute('aria-busy','true');
+      try{
+        const body={};for(const name of ['memory','projects','vault']){const token=inputs[name].value.trim();if(token)body[name]={url:base.value.replace(/\/+$/,'')+'/'+name,token};}
+        if(!Object.keys(body).length)throw Error('Saisis au moins une clé.');
+        await post('/api/installation/services',body);
+        for(const name of ['memory','projects','vault'])inputs[name].value='';
+        status.textContent='Connexions vérifiées. Redémarrage de Heart…';
+        await new Promise(r=>setTimeout(r,1200));
+        const until=Date.now()+45000;let ready=false;
+        while(Date.now()<until){try{const next=await api('/api/state');if(next.authenticated&&next.installation?.ready&&Object.keys(body).every(s=>next.installation?.services.includes(s))){ready=true;break;}}catch{}await new Promise(r=>setTimeout(r,500));}
+        if(!ready)throw Error('Configuration enregistrée. Actualise lorsque le service est redémarré.');
+        location.reload();
+      }catch(e){status.textContent=errorText(e);connect.disabled=false;el('setup-next').disabled=false;el('setup-back').disabled=false;section.removeAttribute('aria-busy');}
+    };
+    section.append(connect,status);target.append(section);
   }
   function setupError(e) {
     el("setup-error").textContent = errorText(e);
     el("setup-error").hidden = false;
   }
   async function saveDraft(next, completed) {
+    if(step===4&&next===5){
+      const provider=selectedProvider(),modelId=provider==='demo'?'demo':el('model-id').value.trim();
+      if(provider!=='demo'&&!modelAvailable())throw Error('Connecte le fournisseur et choisis un modèle avant de continuer.');
+      const catalog=models.find(model=>model.id===modelId),contextWindow=provider==='demo'?32768:Number(el('context-window').value);
+      draft.conversationDefaults={...(draft.conversationDefaults||{fileAccess:'read',networkAccess:false}),selection:{provider,modelId,contextWindow,capacitySource:catalog?.contextWindow?'catalog':'configured',...(selectedReasoningEffort()?{reasoningEffort:selectedReasoningEffort()}: {})}};
+    }
     const result = await post("/api/assistant", {
       settings: {
         ...draft,
@@ -898,6 +945,7 @@
   system.addEventListener("change", () => theme(profile.settings.theme));
   window.heartUI = {
     sync,
+    resumeOnboarding:()=>{if(state.assistant&&!state.assistant.settings.completed&&state.assistant.settings.step===4){profile=state.assistant;openSetup();}},
     openEditor,
     picture,
     assistantName: () => profile.settings.name,
