@@ -239,3 +239,13 @@ créée côté portail et conservée dans la configuration privée avec les autr
 clés ; aucune boîte ni signature personnelle n’est importée automatiquement.
 Les configurations historiques sans Mail restent valides. Après connexion,
 ajouter ses comptes et signatures dans l’onglet Mail de mcps.natio.re.
+
+## Runtimes des projets indépendants
+
+Le Node embarqué de l’installation appartient à Heart et aux sessions temporaires
+de développement. L’exécution hôte indépendante utilise le PATH système : un
+projet doit fournir son propre runtime ou un runtime système explicitement
+installé, ses dépendances et son service systemd/Compose. Ne pas pointer son
+ExecStart vers le code ou le Node privé de Heart. Ses tâches métier planifiées
+utilisent ses propres timers/cron ; les tâches Heart servent au suivi de
+l’assistante. L’arrêt du harness ne doit pas interrompre l’exploitation du projet.
