@@ -507,7 +507,11 @@ directement, sous les droits du fil ; le modèle reçoit les références. Les b
 image MCP utilisent le transport visuel existant, volatils durant le tour afin de
 ne pas gonfler l’historique. Pas de nouveau format fournisseur ou framework.
 Anciennes installations à trois services préservées, Mail négocié explicitement
-par les nouveaux clients. La connexion d’une boîte reste à effectuer par l’utilisateur.
+par les nouveaux clients. Connexion par saisie privée, consentement OAuth ou
+transfert serveur-à-serveur explicitement autorisé vers une cible préconfigurée ;
+aucun mot de passe relayé dans les outils Heart. Gmail et les trois comptes OVH
+du propriétaire sont connectés ; la création d’un brouillon/envoi reste une action
+métier distincte de cette qualification.
 
 ## Cohérence des capacités
 

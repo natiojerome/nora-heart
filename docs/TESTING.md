@@ -783,3 +783,14 @@ régression SQLite + pièces jointes/relance/arrêt réussie.
 Vérification déployée : groupes Mémoire/Projets/Coffre-fort/Mail/Recherche web,
 éditeur reprenant le même libellé, skill Revue de code disponible, quatre largeurs,
 aucune erreur JavaScript. Aucune inférence ni émission d’e-mail dans ce contrôle.
+
+## Connexions Mail personnelles — 23 novembre 2026
+
+`pnpm check` : 278 tests réussis ; `pnpm demo:sdk` : succès simulé explicitement.
+Qualification réelle via `ExternalTools.callApproved` et les 19 outils Mail déjà
+approuvés : quatre comptes connectés, `mail_test`, dossiers, recherche d’un objet
+aléatoire inexistant et une identité conservée par compte. Gmail OAuth natif
+(client dédié, consentement réel, refresh token chiffré) ; OVH IMAPS/SMTPS pour les
+trois autres comptes. Même UUID avant/après ; transfert V4 répété : reçu rejoué,
+version inchangée, sans double configuration. Aucun mail envoyé ni contenu
+personnel lu ; ces essais ne qualifient pas un envoi personnel de bout en bout.

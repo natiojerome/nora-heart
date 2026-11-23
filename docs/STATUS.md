@@ -1,6 +1,6 @@
 # État et reprise
 
-Point du 22 novembre 2026. Lire aussi ARCHITECTURE.md, DECISIONS.md et PLAN.md.
+Point du 23 novembre 2026. Lire aussi ARCHITECTURE.md, DECISIONS.md et PLAN.md.
 Socle livré ; la parité complète avec Codex CLI et la qualification de tous les
 fournisseurs restent partielles. Les preuves détaillées sont dans TESTING.md et
 les rapports opérateur privés, pas dans le contexte permanent de l’assistant.
@@ -13,9 +13,12 @@ techniques dans le détail. Onglets Outils / Skills / Connexions MCP. Les noms
 personnalisés, snapshots approuvés, UUID et permissions restent inchangés. La
 mémoire distante n’est plus présentée comme un outil intégré. 278 tests et démo
 SDK réussis, régressions navigateur ciblées et suite complète documentées dans
-TESTING.md. Quatre boîtes du propriétaire préparées côté Mail, avec identités et
-signatures ; état `pending` tant que les credentials ne sont pas saisis et validés.
-Aucune boîte présentée comme connectée et aucun mail envoyé lors de ce chantier.
+TESTING.md. Quatre boîtes du propriétaire connectées côté Mail avec leurs UUID, identités et
+signatures conservés : trois IMAP/SMTP par transfert serveur-à-serveur Natio V4
+autorisé et Gmail par OAuth Google réel. Le client OAuth dédié appartient à
+l’instance MCP ; aucun credential mail dans Heart ou les arguments du modèle.
+Authentification, dossiers, recherche sans résultat et identités vérifiés via les
+outils approuvés Heart, sans envoi ni lecture de contenu personnel.
 
 ## Mail MCP et pièces jointes
 
@@ -27,10 +30,11 @@ Images MCP transmises au cerveau, pixels volatils hors journal ; références
 conservées pour relecture. 278 tests, démo SDK et 28 parcours navigateur réussis ;
 GPT‑6 Luna réel a correctement lu une image synthétique issue d’un outil.
 Nouveaux onboardings à quatre clés ; anciennes installations à trois préservées.
-Quatre boîtes personnelles préparées, en attente de credentials : aucune connectée. Gmail natif attend le client OAuth
-Google de l’instance ; IMAP/SMTP, RLS et secrets chiffrés qualifiés en réel sur
-boîtes synthétiques dans nora-mcps. Prochaine étape : connecter les boîtes et
-signatures au portail, puis qualifier leurs fournisseurs réels sans envoi implicite.
+Quatre boîtes personnelles connectées et testées via Heart le 23 novembre :
+Gmail OAuth réel et trois comptes OVH IMAP/SMTP TLS. Les accès sont chiffrés dans
+OpenBao Mail, sans copie dans Heart. Transfert V4 rejoué avec les mêmes opérations :
+aucun doublon ni changement de version. Prochaine étape : un parcours métier
+de lecture/réponse/PJ demandé par le propriétaire ; aucun envoi implicite.
 
 ## Installation indépendante et onboarding
 

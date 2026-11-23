@@ -196,16 +196,20 @@ références. Voir STATUS.md pour le déploiement et la publication.
 `https://mcps.natio.re/mail` avec une clé Mail distincte liée au même utilisateur.
 19 outils MCP : comptes/dossiers, lecture/recherche, identités/signatures,
 brouillons/envoi/rapprochement, export EML et PJ, guide différé. Le portail HTTPS
-configure les comptes IMAP/SMTP et signatures ; Gmail OAuth attend le client Google
-de l’instance. `HARNESS_MAIL_MCP_CONNECTION_ID` relie la connexion au transfert
+configure les comptes IMAP/SMTP et signatures ; Gmail OAuth dispose du client Google
+de l’instance, qualifié avec un compte réel le 23 novembre 2026. `HARNESS_MAIL_MCP_CONNECTION_ID` relie la connexion au transfert
 binaire `mail.attach_file` / `mail.save_attachment`, sous droits réseau/fichiers
 existants. Nouveau login : scope quatre services, sans rotation à la reconnexion.
 Les installations historiques peuvent conserver leurs trois connexions.
 
 Comptes préparés : l’état explicite `pending` distingue une configuration sans
-credentials d’une boîte connectée. Les accès existants de Natio Connect ne sont
-pas exportés par ses outils ; le portail Mail reçoit les identifiants privés.
+credentials d’une boîte connectée. Les accès existants de Natio Connect peuvent être transférés via l’intention V4
+`communications_sender_transfer` vers une destination préautorisée par opérateur,
+limitée au groupe, à l’acteur et aux UUID des boîtes. Les outils ne retournent
+aucune valeur privée : transfert HTTPS direct au serveur Mail, test fournisseur,
+chiffrement OpenBao et reçu idempotent. Le portail reste la voie de saisie manuelle.
 Pour Gmail en IMAP/SMTP, utiliser un mot de passe d’application Google lorsque
 disponible (validation en deux étapes nécessaire), pas le mot de passe normal.
-Google OAuth reste une autre voie, après configuration du client d’instance.
+Google OAuth constitue une voie distincte, avec consentement et refresh token
+privé sur le serveur Mail ; le compte préparé conserve son UUID et ses signatures.
 La connexion du plugin Gmail de ChatGPT n’est pas un credential exportable Heart.

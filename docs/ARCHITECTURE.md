@@ -1088,6 +1088,12 @@ Les nouvelles demandes de compte négocient quatre services (Mail inclus) ; les
 anciennes configurations à trois services restent lisibles et valides. Le portail
 conserve le contrat à trois clés quand le client omet le scope.
 
+Les accès des boîtes appartiennent exclusivement au service Mail. Un transfert
+Natio V4 autorisé passe directement entre serveurs avec une cible configurée par
+opérateur ; Heart conserve uniquement sa clé MCP Mail. Gmail utilise le client
+OAuth de l’instance Mail, PKCE et un refresh token chiffré ; le callback réutilise
+l’UUID d’un compte préparé de même adresse et conserve ses identités/signatures.
+
 ## Noms et organisation des capacités
 
 `app/capability-labels.ts` contient les libellés de présentation, pas un second

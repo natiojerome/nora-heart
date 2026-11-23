@@ -259,14 +259,14 @@ un compte MCP de test isolé, puis nettoyage. Données locales conservées, pas 
 migration de conversations. Gestion projet désormais raccordée au MCP comme source
 unique ; artefacts physiques locaux. [Contrat et limites](NORA-MCPS.md).
 
-## Suite après Mail
+## Suite après connexion Mail
 
-Mail livré via MCP indépendant et raccordé à Heart ; comptes personnels à connecter
-depuis le portail. Qualifier les fournisseurs personnels (lecture/brouillon avant
-envoi demandé), configurer le client Google si Gmail OAuth est retenu. Les anciens
-clients restent à trois clés ; nouveaux onboardings demandent Mail en plus.
+Mail est raccordé et les quatre boîtes du propriétaire sont connectées : Gmail
+OAuth et trois boîtes IMAP/SMTP transférées par Natio V4. Authentification, dossiers,
+recherche sans résultat et signatures vérifiés depuis Heart, sans envoi. Les
+anciens clients à trois clés restent compatibles ; nouvelles installations à quatre.
 Les conversations et leur historique restent dans Heart.
 
-Les quatre comptes mail préparés attendent la saisie sécurisée des credentials.
-Après cela : test authentification, dossiers et lecture ciblée sans marquer lu,
-puis brouillon uniquement si demandé ; aucun envoi de qualification implicite.
+Prochain parcours utile : une lecture/réponse avec PJ sur une demande métier
+explicite, puis brouillon vérifiable avant tout envoi demandé. Aucun traitement
+automatique des mails, changement de statut lu ou envoi périodique n’est activé.
