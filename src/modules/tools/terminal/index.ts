@@ -1,3 +1,4 @@
+import { startIndependent } from "./independent.ts";
 import { SystemdUnits, type HostUnits } from "./systemd.ts";
 import {setTimeout as wait} from 'node:timers/promises';
 import { spawn, type ChildProcessWithoutNullStreams } from "node:child_process";
@@ -37,7 +38,7 @@ class ProcessExecution implements ExecutionService {
   private readonly units?: HostUnits;
   constructor(
     private readonly directory: string,
-    private readonly options: { binary?: string; nodeBinary?: string; host?: {home:string; ownerUnit?:string; units?:HostUnits} } = {},
+    private readonly options: { binary?: string; nodeBinary?: string; host?: {home:string; units?:HostUnits} } = {},
   ) { this.units = options.host ? options.host.units ?? new SystemdUnits() : undefined; }
   private folder(id: string) {
     if (!/^[0-9a-f-]{36}$/.test(id))
@@ -78,10 +79,18 @@ class ProcessExecution implements ExecutionService {
     if (record.workspace !== root)
       throw new ExecutionError("Commande hors de cette conversation.");
     if (record.command.status === "running" && !(await this.units?.active(id))) {
+      let exitCode: number | undefined;
+      if (record.command.independent) {
+        try {
+          const value=(await readFile(path.join(this.folder(id),"exit-code"),"utf8")).trim();
+          if (/^\d+$/.test(value) && Number(value)<=255) exitCode=Number(value);
+        } catch (error) { if ((error as NodeJS.ErrnoException).code!=="ENOENT") throw error; }
+      }
       record.command = {
         ...record.command,
-        status: "interrupted",
-        signal: "SERVICE_RESTART",
+        status: exitCode===undefined ? "interrupted" : "completed",
+        exitCode: exitCode ?? record.command.exitCode,
+        signal: exitCode===undefined ? "SERVICE_RESTART" : null,
       };
       await this.save(record.command, root);
     }
@@ -96,6 +105,7 @@ class ProcessExecution implements ExecutionService {
       (!Number.isSafeInteger(input.timeoutMs) || input.timeoutMs < 1)
     )
       throw new ExecutionError("Durée de commande invalide.");
+    if (input.interactive!==undefined && typeof input.interactive!=="boolean") throw new ExecutionError("Mode interactif invalide.");
     const root = await realpath(workspace),
       cwd = await realpath(path.resolve(root, input.cwd ?? ".")),
       relative = path.relative(root, cwd);
@@ -116,12 +126,25 @@ class ProcessExecution implements ExecutionService {
       status: "running",
       exitCode: null,
       signal: null,
+      ...(this.options.host && !input.interactive ? {independent:true} : {}),
     };
     await this.save(command, root);
     await writeFile(path.join(folder, "output.log"), "", {
       flag: "wx",
       mode: 0o600,
     });
+    if (command.independent) {
+      try {
+        await startIndependent(id,cwd,folder,input);
+        return structuredClone(command);
+      } catch {
+        // A control-plane failure does not prove the unit was never created.
+        if (await this.units!.active(id)) return structuredClone(command);
+        command.status="interrupted";command.signal="SPAWN_ERROR";
+        await this.save(command,root);
+        throw new ExecutionError("Lancement de la commande hôte non confirmé. Vérifie son état avant de relancer.");
+      }
+    }
     const args = [
       "--unshare-all",
       ...(input.network ? ["--share-net"] : []),
@@ -197,7 +220,6 @@ class ProcessExecution implements ExecutionService {
       "--quiet", "--wait", "--pipe", "--collect", "--service-type=exec",
       "--expand-environment=no", `--unit=${unit}`, `--working-directory=${cwd}`,
       "--property=ExitType=cgroup", "--property=KillMode=control-group", `--property=Group=${process.getgid?.()??0}`, "--property=UMask=0007",
-      ...(this.options.host.ownerUnit ? [`--property=PartOf=${this.options.host.ownerUnit}`] : []),
       "--", "/usr/bin/env", "-i", `HOME=${this.options.host.home}`,
       `PATH=${this.options.nodeBinary ? path.dirname(this.options.nodeBinary)+":" : ""}/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin`,
       "LANG=C.UTF-8", "TERM=dumb", "/bin/sh", "-c", input.command,
@@ -318,7 +340,7 @@ class ProcessExecution implements ExecutionService {
   async write(workspace: string, id: string, input: string, close = false) {
     await this.record(workspace, id);
     const active = this.active.get(id);
-    if (!active) throw new ExecutionError("Cette commande est terminée.");
+    if (!active) throw new ExecutionError("Entrée interactive indisponible. Utilise interactive:true pour une commande de développement temporaire.");
     if (typeof input !== "string")
       throw new ExecutionError("Entrée texte requise.");
     await new Promise<void>((resolve, reject) =>
@@ -349,6 +371,10 @@ class ProcessExecution implements ExecutionService {
     clearTimeout(timer);
     return structuredClone(active.command);
   }
+  /** Only explicitly interactive tool sessions belong to this process. Native project units are untouched. */
+  async close() {
+    await Promise.all([...this.active.values()].map(active=>this.stop(active.workspace,active.command.id)));
+  }
   async list(workspace: string) {
     let names: string[];
     try {
@@ -373,7 +399,7 @@ export class BubblewrapExecution extends ProcessExecution {
 }
 /** Unrestricted host commands: construct only in the explicitly installed worker. */
 export class HostExecution extends ProcessExecution {
-  constructor(directory:string, options:{home:string;nodeBinary?:string;ownerUnit?:string;units?:HostUnits}) {super(directory,{nodeBinary:options.nodeBinary,host:options});}
+  constructor(directory:string, options:{home:string;nodeBinary?:string;units?:HostUnits}) {super(directory,{nodeBinary:options.nodeBinary,host:options});}
 }
 
 export function terminalTools(
@@ -419,11 +445,12 @@ export function terminalTools(
   return [
     tool(
       "terminal.exec",
-      host ? "Mode YOLO autorisé : commande sur le serveur entier en root, réseau disponible, cwd absolu accepté. Aucune confirmation d’outil supplémentaire requise pour la tâche demandée. Ne demande pas les permissions déjà accordées. Vérifie les résultats. Retourne id, état et première sortie ; terminal.read seulement si running ou more. yieldTimeMs règle l’attente de retour (500 ms par défaut, 0 immédiat), sans arrêter la commande. Aucun timeout imposé." : "Lancer une commande shell dans le projet isolé (Git, recherche rg, tests, scripts, installations). Retourne id, état et première sortie ; terminal.read seulement si running ou more. yieldTimeMs règle l’attente de retour (500 ms par défaut, 0 immédiat). Réseau selon le réglage du propriétaire. Aucun timeout imposé ; timeoutMs facultatif.",
+      host ? "Mode YOLO autorisé : commande sur le serveur entier en root, réseau disponible, cwd absolu accepté. Par défaut unité système indépendante : arrêt/redémarrage de Heart ou annulation du tour ne l’arrêtent pas ; terminal.stop est explicite. Sans stdin et avec runtime/PATH système, sans dépendance au Node embarqué de Heart. Pour un projet permanent installer son propre service systemd activé ou Docker Compose avec ses runtimes/configurations, hors du code Heart. interactive:true réservé à stdin de développement temporaire. Aucune confirmation d’outil supplémentaire requise pour la tâche demandée. Ne demande pas les permissions déjà accordées. Vérifie les résultats. Retourne id, état et première sortie ; terminal.read seulement si running ou more. yieldTimeMs règle l’attente de retour (500 ms par défaut, 0 immédiat), sans arrêter la commande. Aucun timeout imposé." : "Terminal temporaire de développement isolé (Git, recherche rg, tests, scripts, installations). Ne pas y exploiter un projet : son service et son runtime doivent être indépendants de Heart. Retourne id, état et première sortie ; terminal.read seulement si running ou more. yieldTimeMs règle l’attente de retour (500 ms par défaut, 0 immédiat). Réseau selon le réglage du propriétaire. Aucun timeout imposé ; timeoutMs facultatif.",
       {
         command: string,
         cwd: {type:"string",description:host?"Facultatif : répertoire courant sur l’hôte ; chemins absolus acceptés.":"Facultatif : racine de l’espace du fil par défaut. Utiliser '.' ou un sous-dossier ; le dossier d’installation Heart est distinct."},
         timeoutMs: { type: "integer", minimum: 1 },
+        ...(host ? {interactive:{type:"boolean",description:"Défaut false : exécution native indépendante de Heart, sorties conservées, arrêt explicite. true seulement pour stdin de développement temporaire ; jamais pour exploiter un projet."}} : {}),
         yieldTimeMs: integer,
       },
       ["command"],
@@ -432,7 +459,7 @@ export function terminalTools(
         if(typeof yieldTimeMs!=='number'||!Number.isSafeInteger(yieldTimeMs)||yieldTimeMs<0)throw new ExecutionError('Attente de retour invalide.');
         const command=await execution.start(workspace,{
           command:args.command as string,cwd:args.cwd as string|undefined,
-          timeoutMs:args.timeoutMs as number|undefined,network,
+          timeoutMs:args.timeoutMs as number|undefined,interactive:args.interactive as boolean|undefined,network,
         },signal);
         const deadline=performance.now()+yieldTimeMs;
         let output=await execution.read(workspace,command.id);
@@ -503,8 +530,8 @@ export class HostExecutionClient implements ExecutionService {
     signal?.throwIfAborted();
     const command=await this.call<CommandSnapshot>('start',workspace,[input]);
     const stop=()=>{void this.stop(workspace,command.id).catch(()=>{});};
-    if(signal?.aborted)await this.stop(workspace,command.id);
-    else if(signal){this.signals.set(command.id,{signal,stop});signal.addEventListener('abort',stop,{once:true});}
+    if(!command.independent && signal?.aborted)await this.stop(workspace,command.id);
+    else if(!command.independent && signal){this.signals.set(command.id,{signal,stop});signal.addEventListener('abort',stop,{once:true});}
     // Listener lifecycle is tied to the run signal; no polling/model call needed.
     return command;
   }

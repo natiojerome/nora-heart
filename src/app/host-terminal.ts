@@ -8,10 +8,10 @@ import type {CommandInput} from '../contracts/execution.ts';
 import {HostExecution} from '../modules/tools/terminal/index.ts';
 
 /** Deliberately privileged, opt-in installation; never imports web/LLM credentials. */
-export async function openHostTerminal(options:{socket:string;directory:string;workspaceDirectory:string;home:string;ownerUnit?:string}){
+export async function openHostTerminal(options:{socket:string;directory:string;workspaceDirectory:string;home:string}){
   await mkdir(options.directory,{recursive:true,mode:0o700});
   await mkdir(options.home,{recursive:true,mode:0o700});
-  const execution=new HostExecution(options.directory,{home:options.home,nodeBinary:process.execPath,ownerUnit:options.ownerUnit});
+  const execution=new HostExecution(options.directory,{home:options.home,nodeBinary:process.execPath});
   const root=await realpath(options.workspaceDirectory);
   try {if((await lstat(options.socket)).isSocket())await unlink(options.socket);else throw new Error('Socket path is occupied');}catch(error){if((error as NodeJS.ErrnoException).code!=='ENOENT')throw error;}
   const server=createServer(async(req,res)=>{
@@ -64,10 +64,7 @@ export async function openHostTerminal(options:{socket:string;directory:string;w
   await new Promise<void>((resolve,reject)=>{server.once('error',reject);server.listen(options.socket,()=>resolve());});
   await chmod(options.socket,0o660);
   return {close:async()=>{
-    for(const entry of await import('node:fs/promises').then(fs=>fs.readdir(root))){
-      if(!/^[0-9a-f-]{36}$/.test(entry))continue;
-      for(const command of await execution.list(path.join(root,entry)))if(command.status==='running')await execution.stop(path.join(root,entry),command.id);
-    }
+    await execution.close();
     server.closeAllConnections();await new Promise<void>(resolve=>server.close(()=>resolve()));await unlink(options.socket).catch(()=>{});
   }};
 }

@@ -127,7 +127,7 @@ export class Conversations {
     if(body.access==='yolo'&&!this.options.hostExecution)throw new WorkspaceError("Worker YOLO indisponible sur cette installation.");
     if(body.access!==previous.fileAccess){
       const execution=previous.fileAccess==='yolo'?this.options.hostExecution:this.options.execution;
-      if(execution)for(const command of await execution.list(await this.workspace(id)))if(command.status==='running')await execution.stop(await this.workspace(id),command.id);
+      if(execution)for(const command of await execution.list(await this.workspace(id)))if(command.status==='running'&&!command.independent)await execution.stop(await this.workspace(id),command.id);
     }
     await this.options.repository.setFileAccess(id,body.access as FileAccess);
     return this.get(id);

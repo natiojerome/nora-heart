@@ -76,7 +76,7 @@ export class ProjectsWorkspace {
   async close() {
     if (this.execution)
       for (const command of await this.execution.list(this.directory))
-        if (command.status === "running")
+        if (command.status === "running" && !command.independent)
           await this.execution.stop(this.directory, command.id);
   }
 }

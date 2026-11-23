@@ -6,12 +6,16 @@ export interface CommandSnapshot {
   status: "running" | "completed" | "interrupted";
   exitCode: number | null;
   signal: string | null;
+  /** Native host execution independent of Heart; stdin is not attached. */
+  independent?: boolean;
 }
 export interface CommandInput {
   command: string;
   cwd?: string;
   network?: boolean;
   timeoutMs?: number;
+  /** Explicit temporary stdin session; never use for a deployed project. */
+  interactive?: boolean;
 }
 export interface CommandOutput {
   command: CommandSnapshot;

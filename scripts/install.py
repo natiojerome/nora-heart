@@ -377,7 +377,7 @@ def install(options):
     atomic(Path('/etc/systemd/system')/(name+'-wallets-backup.timer'),'[Unit]\nDescription=Heart wallet recovery backup\n[Timer]\nOnBootSec=5m\nOnCalendar=daily\nPersistent=true\n[Install]\nWantedBy=timers.target\n',0o644)
     run([*command, root / 'src/interfaces/migrate.ts'], cwd=root, env={**env, **{k:str(v) for k,v in values.items()}})
     worker_env = config / 'worker.env'
-    atomic(worker_env, env_text({'HARNESS_HOST_SOCKET': values['HARNESS_HOST_SOCKET'], 'HARNESS_HOST_STATE_DIR': str(private / 'host/commands'), 'HARNESS_HOST_WORKSPACES': str(private / 'state/conversations'), 'HARNESS_HOST_HOME': str(private / 'host/home'), 'HARNESS_HOST_UNIT': name + '-host.service'}))
+    atomic(worker_env, env_text({'HARNESS_HOST_SOCKET': values['HARNESS_HOST_SOCKET'], 'HARNESS_HOST_STATE_DIR': str(private / 'host/commands'), 'HARNESS_HOST_WORKSPACES': str(private / 'state/conversations'), 'HARNESS_HOST_HOME': str(private / 'host/home')}))
     service(root, name + '-host', 'root', [*command, root / 'src/interfaces/host-terminal.ts'], worker_env, group=name, extra='UMask=0007\nRuntimeDirectory='+name+'-host\nRuntimeDirectoryMode=0750\n')
     search_env=config / 'search.env'
     atomic(search_env,env_text({'HARNESS_SEARCH_PORT':identity['searchPort'],'HARNESS_SEARCH_ENGINE_URL':'http://127.0.0.1:'+str(identity['enginePort'])}))

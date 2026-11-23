@@ -289,7 +289,7 @@ test("an explicitly unbounded conversation can continue beyond eight tool rounds
   }
 });
 
-test('YOLO is explicit per thread, routes tools to its worker and revokes running host commands on exit',async()=>{
+test('YOLO is explicit per thread, routes tools to its worker and revokes only temporary commands on exit',async()=>{
   const root=await mkdtemp(path.join(os.tmpdir(),'heart-yolo-policy-'));
   const calls:string[]=[];
   const command={id:'11111111-1111-4111-8111-111111111111',command:'whoami',cwd:'/',startedAt:new Date().toISOString(),status:'running' as const,exitCode:null,signal:null};
@@ -316,6 +316,10 @@ test('YOLO is explicit per thread, routes tools to its worker and revokes runnin
     assert.notEqual((await fixture.service.get(second.id)).conversation.fileAccess,'yolo');
     await assert.rejects(fixture.service.startCommand(second.id,{command:'whoami'}),/Active/);
     await fixture.service.fileAccess(first.id,{access:'read'});assert.deepEqual(calls,['host-network','host-network','stop-host']);
+    Object.assign(command,{independent:true});
+    await fixture.service.fileAccess(first.id,{access:'yolo'});
+    await fixture.service.fileAccess(first.id,{access:'read'});
+    assert.deepEqual(calls,['host-network','host-network','stop-host'],'changing Heart permissions must not stop independent project execution');
   }finally{await rm(root,{recursive:true,force:true});}
 });
 
