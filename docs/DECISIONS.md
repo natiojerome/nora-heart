@@ -602,3 +602,21 @@ regrouper les lectures simultanées. Indiquer l’outil d’aperçu de la source
 les outils déclarés, sans créer de catalogue parallèle. Reconstruire les compteurs
 d’effets reçus hors résumé pour les longs tours, sans confondre succès d’appel
 et résultat métier actuel.
+
+## Heart est responsable des écritures de suivi
+
+Ne pas confondre autorité des données (MCP Projets) et orchestration (Heart).
+Une simple consigne au modèle principal ne suffit pas : ajouter un contrôle de
+fin de tour après la mémoire, capable de demander les lectures manquantes et les
+écritures versionnées. Le moteur exécute celles-ci comme outils ordinaires puis
+le contrôle relit leur état, sans rejouer le travail ni inventer de succès.
+La consultation seule ne modifie pas le plan ; contraintes antérieures conservées.
+
+Le suivi interne du projet courant reste disponible sans accès réseau des outils
+externes, comme la mémoire ; cela ne supprime aucune approbation MCP. Les outils
+globaux gardent leurs permissions. Contrats génériques et assemblage explicite,
+modules review/tools distincts ; pas de synchronisation locale ni scheduler ajouté.
+Le contrôle ajoute normalement une décision modèle par tour de projet, puis une
+lecture de confirmation sans inférence. Inspection ciblée possible si nécessaire.
+Budget insuffisant : réconciliation déléguée explicitement, pas de troncature ni
+promesse d’infaillibilité. Instructions visibles et réinitialisables, 15 blocs.

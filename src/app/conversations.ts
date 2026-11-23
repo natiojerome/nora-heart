@@ -1,3 +1,5 @@
+import {ProjectReview} from "../modules/projects/review/index.ts";
+import {projectProgressTools} from "../modules/tools/projects/index.ts";
 import {ContextError} from "../contracts/context.ts";
 import {withProjectContext} from "./project-context.ts";
 import type {ProjectTracking} from "../contracts/project-tracking.ts";
@@ -274,6 +276,17 @@ export class Conversations {
     if(policies.tools.maxCallsPerBatch>0)instructions+=`\nLimite configurée : au plus ${policies.tools.maxCallsPerBatch} appels d’outils dans une même réponse.`;
     return instructions;
   }
+  private fallbackEngine(conversation:Conversation,blocks:InstructionOverrides,policies:RuntimePolicies,execution?:ExecutionService){
+    const tracking=this.options.projectTracking,projectId=conversation.projectId;
+    const progress=tracking&&projectId?projectProgressTools(tracking,projectId,{overview:true,item:true,updateProject:true,createItem:true,updateItem:true}):[];
+    return new Engine(this.options.sessions,[
+      ...historyTools(this.options.sessions,conversation.id),
+      ...fileTools(conversation.fileAccess==='yolo'?(this.options.hostFiles??(()=>{throw new WorkspaceError('Fichiers YOLO indisponibles. Aucun repli vers le workspace.');})):undefined,conversation.fileAccess==='yolo'),
+      ...(execution?terminalTools(execution,conversation.fileAccess==='yolo'||(conversation.networkAccess??false),conversation.fileAccess==='yolo'):[]),
+      ...memoryTools(this.options.memory),...interactionTools(),...progress,
+    ],withProjectContext(new BoundedContext(this.options.sessions,this.options.memory,instructionValue(blocks,'compression'),policies),tracking,projectId,instructionValue(blocks,'projects'),progress.length?'projects.read':undefined),
+    tracking&&projectId&&conversation.selection?.provider!=='demo'?new ProjectReview(tracking,projectId,instructionValue(blocks,'projectReview'),instructionValue(blocks,'projects')):undefined);
+  }
   private async selection(body:Record<string,unknown>):Promise<ModelSelection>{
     if(!['demo','chatgpt','openai','anthropic','openrouter','venice'].includes(String(body.provider)))throw new Error('Choisir un modèle.');
     const provider = body.provider as ModelSelection["provider"];
@@ -345,13 +358,13 @@ export class Conversations {
       if(!cancelling&&conversation.fileAccess==='yolo'&&!this.options.hostExecution)throw new WorkspaceError('Worker YOLO indisponible. Aucun repli implicite.');
       const execution=conversation.fileAccess==='yolo'?this.options.hostExecution:this.options.execution;
       if(!resume)await configuration?.skills?.explicit(String(body.prompt??''));
-      const engine = await this.options.engineFor?.({...conversation,selection},blocks,policies,configuration?.skills) ?? new Engine(this.options.sessions,[...historyTools(this.options.sessions,id),...fileTools(conversation.fileAccess==='yolo'?(this.options.hostFiles??(()=>{throw new WorkspaceError('Fichiers YOLO indisponibles. Aucun repli vers le workspace.');})):undefined,conversation.fileAccess==='yolo'),...(execution?terminalTools(execution,conversation.fileAccess==='yolo'||(conversation.networkAccess??false),conversation.fileAccess==='yolo'):[]),...memoryTools(this.options.memory),...interactionTools()],withProjectContext(new BoundedContext(this.options.sessions,this.options.memory,instructionValue(blocks,'compression'),policies),this.options.projectTracking,conversation.projectId,instructionValue(blocks,'projects')));
+      const engine = await this.options.engineFor?.({...conversation,selection},blocks,policies,configuration?.skills) ?? this.fallbackEngine({...conversation,selection},blocks,policies,execution);
       if(!resume)await this.options.chatAssets?.claim(id,references.map(file=>file.id));
       runSignal.throwIfAborted();
       await engine.run({ sessionId: id, runId:executionId, resume, prompt: typeof body.prompt==='string'?body.prompt.trim() || "Analyse les pièces jointes.":"", attachments:references, provider: model, modelIdentity:{provider,modelId},
         displayName: this.options.displayName, instructions: await this.instructions(workspace,{...conversation,selection},blocks,policies,identity)+(configuration?.skills?.instructions(rawModel.supportsTools!==false)??''), workspace, maxSteps: conversation.maxSteps ?? 0, maxCallsPerBatch:policies.tools.maxCallsPerBatch, contextWindow,
         reserveTokens: Math.min(4096, Math.floor(contextWindow / 4)),
-        permissions: new Set(["history.read" as const,...(configuration?.skills?.entries.length?["skills.read" as const]:[]),...(conversation.fileAccess === "none" ? [] : ["files.read" as const]), ...(["write","develop","yolo"].includes(conversation.fileAccess ?? "read") ? ["files.write" as const] : []), ...(["develop","yolo"].includes(conversation.fileAccess??"read") ? ["process.execute" as const] : []), "memory.read", "memory.write", "tasks.read", "tasks.write", "user.input", ...(conversation.networkAccess||conversation.fileAccess==='yolo'?["external.read" as const,"external.write" as const]:[])]), signal:runSignal,
+        permissions: new Set(["history.read" as const,...(configuration?.skills?.entries.length?["skills.read" as const]:[]),...(conversation.fileAccess === "none" ? [] : ["files.read" as const]), ...(["write","develop","yolo"].includes(conversation.fileAccess ?? "read") ? ["files.write" as const] : []), ...(["develop","yolo"].includes(conversation.fileAccess??"read") ? ["process.execute" as const] : []), "memory.read", "memory.write", ...(conversation.projectId&&this.options.projectTracking?["projects.read" as const,"projects.write" as const]:[]), "tasks.read", "tasks.write", "user.input", ...(conversation.networkAccess||conversation.fileAccess==='yolo'?["external.read" as const,"external.write" as const]:[])]), signal:runSignal,
         onProgress:progress=>{const active=this.active.get(id);if(active?.controller===controller)active.commentary=progress.text;},
         onActivity:phase=>{
           const active=this.active.get(id);if(!active || active.controller!==controller)return;

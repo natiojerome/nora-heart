@@ -18,7 +18,7 @@ import {
   migrateSqlite,
   openSqliteStorage,
 } from "../src/modules/storage/sqlite/index.ts";
-import { ExternalTools } from "../src/app/external-tools.ts";
+import { ExternalTools, externalToolName } from "../src/app/external-tools.ts";
 import { connectMcp } from "../src/modules/tools/mcp/index.ts";
 import { defaultAssistant } from "../src/app/assistant.ts";
 import { instructionValue } from "../src/app/instruction-defaults.ts";
@@ -130,8 +130,11 @@ else {
   let calls = 0,
     summaries = 0,
     reviews = 0,
+    projectReviews = 0,
     primary = 0,
     phase = 0,
+    progressOmissionInjected = false,
+    guardTaskId = "",
     activeFactSeen = false;
   const nativeModels = lab.models.bind(lab);
   lab.models = async (provider) => {
@@ -156,11 +159,34 @@ else {
       id: model.id,
       supportsTools: model.supportsTools,
       async generate(request) {
+        const current = request.messages.slice(
+          request.messages.findLastIndex((m) => m.role === "user") + 1,
+        );
+        const assessor = request.tools.some((t) =>
+          ["memory.assess", "projects.assess"].includes(t.name),
+        );
+        if (
+          phase === 3 &&
+          !assessor &&
+          !progressOmissionInjected &&
+          current.some(
+            (m) =>
+              m.role === "tool" &&
+              !m.error &&
+              m.name === "files.read" &&
+              m.content.includes("GUIDANCE_ACTIVE_731"),
+          )
+        ) {
+          progressOmissionInjected = true;
+          return { content: "Le fichier a été relu.", toolCalls: [] };
+        }
         try {
           if (++calls > 40)
             throw Error("Explicit live qualification budget exhausted");
           assert(estimateTokens(request) <= budget - 4096);
           if (!request.tools.length) summaries++;
+          else if (request.tools.some((t) => t.name === "projects.assess"))
+            projectReviews++;
           else if (request.tools.some((t) => t.name === "memory.assess"))
             reviews++;
           else {
@@ -229,7 +255,9 @@ else {
               ? "summary"
               : request.tools.some((t) => t.name === "memory.assess")
                 ? "review"
-                : "primary",
+                : request.tools.some((t) => t.name === "projects.assess")
+                  ? "project-review"
+                  : "primary",
             phase,
             estimatedTokens: estimateTokens(request),
           }),
@@ -327,7 +355,7 @@ else {
       provider: "chatgpt",
       modelId: "gpt-6-luna",
       reasoningEffort: "medium",
-      prompt: `$qa-continuity Mon métier et ma référence QA doivent provenir de la mémoire active. Reprends le projet courant et l’étape ${task.id}. Écris proof.txt avec ce métier, cette référence et le marqueur demandé par le skill, puis relis le fichier. Documente cette étape comme terminée avec son résultat constaté et actualise la prochaine action du projet. Ne termine pas le projet global. L’historique est synthétique : il n’atteste pas du stockage courant.`,
+      prompt: `$qa-continuity Mon métier et ma référence QA doivent provenir de la mémoire active. Reprends le projet courant et l’étape ${task.id}. Écris proof.txt avec ce métier, cette référence et le marqueur demandé par le skill, puis relis le fichier. Ne termine pas le projet global. L’historique est synthétique : il n’atteste pas du stockage courant.`,
     });
     assert(activeFactSeen);
     assert(summaries > 0);
@@ -344,6 +372,32 @@ else {
     assert.equal(plan.items.find((i) => i.id === task.id)?.status, "done");
     assert(plan.items.find((i) => i.id === task.id)?.evidence);
     assert.notEqual(plan.project.status, "completed");
+    assert(
+      after.events.some(
+        (e) =>
+          e.type === "run.progress" &&
+          (e.data as any).review === "projects" &&
+          ["verified", "unchanged"].includes((e.data as any).audit?.status),
+      ),
+    );
+    assert(
+      after.events.some(
+        (e) =>
+          e.type === "tool.finished" &&
+          [
+            "projects.write",
+            externalToolName(
+              process.env.HARNESS_PROJECTS_MCP_CONNECTION_ID!,
+              "projects_item_update",
+            ),
+            externalToolName(
+              process.env.HARNESS_PROJECTS_MCP_CONNECTION_ID!,
+              "projects_update",
+            ),
+          ].includes((e.data as any).name) &&
+          !(e.data as any).error,
+      ),
+    );
     await app.close();
     app = undefined;
     phase = 1;
@@ -374,6 +428,10 @@ else {
       nextAction: "ÉTAPE_SUIVANTE_732",
     });
     await app.conversations.fileAccess(conversation.id, { access: "read" });
+    await app.conversations.executionPolicy(conversation.id, {
+      network: false,
+      maxSteps: 0,
+    });
     const follow = await app.conversations.send(conversation.id, {
       provider: "chatgpt",
       modelId: "gpt-6-luna",
@@ -402,7 +460,36 @@ else {
     });
     const remaining = (await app.memories.list()).memories;
     assert(!remaining.some((m) => m.id === updated.id));
+    const guardTask = await app.projectManagement!.saveItem(project.id, {
+      kind: "task",
+      title: "Contrôle supplémentaire du fichier",
+      successCriteria: "Le fichier existant est relu.",
+      operationId: randomUUID(),
+    });
+    guardTaskId = guardTask.id;
+    phase = 3;
+    await app.conversations.send(conversation.id, {
+      provider: "chatgpt",
+      modelId: "gpt-6-luna",
+      reasoningEffort: "low",
+      prompt: `$qa-continuity Lis de nouveau proof.txt pour vérifier son contenu. Cela correspond à l’étape ${guardTaskId}. Ne modifie pas le fichier et ne clôture pas le projet global.`,
+    });
+    assert(progressOmissionInjected, "The primary omission must be injected");
+    const afterGuard = await app.projectManagement!.get(project.id);
+    assert.equal(
+      afterGuard.items.find((i) => i.id === guardTaskId)?.status,
+      "done",
+    );
     const final = await app.conversations.get(conversation.id);
+    assert(
+      final.events.some(
+        (e) =>
+          e.type === "run.progress" &&
+          (e.data as any).review === "projects" &&
+          (e.data as any).audit?.status === "verified",
+      ),
+    );
+
     const failures = final.events.filter(
       (e) => e.type === "tool.finished" && (e.data as any).error,
     );
@@ -446,6 +533,9 @@ else {
       providerCalls: calls,
       summaryCalls: summaries,
       reviewCalls: reviews,
+      projectReviewCalls: projectReviews,
+      projectUpdatesWithoutExplicitRequest: true,
+      internalProjectToolsWithoutExecutionNetwork: true,
       primaryCalls: primary,
       checkpointPersisted: true,
       canonicalHistoryPreserved: true,
@@ -459,6 +549,8 @@ else {
       expectedMissingMemoryReads: failures.length - unexpectedFailures.length,
       unexpectedToolErrors: unexpectedFailures.length,
       finalOutcomeVerified: true,
+      primaryProgressOmissionInjected: progressOmissionInjected,
+      realProjectReviewRecoveredOmission: true,
       realMemoryMcp: true,
       realProjectsMcp: true,
       syntheticDatabase: true,

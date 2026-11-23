@@ -1,3 +1,5 @@
+import {ProjectReview} from "../modules/projects/review/index.ts";
+import {projectProgressTools} from "../modules/tools/projects/index.ts";
 import {withProjectContext} from "./project-context.ts";
 import {ProjectManagement} from "./project-management.ts";
 import { presentTools } from "./capability-labels.ts";
@@ -284,10 +286,14 @@ export async function openWebConversations(
           policies,
         );
         const remoteTools=await externalTools.toolsFor(conversation,memoryConnectionId?[memoryConnectionId]:[]);
-        const projectOverviewName=projectConnectionId?externalToolName(projectConnectionId,'projects_overview'):undefined;
+        const progressConnection=projectConnectionId?await storage.externalTools.get(projectConnectionId):null;
+        const approved=(name:string)=>!!progressConnection?.enabled&&progressConnection.tools.some(t=>t.name===name);
+        const writeApproved=(name:string)=>approved(name)&&!!progressConnection?.allowWrites;
+        const progressTools=conversation.projectId&&remoteProjects?projectProgressTools(remoteProjects,conversation.projectId,{overview:approved('projects_overview'),item:approved('projects_item_get'),updateProject:writeApproved('projects_update')&&approved('projects_overview'),createItem:writeApproved('projects_item_create')&&approved('projects_item_get'),updateItem:writeApproved('projects_item_update')&&approved('projects_item_get')}):[];
         return new Engine(
           storage.sessions,
           presentTools([
+            ...progressTools,
             ...remoteTools,
             ...(runSkills ? skillTools(runSkills, runSkills.entries) : []),
             ...historyTools(storage.sessions, conversation.id),
@@ -330,16 +336,11 @@ export async function openWebConversations(
             ...interactionTools(),
             ...tasksTools(tasks, conversation.id),
           ]),
-          withProjectContext(runSkills ? runSkills.context(context) : context,remoteProjects,conversation.projectId,instructionValue(blocks,"projects"),remoteTools.find(t=>t.name===projectOverviewName)?.name),
-          conversation.selection?.provider === "demo" ||
-            (!memoryConnectionId && remoteMemoryRequired)
-            ? undefined
-            : new MemoryReview(
-                scoped,
-                conversation.projectId ?? null,
-                instructionValue(blocks, "memoryPolicy"),
-                instructionValue(blocks, "memoryReview"),
-              ),
+          withProjectContext(runSkills ? runSkills.context(context) : context,remoteProjects,conversation.projectId,instructionValue(blocks,"projects"),progressTools.find(t=>t.name==='projects.read')?.name),
+          conversation.selection?.provider === "demo"?[]:[
+            ...((!memoryConnectionId&&remoteMemoryRequired)?[]:[new MemoryReview(scoped,conversation.projectId??null,instructionValue(blocks,'memoryPolicy'),instructionValue(blocks,'memoryReview'))]),
+            ...(conversation.projectId&&remoteProjects&&progressTools.some(t=>t.name==='projects.write')?[new ProjectReview(remoteProjects,conversation.projectId,instructionValue(blocks,'projectReview'),instructionValue(blocks,'projects'))]:[]),
+          ],
         );
       },
     });

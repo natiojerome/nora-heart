@@ -152,8 +152,7 @@ fichier produit puis relu par le test, projet non clôturé prématurément.
 Base/compte de qualification séparés et retirés ; aucune donnée utilisateur
 modifiée par ces scénarios. Voir [PROJECTS.md](PROJECTS.md).
 
-Prochaine étape : utiliser ce suivi sur un projet réel pour définir ses critères
-et étapes avec l’utilisateur, puis observer les mises à jour pendant le travail.
+Le suivi comprend désormais le contrôle des écritures décrit ci-dessous.
 Aucun reclassement automatique des projets existants ni plan fictif créé pour eux.
 
 Mise en service vérifiée sur heart.natio.re : ouverture d’une vraie fiche MCP,
@@ -165,7 +164,7 @@ hors serveur et restauré aussi ; ressources de restauration retirées.
 
 ## Instructions et continuité — 23 novembre
 
-Audit du 23 novembre : 14 blocs configurables, dont suivi des projets. Projection
+Audit du 23 novembre : 15 blocs configurables, dont suivi et contrôle des projets. Projection
 de compression sans résultats/arguments transitoires, reprise entre lots complets
 d’un long tour, ancien checkpoint/lot surdimensionné fragmenté comme données,
 réinjection des skills et état projet relu par préparation. Recherche mémoire :
@@ -179,7 +178,7 @@ Révocation MCP détectée : source retirée des schémas/inventaires, pas de re
 redémarrage, nouvelles consignes/droits et valeurs mémoire corrigées puis oubliées.
 Une lecture attendue d’un souvenir supprimé renvoie introuvable ; aucun échec
 d’outil inattendu ni rejeu. Bases/rôles/tokens QA retirés. Activé en production ;
-14 blocs présents, profil version 26/personnalité inchangés, skill actif sain.
+14 blocs présents lors de cette activation, profil version 26/personnalité inchangés, skill actif sain.
 Sauvegarde complète de 321b8b2 déchiffrée et restaurée dans PostgreSQL isolé,
 identité/compteurs et fichiers récupérés ; aucun restore sur la production.
 Aucune instruction personnalisée écrasée.
@@ -194,3 +193,28 @@ perdre toute trace d’une opération dans un long tour.
 Suite : suivre un projet réel dans la durée et mesurer les longs historiques
 sur les cerveaux utilisés, notamment les formulations qui échappent à la
 recherche lexicale. Pas de promesse d’infaillibilité sémantique de tous les LLM.
+
+
+## Heart pilote les mises à jour des projets — 23 novembre
+
+Le suivi ne dépend plus seulement de l’initiative du modèle principal. Outils
+internes projects.read/write limités au projet courant, puis contrôle avant bilan :
+lecture ciblée si nécessaire, décision explicite, écritures versionnées et relecture
+MCP. Mémoire traitée avant suivi, contrats/modules séparés, aucun plan local.
+Une consultation ne réécrit pas le plan ; blocages/prochaine action enregistrables
+sans rappel utilisateur. Réseau des commandes distinct des permissions de stockage :
+connexion MCP active et écritures approuvées toujours nécessaires.
+
+312 tests, démo SDK et 29 parcours navigateur passent. Vrai ChatGPT gpt-6-luna,
+26 inférences, MCP Mémoire/Projets réels en base/tenant QA séparés : travail initial
+suivi sans demande explicite, reprise/compression/droits réseau vérifiés, puis oubli
+de mise à jour délibérément injecté dans la réponse principale. La revue Luna réelle
+récupère cet oubli et le MCP confirme l’étape terminée. Une réponse principale est
+simulée uniquement pour injecter cette panne ; le reste et la correction sont réels.
+Aucune donnée utilisateur touchée ; bases/rôles/tokens/unités QA retirés.
+
+Une course de version ne doit pas écraser une autre conversation ; une écriture
+non confirmée est signalée. Contrôle trop grand : délégation explicite au modèle
+principal, pas de troncature des preuves. Qualité sémantique non universelle,
+pas d’atomicité entre plusieurs écritures. Texte visible et réinitialisable dans
+Instructions, quinzième bloc. Détails dans PROJECTS/TESTING.

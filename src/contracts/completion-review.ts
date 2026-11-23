@@ -9,12 +9,20 @@ export interface CompletionReview {
   readonly failureMode?: "append" | "replace" | "revise";
   /** A scoped observation for the primary model; never publish it as the final answer. */
   review(input: {
+    runId?: string;
+    /** Canonical messages before compaction, with transient values removed by the engine. */
+    evidenceMessages?: readonly import("./messages.ts").Message[];
     provider: ModelProvider;
     request: ModelRequest;
     response: ModelResponse;
     contextWindow?: number;
     reserveTokens?: number;
-  }): Promise<{ response: ModelResponse; audit: Json; revision?: string }>;
+  }): Promise<{
+    response: ModelResponse;
+    audit: Json;
+    revision?: string;
+    verifyAfterTools?: boolean;
+  }>;
 }
 
 /** Safe diagnostic categories only; never include provider payloads or user data. */

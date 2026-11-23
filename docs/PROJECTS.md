@@ -41,9 +41,33 @@ la version et la date de lecture, avec les compteurs. Aucun plan détaillé ou
 historique de preuves recopié systématiquement. Le modèle utilise ensuite les
 outils Projets pour lire le détail et actualiser l’élément après un résultat
 vérifié. Une indisponibilité est explicite, sans ancien état présenté comme frais.
-Cela guide le modèle ; ce n’est pas une garantie d’initiative parfaite à chaque tour.
-Les outils du chat conservent les droits existants : connexion active, écritures
-approuvées et accès réseau ou mode YOLO autorisé pour le fil.
+Heart ne se contente pas de cette lecture : il est responsable de la mise à jour.
+Les outils internes `projects.read` et `projects.write` permettent de lire le plan,
+créer les étapes/blocages et actualiser statut, critères, preuve et prochaine action.
+Ils sont limités au projet du fil et restent disponibles lorsque le réseau des
+commandes/outils externes est désactivé. Le binding MCP doit être actif, les outils
+correspondants approuvés et les écritures autorisées ; aucun contournement des
+permissions de la connexion. Les outils MCP globaux gardent leurs droits réseau.
+
+Avant la réponse finale d’un tour de projet, après la revue mémoire, un contrôle
+`ProjectReview` distinct demande au même cerveau une décision explicite : rien à
+changer, lire un détail/page manquant, ou proposer les mises à jour nécessaires.
+Il tient compte des contraintes antérieures et des résultats réels du tour, même
+après compression. Une consultation seule ne justifie pas de réécrire la prochaine
+action. Une panne peut produire un blocage, jamais une réussite fictive.
+
+Les propositions passent par les outils ordinaires du moteur, avec versions et
+journal d’effets, puis le contrôle relit le MCP pour confirmer les champs écrits.
+Un conflit ne provoque aucun écrasement ni rejeu automatique. Une confirmation
+impossible est signalée dans le bilan. Les lots ne sont pas transactionnels :
+des écritures partielles restent possibles. Une lecture identique répétée par
+le contrôle est refusée pour éviter une boucle sans progrès.
+
+Ce mécanisme récupère un oubli du modèle principal, sans garantir toutes ses
+décisions sémantiques. Un contrôle trop volumineux délègue explicitement la
+réconciliation au modèle principal, sans tronquer les preuves ni dépasser le
+budget. Le contrôle est omis en démo, sans outils ou sans écriture approuvée.
+Le texte de contrôle est visible, modifiable et réinitialisable dans Instructions.
 
 L’ouverture, une sauvegarde, le retour dans la fenêtre et **Actualiser** relisent
 le suivi. Aucun polling périodique. Le catalogue regroupe ses lectures simultanées ;
@@ -66,6 +90,11 @@ valide les commandes du propriétaire et le rattachement des éléments. Le modu
 `storage/mcp-projects` adapte les champs et outils MCP, valide leurs réponses et
 ne contient aucun SQL. `app/web-conversations.ts` assemble ces contrats ; le core
 ne connaît aucune implémentation.
+
+`modules/tools/projects` expose le suivi interne derrière `ProjectTracking`.
+`modules/projects/review` propose et vérifie, sans exécuter les écritures lui-même.
+Le contrat générique `CompletionReview` accepte plusieurs contrôles ordonnés ;
+la composition relie mémoire puis projets. Aucun client MCP/SQL dans ces modules.
 
 L’interface utilise `/api/projects`, `/api/projects/:id` et
 `/api/projects/:id/items`. Les créations portent un UUID d’opération réutilisé

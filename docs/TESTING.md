@@ -985,3 +985,36 @@ fiche Projets contrôlée en lecture seule aux quatre largeurs, zéro erreur JS.
 Backup complet de 321b8b2 déchiffré et pg_dump restauré sans réseau (256 Mio) :
 identité/compteurs et fichiers/configurations identiques. Conteneur et fichiers
 privés retirés. Aucune donnée de production restaurée/écrasée.
+
+
+## Écritures de suivi autonomes — 23 novembre 2026
+
+`pnpm check` : 312 tests réussis ; `pnpm demo:sdk` : succès, fournisseur simulé.
+29 parcours navigateur réussis avec le catalogue d’instructions à 15 blocs.
+Les dix tests project-progress couvrent oubli principal récupéré, décision sans
+changement, conflit non écrasé, scope/version/UUID d’opération, preuves transitoires
+exclues, blocage réel, inspection ciblée, contraintes antérieures et ordre mémoire
+puis projet. Aucun fournisseur simulé présenté comme intégration réelle.
+
+`tests/live-context-continuity.ts --live` : ChatGPT gpt-6-luna medium puis low,
+26 inférences (15 principales, 3 résumés, 4 revues mémoire, 4 revues projet).
+Assemblage web réel sur SQLite jetable, MCP Mémoire/Projets de production en
+base/tenant séparés, budget de test 32 768 sans changer la capacité native.
+Travail initial documenté sans demander explicitement de mettre à jour le plan ;
+consultation après reprise sans réécriture gratuite de prochaine action ; mémoire
+corrigée puis oubliée, une lecture attendue introuvable, zéro erreur inattendue.
+Le suivi interne fonctionne aussi avec le réseau d’exécution désactivé.
+
+Dernière phase : injection volontaire d’une réponse principale prématurée après
+lecture réussie du fichier, sans mise à jour d’étape. Cette seule réponse est
+synthétique ; la décision de correction est produite par Luna, les écritures et
+leur vérification passent réellement par le MCP. L’étape termine avec critère et
+preuve, projet global laissé ouvert. Pas de rejeu d’action métier. Le premier essai
+avait révélé une reformulation inutile de prochaine action : contraintes primaires
+et interdiction des modifications stylistiques ajoutées, puis scénario complet
+rejoué avec succès. Les tests ne prétendent pas qualifier toutes les décisions LLM.
+
+[Preuve du parcours](qualification/project-progress/luna.json). Bases/rôles/tokens,
+unités et tunnels jetables retirés ; aucun compte ou projet du propriétaire modifié.
+Aucune migration ou dépendance supplémentaire. Contrôle paginé testé en régression ;
+le parcours réel n’a pas eu besoin de cette branche d’inspection.

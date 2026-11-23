@@ -23,6 +23,8 @@ export type Permission =
   | "files.write"
   | "memory.read"
   | "memory.write"
+  | "projects.read"
+  | "projects.write"
   | "process.execute"
   | "user.input"
   | "external.read"

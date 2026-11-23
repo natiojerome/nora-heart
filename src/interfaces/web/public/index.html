@@ -1554,7 +1554,7 @@ Liste les fichiers de l’espace de test et explique ce que tu as trouvé.</text
         <label for="defaults-effort" id="defaults-effort-label">Effort</label><select id="defaults-effort"><option value="">Automatique</option></select><p id="defaults-model-status" class="field-help" role="status"></p>
         <div id="defaults-capacity-field"><label for="defaults-capacity">Fenêtre de contexte</label><input id="defaults-capacity" type="number" min="4096" max="2000000" value="32768"></div>
       <label for="defaults-access">Mode</label><select id="defaults-access"><option value="none">Aucun outil fichier</option><option value="read">Lecture seule</option><option value="write">Lecture et écriture</option><option value="develop">Développement isolé</option><option value="yolo">YOLO · serveur entier, root</option></select>
-        <label class="setting-switch" for="defaults-network"><span><strong>Accès réseau</strong><small>Commandes et outils web du nouveau fil.</small></span><input id="defaults-network" type="checkbox" role="switch"></label><p id="defaults-access-help" class="field-help">Le réseau autorise les commandes et les outils MCP activés. YOLO donne accès au serveur entier et au réseau sans confirmations supplémentaires.</p>
+        <label class="setting-switch" for="defaults-network"><span><strong>Accès réseau</strong><small>Commandes et outils web du nouveau fil.</small></span><input id="defaults-network" type="checkbox" role="switch"></label><p id="defaults-access-help" class="field-help">Réseau : commandes et connexions d’outils externes. Mémoire et suivi du projet restent gérés par Heart. YOLO donne accès au serveur entier et au réseau.</p>
       </div><footer class="editor-actions"><button type="submit" id="save-defaults" class="button primary">Enregistrer</button></footer></form>
     </dialog>
     <dialog id="usage-dialog" class="editor-dialog usage-dialog" aria-labelledby="usage-heading">
@@ -1584,7 +1584,7 @@ Liste les fichiers de l’espace de test et explique ce que tu as trouvé.</text
           </select>
           <p id="workspace-access-help" class="field-help"></p>
           <p class="settings-save-note">Mode enregistré automatiquement.</p>
-          <form id="network-policy-form" class="execution-policy">            <label class="setting-switch" for="execution-network"><span><strong>Accès au réseau</strong><small>Commandes et outils MCP activés. Toujours actif en YOLO.</small></span><input id="execution-network" type="checkbox" role="switch" /></label><div class="settings-inline-actions"><button class="button secondary compact" type="submit">Enregistrer le réseau</button></div></form>
+          <form id="network-policy-form" class="execution-policy">            <label class="setting-switch" for="execution-network"><span><strong>Accès au réseau</strong><small>Commandes et outils externes. Toujours actif en YOLO.</small></span><input id="execution-network" type="checkbox" role="switch" /></label><div class="settings-inline-actions"><button class="button secondary compact" type="submit">Enregistrer le réseau</button></div></form>
         </section>
         <section id="settings-execution" class="settings-section" role="tabpanel"><div class="settings-section-heading"><div><h3>Exécution</h3><p>Budget de travail.</p></div></div>
           <form id="execution-policy-form" class="execution-policy">

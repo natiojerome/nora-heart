@@ -30,7 +30,8 @@ conformément à la décision du propriétaire, sans nouvelle plateforme maison.
 
 Objectif global, objectifs imbriqués, étapes et blocages dans le MCP, avec critères,
 preuves et gardes de clôture. Fiche web, compteurs globaux, contexte léger par tour
-et mises à jour via outils. Qualifié avec SQL/MCP réels, navigateur et Luna.
+et mises à jour via outils. Heart vérifie aussi les écritures avant le bilan,
+sans attendre un rappel utilisateur : décision explicite, effets puis relecture MCP. Qualifié avec SQL/MCP réels, navigateur et Luna.
 Aucune conversion automatique des anciens plans. Voir [PROJECTS.md](PROJECTS.md).
 
 ## Audit de continuité
@@ -43,8 +44,9 @@ de finalité, permission ou autorité des données.
 
 ## Prochaines étapes utiles
 
-1. Appliquer le suivi à un projet réel : définir critères/étapes utiles, puis
-   observer et ajuster les mises à jour après résultats, sans inventer de plan.
+1. Observer le contrôle automatique de suivi sur les projets réels : critères,
+   étapes, blocages et prochaine action après résultats, sans fabriquer de plan
+   ni modifier les fiches lors d’une simple consultation.
 2. Sur demande métier explicite, qualifier une lecture/réponse mail avec pièce
    jointe, identité et signature conservées. L’envoi simple Heart/Luna et sa
    réception Gmail sont déjà qualifiés ; aucun nouvel envoi de test implicite.

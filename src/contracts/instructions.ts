@@ -3,6 +3,7 @@ export type InstructionId =
   | "work"
   | "tasks"
   | "projects"
+  | "projectReview"
   | "memory"
   | "memoryPolicy"
   | "development"

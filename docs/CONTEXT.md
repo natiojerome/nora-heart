@@ -167,3 +167,14 @@ réinjectée ne justifie pas de rejouer une opération ; les originaux restent
 consultables. Ces compteurs n’attestent pas de l’état métier/mémoire courant.
 Les fiches Projets démarrent une lecture indépendante, pour ne pas rejoindre un
 instantané commencé avant une écriture acquittée dans une autre conversation.
+
+
+Le suivi est aussi vérifié avant la réponse finale : MemoryReview puis
+ProjectReview, indépendants derrière CompletionReview. La revue projet dispose
+des contraintes principales et des preuves du tour non perdues par compression ;
+arguments/résultats transitoires retirés. Sa décision none/inspect/update ne remplace
+pas la réponse métier et les effets repassent par le moteur avant relecture MCP.
+Une demande de statut ne réécrit pas gratuitement la prochaine action. Si le
+contexte de contrôle dépasse le budget, le moteur demande explicitement au modèle
+principal de réconcilier le suivi avec les outils ; aucun appel trop grand ni
+résumé improvisé des preuves. Voir [PROJECTS.md](PROJECTS.md).

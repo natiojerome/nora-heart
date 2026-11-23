@@ -80,7 +80,7 @@ test(
       );
       await page.evaluate(() => (location.hash = "instructions"));
       await page.waitForSelector(".instruction-row");
-      assert.equal(await page.locator(".instruction-row").count(), 14);
+      assert.equal(await page.locator(".instruction-row").count(), 15);
       assert.equal(
         await page.locator("#screen-instructions").isVisible(),
         true,
@@ -439,7 +439,7 @@ test(
             at: new Date().toISOString(),
             scope:
               "Chromium + actual HTTP/SQLite assembly on temporary state; no model call",
-            blocks: 14,
+            blocks: 15,
             unifiedConfiguration: true,
             fourAccessibleTabs: true,
             lazyCatalog: true,

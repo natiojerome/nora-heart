@@ -253,7 +253,7 @@ première réponse finale du tour. Les effets proposés repassent par la boucle 
 le core ne connaît que ce contrat, sans règle mémoire, SQL ou fournisseur concret.
 Un audit `run.progress` de kind review consigne les catégories, hors bulles de chat.
 Un échec préserve la réponse et ajoute l’avertissement fourni par le module.
-Ce contrôle ajoute un appel modèle par tour terminé hors démo/modèle sans outils ;
+Ce contrôle mémoire ajoute un appel modèle par tour terminé hors démo/modèle sans outils ;
 aucune reprise rétroactive ni revue en boucle.
 L’outil `memory.get` refuse les souvenirs oubliés, même avec un UUID connu ;
 le service administratif conserve leur lecture pour restauration et historique.
@@ -1036,8 +1036,8 @@ MemoryService.get relit l’état courant et exige une révision active identiqu
 avec un cache limité à cette revue. Aucune dépendance au backend concret.
 CompletionReview déclare une politique failureMode optionnelle ; la revue mémoire
 choisit revise : le brouillon reste retenu, puis le modèle principal reprend si
-la vérification échoue. Les autres revues conservent leur comportement. Aucune
-seconde revue, un appel primaire supplémentaire sur révision ou échec.
+la vérification échoue. Les autres revues conservent leur comportement. Une seule décision mémoire, un appel primaire supplémentaire sur révision ou échec.
+Le contrôle des projets a son propre cycle de vérification, décrit plus bas.
 
 L’absence de binding Projects désactive la création et ne lit pas le catalogue SQL.
 Une injection de repository explicite sert aux fixtures de qualification ; elle
@@ -1047,7 +1047,7 @@ conservés pour leurs données et leurs tests, sans être sélectionnés implici
 L’inventaire primaire est fourni à la revue par primaryToolNames ; l’unique outil
 memory.assess de ce contrôle ne représente pas les capacités du fil. La correction
 memoryCorrection contient claim/issue, vérifiée comme citation du brouillon puis
-transmise par le contrat neutre revision. Une seule revue par run ; un nouvel appel
+transmise par le contrat neutre revision. Une seule décision mémoire par run ; un nouvel appel
 primaire uniquement si correction demandée, avec budget/contexte/permissions inchangés.
 Aucun brouillon rejeté ni feedback de contrôle ajouté à l’historique conversationnel.
 
@@ -1218,3 +1218,35 @@ lectures en vol : une requête postérieure à une écriture part de l’autorit
 rejoindre un ancien instantané. Les catalogues gardent leur regroupement léger.
 Compteurs de résultats d’outils déjà reçus reconstruits hors résumé pendant un
 long tour ; aucun argument/résultat sensible dans ces compteurs.
+
+## Écritures de suivi pilotées par Heart
+
+`modules/tools/projects/index.ts` expose `projects.read`/`projects.write`, limités
+au projet courant derrière le contrat `ProjectTracking`. La composition filtre
+chaque opération selon les outils approuvés et le droit d’écriture du binding.
+Les permissions `projects.read`/`projects.write` sont distinctes de celles des
+commandes et outils externes : couper leur réseau ne coupe pas la persistance
+interne du suivi. L’adaptateur MCP revérifie toujours les autorisations distantes.
+
+`modules/projects/review/index.ts` implémente le contrat générique CompletionReview.
+Le moteur accepte une liste ordonnée : mémoire d’abord, suivi du projet ensuite.
+Une décision sans effet passe au contrôle suivant sans réappeler le modèle principal.
+Le contrôle reçoit les preuves canoniques privées (résultats transitoires retirés),
+les contraintes/contexte de la requête principale et une fiche MCP fraîche. Il
+choisit none, inspect ou update. inspect émet des lectures ordinaires puis une
+nouvelle décision ; une lecture identique répétée est refusée. update émet des
+écritures ordinaires, jamais une écriture cachée depuis le contrôle.
+
+`verifyAfterTools` permet une vérification après effets. Le contrôle relit versions
+et champs distants, sans inférence supplémentaire. La proposition temporaire est
+limitée au run ; intentions/reçus restent dans le journal existant et les données
+métier dans le MCP. Aucun plan SQL local, worker supplémentaire ou reprise aveugle.
+Création : UUID d’opération stable dérivé du run/call ; édition : expectedVersion.
+Une erreur/concurrence ne doit pas devenir une fausse confirmation ; une absence
+de confirmation est explicitement ajoutée au bilan. Pas d’atomicité multi-écritures.
+
+Une consultation ne déclenche pas de reformulation du plan. Budget insuffisant
+pour le contrôle complet : délégation explicite de la réconciliation au modèle
+principal, sans retrait silencieux des preuves. Démo, absence d’outils ou de droit
+d’écriture : pas de contrôle d’écriture. Instructions `projectReview` configurables
+avec reset, quinzième bloc ; aucune règle NLP parallèle ni backend imposé au core.

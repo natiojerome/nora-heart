@@ -36,7 +36,7 @@ au lieu d’une consigne fixe de 2500 caractères.
 
 ## Source et persistance
 
-`app/instruction-defaults.ts` assemble les quatorze blocs livrés.
+`app/instruction-defaults.ts` assemble les quinze blocs livrés.
 La personnalité reste stockée dans `personalityInstructions`, le nom et le genre
 dans leurs champs existants : pas de seconde source dans les surcharges.
 `Assistant` dérive `presentationInstructions` et `personalityDefault` pour les
@@ -60,7 +60,7 @@ Les anciens clients qui sauvent le profil sans ce champ conservent les surcharge
 
 Au début d’un envoi ou d’une reprise de formulaire, Conversations lit un instantané
 des surcharges. Celui-ci sert aux consignes principales et à l’assemblage du même
-run : politique de consentement, revue mémoire et instructions de compression.
+run : politique de consentement, revues mémoire/projets et instructions de compression.
 Il est réutilisé pendant les étapes outils. Modifier les réglages pendant un run
 ne change donc pas ses consignes en cours ; elles sont relues au prochain échange.
 
@@ -72,6 +72,7 @@ ne change donc pas ses consignes en cours ; elles sont relues au prochain échan
 | Exécution et autonomie | Chaque appel principal : accomplir et vérifier les actions autorisées, fichiers pour lire/éditer, terminal pour exécuter. |
 | YOLO | Accès yolo. |
 | Revue mémoire | Première tentative de réponse finale, hors démo/modèle sans outils. |
+| Contrôle du suivi des projets (`projectReview`) | Après la revue mémoire dans un fil de projet avec écritures approuvées ; nouvelles lectures si nécessaire, puis vérification des effets sans inférence supplémentaire. |
 | Compression | Lorsqu’une compression devient nécessaire. |
 
 Les modules de revue/contexte reçoivent du texte par leurs constructeurs, sans

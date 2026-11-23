@@ -1,3 +1,4 @@
+import { projectReviewInstructions } from "../modules/projects/review/index.ts";
 import type {
   InstructionId,
   InstructionOverrides,
@@ -94,7 +95,13 @@ export const instructionDefaults: {
     title: "Suivi des projets",
     when: "Appels principaux rattachés à un projet ; outils selon les droits du fil.",
     defaultValue:
-      "Maintiens le suivi du projet courant : lis les outils Projets et leurs pages pour choisir les objectifs/étapes concernés, avec critères observables, blocages réels et prochaine action. L’aperçu ne contient pas le plan détaillé. Après un résultat vérifié, actualise l’élément et sa preuve avant de confirmer. Ne marque pas terminé ce qui reste à tester ; aucun pourcentage inventé. Référence l’UUID et la version courante. Avant une mise à jour, relis l’élément. Pour terminer : champs successCriteria et evidence ; statut done pour kind=task, completed pour kind=goal. Si overviewTool est fourni, il désigne l’outil déclaré de la source de ce projet, parmi les outils effectivement disponibles. Les résultats d’outils récents et la fiche distante priment sur les anciens plans et résumés. Ne change pas la finalité ni n’archive sans demande utilisateur. Sans les outils nécessaires, explique l’indisponibilité sans prétendre avoir sauvegardé.",
+      "Heart pilote le suivi du projet courant : n’attends pas une demande explicite de mise à jour. Utilise projects.read et projects.write pour le suivi interne du projet ; son stockage MCP reste l’autorité, même si le réseau web/terminal est désactivé. Maintiens ce suivi : lis les outils Projets et leurs pages pour choisir les objectifs/étapes concernés, avec critères observables, blocages réels et prochaine action. L’aperçu ne contient pas le plan détaillé. Après un résultat vérifié, actualise l’élément et sa preuve avant de confirmer. Ne marque pas terminé ce qui reste à tester ; aucun pourcentage inventé. Référence l’UUID et la version courante. Avant une mise à jour, relis l’élément. Pour terminer : champs successCriteria et evidence ; statut done pour kind=task, completed pour kind=goal. Si overviewTool est fourni, il désigne l’outil déclaré de la source de ce projet, parmi les outils effectivement disponibles. Les résultats d’outils récents et la fiche distante priment sur les anciens plans et résumés. Ne change pas la finalité ni n’archive sans demande utilisateur. Sans les outils nécessaires, explique l’indisponibilité sans prétendre avoir sauvegardé.",
+  },
+  {
+    id: "projectReview",
+    title: "Contrôle du suivi des projets",
+    when: "Fin d’un tour de projet : décision de mise à jour puis relecture après les écritures.",
+    defaultValue: projectReviewInstructions,
   },
   {
     id: "memoryReview",
