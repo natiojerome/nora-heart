@@ -978,3 +978,10 @@ history.read. Demande active/dernier lot nécessaires trop grands : erreur sûre
 pas retrait silencieux. Les résultats transitoires ne sont pas versés au résumé,
 mais un modèle peut recopier une donnée dans son propre texte. Les fixtures ne
 qualifient pas toutes les fenêtres natives ni tous les fournisseurs.
+
+Activation contrôlée : catalogue HTTPS de 14 blocs, version du profil inchangée
+(26), personnalité conservée et skill code-review activé sans erreur. Vraie
+fiche Projets contrôlée en lecture seule aux quatre largeurs, zéro erreur JS.
+Backup complet de 321b8b2 déchiffré et pg_dump restauré sans réseau (256 Mio) :
+identité/compteurs et fichiers/configurations identiques. Conteneur et fichiers
+privés retirés. Aucune donnée de production restaurée/écrasée.

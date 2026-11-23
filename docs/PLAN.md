@@ -35,9 +35,10 @@ Aucune conversion automatique des anciens plans. Voir [PROJECTS.md](PROJECTS.md)
 
 ## Audit de continuité
 
-Révision de l’injection des instructions/outils/skills, mémoire et suivi courant
-pendant les longs tours et compressions. Tests mécaniques renforcés, qualification
-réelle combinée et mise en service suivies dans STATUS/TESTING. Aucun changement
+Révision livrée de l’injection des instructions/outils/skills, mémoire et suivi
+courant pendant les longs tours/compressions. 302 tests, 29 parcours navigateur,
+42 tests PostgreSQL, scénario réel Luna/MCP combiné et restauration vérifiée.
+Preuves et limites dans STATUS/TESTING. Aucun changement
 de finalité, permission ou autorité des données.
 
 ## Prochaines étapes utiles

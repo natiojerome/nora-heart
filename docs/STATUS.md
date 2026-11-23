@@ -178,8 +178,11 @@ Révocation MCP détectée : source retirée des schémas/inventaires, pas de re
 3 compressions et 3 revues, MCP Mémoire/Projets et skill local, reprise après
 redémarrage, nouvelles consignes/droits et valeurs mémoire corrigées puis oubliées.
 Une lecture attendue d’un souvenir supprimé renvoie introuvable ; aucun échec
-d’outil inattendu ni rejeu. Bases/rôles/tokens QA retirés. Activation et sauvegarde
-finales en cours ; aucune instruction personnalisée écrasée.
+d’outil inattendu ni rejeu. Bases/rôles/tokens QA retirés. Activé en production ;
+14 blocs présents, profil version 26/personnalité inchangés, skill actif sain.
+Sauvegarde complète de 321b8b2 déchiffrée et restaurée dans PostgreSQL isolé,
+identité/compteurs et fichiers récupérés ; aucun restore sur la production.
+Aucune instruction personnalisée écrasée.
 
 Les fiches projet ne rejoignent plus une lecture déjà en vol avant une écriture
 acquittée : suivi indépendant par préparation, catalogue léger toujours regroupé.
@@ -187,3 +190,7 @@ La source et son outil d’aperçu effectivement déclaré sont indiqués au mod
 Les compteurs des résultats d’outils déjà reçus du tour sont reconstruits depuis
 le journal hors résumé, sans arguments ni données sensibles, pour éviter de
 perdre toute trace d’une opération dans un long tour.
+
+Suite : suivre un projet réel dans la durée et mesurer les longs historiques
+sur les cerveaux utilisés, notamment les formulations qui échappent à la
+recherche lexicale. Pas de promesse d’infaillibilité sémantique de tous les LLM.
