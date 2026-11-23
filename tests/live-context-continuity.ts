@@ -134,6 +134,7 @@ else {
     primary = 0,
     phase = 0,
     progressOmissionInjected = false,
+    memoryOmissionPhases = new Set<number>(),
     guardTaskId = "",
     activeFactSeen = false;
   const nativeModels = lab.models.bind(lab);
@@ -180,8 +181,18 @@ else {
           progressOmissionInjected = true;
           return { content: "Le fichier a été relu.", toolCalls: [] };
         }
+        if (
+          phase >= 4 &&
+          phase <= 6 &&
+          request.tools.length > 0 &&
+          !assessor &&
+          !memoryOmissionPhases.has(phase)
+        ) {
+          memoryOmissionPhases.add(phase);
+          return { content: "Bien reçu.", toolCalls: [] };
+        }
         try {
-          if (++calls > 40)
+          if (++calls > 48)
             throw Error("Explicit live qualification budget exhausted");
           assert(estimateTokens(request) <= budget - 4096);
           if (!request.tools.length) summaries++;
@@ -480,6 +491,55 @@ else {
       afterGuard.items.find((i) => i.id === guardTaskId)?.status,
       "done",
     );
+    // Fault injection: omit the primary memory action, while Luna reviews and MCP effects stay real.
+    phase = 4;
+    await app.conversations.send(conversation.id, {
+      provider: "chatgpt",
+      modelId: "gpt-6-luna",
+      reasoningEffort: "low",
+      prompt:
+        "Ma préférence durable pour la qualification QA : je préfère les comptes rendus au format QA_MEMORY_734. Cette préférence est utile pour mes prochains échanges.",
+    });
+    const remembered = (await app.memories.list()).memories.filter((m) =>
+      m.content.includes("QA_MEMORY_734"),
+    );
+    assert.equal(
+      remembered.length,
+      1,
+      "The real review must recover the omitted save",
+    );
+    phase = 5;
+    await app.conversations.send(conversation.id, {
+      provider: "chatgpt",
+      modelId: "gpt-6-luna",
+      reasoningEffort: "low",
+      prompt:
+        "Correction : pour les comptes rendus de qualification QA, je préfère maintenant le format QA_MEMORY_735 à la place de QA_MEMORY_734.",
+    });
+    const corrected = (await app.memories.list()).memories.filter((m) =>
+      m.content.includes("QA_MEMORY_735"),
+    );
+    assert.equal(corrected.length, 1);
+    assert.equal(
+      corrected[0].id,
+      remembered[0].id,
+      "Correction updates the same durable memory",
+    );
+    assert(corrected[0].version > remembered[0].version);
+    phase = 6;
+    await app.conversations.send(conversation.id, {
+      provider: "chatgpt",
+      modelId: "gpt-6-luna",
+      reasoningEffort: "low",
+      prompt:
+        "Oublie ma préférence de format de compte rendu QA_MEMORY_735, ainsi que son ancienne valeur QA_MEMORY_734. Je demande sa suppression de la mémoire durable.",
+    });
+    assert(
+      !(await app.memories.list()).memories.some(
+        (m) => m.id === remembered[0].id,
+      ),
+    );
+    assert.equal(memoryOmissionPhases.size, 3);
     const final = await app.conversations.get(conversation.id);
     assert(
       final.events.some(
@@ -552,6 +612,15 @@ else {
       primaryProgressOmissionInjected: progressOmissionInjected,
       realProjectReviewRecoveredOmission: true,
       realMemoryMcp: true,
+      primaryMemoryOmissionsInjected: memoryOmissionPhases.size,
+      realMemoryReviewRecoveredCreateUpdateForget: true,
+      memoryWriteReadbackVerified:
+        final.events.filter(
+          (e) =>
+            e.type === "run.progress" &&
+            (e.data as any).review === "memory" &&
+            (e.data as any).audit?.status === "verified",
+        ).length >= 3,
       realProjectsMcp: true,
       syntheticDatabase: true,
       noOwnerDataTouched: true,

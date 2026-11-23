@@ -106,6 +106,7 @@ JSON Schema via une déclaration d’outil réservée à cette revue :
 - `remember` : fait durable nouveau établi par le message humain ;
 - `update` : fait modifié, avec ID/version d’un souvenir actif retrouvé ;
 - `known` : fait déjà conservé, sans réécriture ;
+- `forget` : demande explicite d’oubli, avec ID/version actuels ;
 - `none` : rien de durable utile, fait temporaire ou refus ;
 - `confirm` : accord ou précision nécessaires avant conservation.
 
@@ -125,15 +126,15 @@ effets proposés retournent dans la boucle normale : permissions, journal,
 comparaison de version, validation des secrets et cartes existantes s’appliquent.
 Le module n’exécute aucun outil et ne dépend d’aucun stockage ou fournisseur concret.
 `confirm` passe par le formulaire existant ; aucune autre écriture préparée dans
-ce lot n’est exécutée avant la réponse humaine. Pas d’oubli/restauration automatique.
+ce lot n’est exécutée avant la réponse humaine. Pas d’oubli sans demande explicite ni restauration automatique.
 
 Un événement `run.progress` de `kind: review` consigne statut et catégories de
 décision, sans citation ni raisonnement privé ; il ne devient pas une bulle de chat.
-Seuls les résultats réussis des outils confirment une sauvegarde. La revue ne se
-répète pas après les effets qu’elle propose, et un seul brouillon final est publié.
+Seuls les résultats réussis des outils confirment une sauvegarde. Après ses effets, la revue relit le stockage sans nouvelle inférence ;
+un seul bilan final est publié.
 Si elle échoue, renvoie une promesse sans décision ou dépasse le budget de contexte,
-la réponse reste disponible avec un avertissement explicite ; aucun diagnostic brut
-fournisseur n’est journalisé. Une annulation n’est pas transformée en réussite.
+le brouillon est retenu et une reprise primaire demande une réponse honnête sur
+les opérations non confirmées ; aucun diagnostic brut fournisseur n’est journalisé. Une annulation n’est pas transformée en réussite.
 
 Coût/portée : un appel au même modèle par tour terminé, hors démo et modèle sans
 outils ; un retour modèle après écriture comme pour tout outil. Le message humain,
@@ -286,3 +287,37 @@ Après compression : identité, consignes, outils et skills actifs restent prés
 la fiche projet est actuelle à sa date de lecture et les souvenirs actifs sont
 réinjectés selon le budget. Résumé et mémoire durable restent séparés. Voir
 [CONTEXT.md](CONTEXT.md) et [INSTRUCTIONS.md](INSTRUCTIONS.md).
+
+
+## Écritures contrôlées par Heart
+
+Le suivi mémoire appartient au harness ; le MCP reste l’autorité des données.
+Une décision de revue peut rattraper une création/correction omise par le modèle
+principal ou une demande explicite d’oubli non exécutée. Les outils passent par
+les permissions, schémas et versions existants. Aucun SQL/client MCP ni règle par
+mots-clés dans le module de revue ; consentement et secrets restent inchangés.
+
+La revue utilise les reçus mémoire/réponses de formulaire canoniques du tour,
+même si le contexte principal les a comprimés. Aucun fichier/web/image brut ni
+argument transitoire ajouté. Elle relit aussi les écritures réussies du modèle
+principal ; si le même souvenir a été modifié plusieurs fois dans le tour, seule
+sa dernière mutation réussie est comparée. Après les écritures qu’elle propose,
+verifyAfterTools déclenche une relecture des ID/version/statut/champs actuels,
+sans deuxième appel d’évaluation LLM. La portée projet est dérivée du fil comme
+pour les outils, sans argument projectId inexistant à demander au cerveau.
+
+Un oubli SQL est confirmé par le statut forgotten ; une suppression MCP par un
+reçu réussi puis l’absence typée du même ID. MemoryNotFoundError distingue cette
+absence d’une panne réseau/base ; un timeout n’est jamais une preuve d’oubli.
+Une version concurrente ne doit pas être écrasée : la confirmation est refusée
+et le modèle principal reprend pour expliquer le résultat réellement vérifiable,
+sans rejeu automatique. Les écritures de plusieurs souvenirs ne sont pas atomiques.
+Les propositions restent éphémères ; journal/reçus existants et MCP font autorité.
+
+La décision ajoute toujours normalement un seul appel modèle ; la vérification
+ajoute des lectures de stockage, pas d’inférence. Plus de plafond fixe de 16
+décisions dans le schéma de revue ; le budget de contexte reste contrôlé, sans
+troncature silencieuse. La sélection lexicale des candidats et le jugement LLM
+restent des limites : aucun mécanisme n’assure une pertinence sémantique parfaite.
+Les instructions de revue restent visibles/modifiables/resettable dans le bloc
+existant memoryReview ; aucun nouveau bloc ni service à configurer.

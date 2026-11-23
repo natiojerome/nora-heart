@@ -620,3 +620,20 @@ Le contrôle ajoute normalement une décision modèle par tour de projet, puis u
 lecture de confirmation sans inférence. Inspection ciblée possible si nécessaire.
 Budget insuffisant : réconciliation déléguée explicitement, pas de troncature ni
 promesse d’infaillibilité. Instructions visibles et réinitialisables, 15 blocs.
+
+
+## Même responsabilité pour la mémoire
+
+Heart doit gérer les écritures mémoire avec la même attention que le suivi des
+projets. Conserver la revue existante et lui ajouter la relecture de ses effets,
+ainsi que des écritures principales réussies, sans deuxième évaluation LLM.
+Ajouter forget uniquement sur demande explicite ; faits ordinaires proactifs,
+consentement des cas sensibles et refus des secrets inchangés. Aucun nouveau
+bloc de configuration, backend imposé ou worker. Le MCP conserve les données.
+
+Distinguer absence typée et panne pour confirmer une suppression distante ;
+versions et champs comparés, dernière mutation réussie d’un ID dans le tour.
+Propositions non persistées hors journal existant, pas de rejeu implicite.
+Supprimer le plafond fixe de 16 décisions de revue, conserver le budget de modèle
+et le refus explicite des entrées trop grandes. L’initiative sémantique demeure
+celle du cerveau sélectionné, pas une garantie universelle obtenue par du code.

@@ -1,3 +1,4 @@
+import {MemoryNotFoundError} from "../../../contracts/structured-memory.ts";
 import {defaultRuntimePolicies,type MemoryPolicy} from "../../../contracts/policies.ts";
 import { randomUUID } from "node:crypto";
 import type { Memory } from "../../../contracts/memory.ts";
@@ -35,9 +36,9 @@ export class StructuredMemory implements StructuredMemoryService {
     return this.repository.create({ ...valid, id: randomUUID(), version: 1, status: "active", source: this.view.source, createdAt: at, updatedAt: at });
   }
   async get(id: string): Promise<MemoryRecord> {
-    if (!uuid(id)) throw new Error("Souvenir introuvable.");
+    if (!uuid(id)) throw new MemoryNotFoundError();
     const record = await this.repository.get(id);
-    if (!record || (record.scope === "project" && this.view.projectId !== undefined && record.projectId !== this.view.projectId)) throw new Error("Souvenir introuvable.");
+    if (!record || (record.scope === "project" && this.view.projectId !== undefined && record.projectId !== this.view.projectId)) throw new MemoryNotFoundError();
     return record;
   }
   async list(includeForgotten = false): Promise<MemoryRecord[]> {

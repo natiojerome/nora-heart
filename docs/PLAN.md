@@ -31,7 +31,8 @@ conformément à la décision du propriétaire, sans nouvelle plateforme maison.
 Objectif global, objectifs imbriqués, étapes et blocages dans le MCP, avec critères,
 preuves et gardes de clôture. Fiche web, compteurs globaux, contexte léger par tour
 et mises à jour via outils. Heart vérifie aussi les écritures avant le bilan,
-sans attendre un rappel utilisateur : décision explicite, effets puis relecture MCP. Qualifié avec SQL/MCP réels, navigateur et Luna.
+sans attendre un rappel utilisateur : décision explicite, effets puis relecture MCP.
+La même relecture qualifie les effets mémoire, y compris l’oubli explicitement demandé. Qualifié avec SQL/MCP réels, navigateur et Luna.
 Aucune conversion automatique des anciens plans. Voir [PROJECTS.md](PROJECTS.md).
 
 ## Audit de continuité

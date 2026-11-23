@@ -228,3 +228,19 @@ Backup `heart-postgres-20261123T093215303253Z.tar.age` de `5a0c408` déchiffré,
 fichiers/configurations récupérés et PostgreSQL restauré sans réseau (256 Mio) :
 identité et compteurs identiques. Conteneur et fichiers privés retirés ; aucun
 restore sur la production. Veilleur crypto toujours arrêté, disque libre 25 Gio.
+
+
+## Contrôle des écritures mémoire — 23 novembre
+
+Implémenté et testé : la revue mémoire existante relit aussi les écritures réussies
+du modèle principal et celles qu’elle propose, dernière mutation réussie par ID.
+Création/correction proactives et oubli explicitement demandé ; consentement et
+refus des secrets inchangés. Versions/champs/statut comparés au stockage, absence
+MCP typée distincte d’une panne. Conflit ou résultat incertain : bilan à réviser,
+sans rejeu ni écrasement. Reçus canoniques filtrés conservés après compression,
+portée projet correctement dérivée du fil. Aucun nouveau module/SDK/bloc requis.
+
+320 tests `pnpm check` et démo SDK passent. Qualification Luna/MCP réelle et
+validation navigateur en cours avant activation ; ne pas les confondre avec
+les tests simulés. Le code précédent de suivi projets reste actif entre-temps.
+Suite immédiate : terminer ces qualifications puis sauvegarder/activer et vérifier.

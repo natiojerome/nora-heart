@@ -71,7 +71,7 @@ ne change donc pas ses consignes en cours ; elles sont relues au prochain échan
 | Développement | Accès develop ou yolo. |
 | Exécution et autonomie | Chaque appel principal : accomplir et vérifier les actions autorisées, fichiers pour lire/éditer, terminal pour exécuter. |
 | YOLO | Accès yolo. |
-| Revue mémoire | Première tentative de réponse finale, hors démo/modèle sans outils. |
+| Revue mémoire | Décision avant réponse finale, hors démo/modèle sans outils, puis relecture des écritures sans nouvelle inférence. |
 | Contrôle du suivi des projets (`projectReview`) | Après la revue mémoire dans un fil de projet avec écritures approuvées ; nouvelles lectures si nécessaire, puis vérification des effets sans inférence supplémentaire. |
 | Compression | Lorsqu’une compression devient nécessaire. |
 

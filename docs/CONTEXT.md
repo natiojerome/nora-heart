@@ -178,3 +178,10 @@ Une demande de statut ne réécrit pas gratuitement la prochaine action. Si le
 contexte de contrôle dépasse le budget, le moteur demande explicitement au modèle
 principal de réconcilier le suivi avec les outils ; aucun appel trop grand ni
 résumé improvisé des preuves. Voir [PROJECTS.md](PROJECTS.md).
+
+
+MemoryReview utilise également les reçus mémoire canoniques du tour filtrés avant
+compaction, sans importer fichiers/web/images ni données transitoires. Les effets
+principaux et ceux de la revue sont relus au stockage, dernière mutation réussie
+par ID. Une suppression distante exige une absence typée, jamais une panne prise
+pour une base vide. La vérification n’ajoute aucune inférence. Voir MEMORY.md.

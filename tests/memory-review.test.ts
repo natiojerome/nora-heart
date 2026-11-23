@@ -87,7 +87,7 @@ test("review isolates direct human text from files and validates a durable fact 
     },
   });
   assert.equal(result.response.toolCalls[0].name, "memory.remember");
-  assert.match(result.response.content, /au-delà/);
+  assert.equal(result.verifyAfterTools, true);
   assert.equal(
     (await f.memory.list()).length,
     0,
@@ -922,4 +922,387 @@ test("recovery from an unavailable review preserves a successful memory write wi
   );
   assert(!JSON.stringify(events).includes("private upstream detail"));
   assert.match(result.text, /résultat de l’outil/);
+});
+
+for (const action of ["remember", "update", "forget"] as const)
+  test(
+    "memory " +
+      action +
+      " is read back after review effects, with one assessment and no replay",
+    async () => {
+      const f = await fixture();
+      const existing =
+        action === "remember"
+          ? null
+          : await f.memory.rememberRecord({
+              ...args,
+              kind: "fact",
+              scope: "personal",
+              projectId: null,
+            });
+      const source =
+        action === "forget" ? "Oublie ma date de naissance." : phrase;
+      const proposed =
+        action === "forget"
+          ? { id: existing!.id, version: existing!.version }
+          : {
+              ...args,
+              ...(existing
+                ? {
+                    id: existing.id,
+                    version: existing.version,
+                    content: "Date confirmée : 9 septembre 1982.",
+                  }
+                : {}),
+            };
+      let inferences = 0,
+        reads = 0;
+      const review = new MemoryReview(
+        {
+          ...f.memory,
+          search: (q) => f.memory.search(q),
+          get: async (id) => {
+            reads++;
+            return f.memory.get(id);
+          },
+        },
+        null,
+        memoryConsentPolicy,
+      );
+      const input = {
+        request: { ...request(source), tools: f.tools },
+        response: draft,
+        runId: "run-" + action,
+        provider: {
+          id: "fake",
+          async generate() {
+            inferences++;
+            return assessed([
+              {
+                action,
+                evidence: source,
+                note: "Fait déclaré ou oubli explicitement demandé.",
+                arguments: proposed,
+              },
+            ]);
+          },
+        },
+      };
+      const decision = await review.review(input);
+      assert.equal(decision.verifyAfterTools, true);
+      const call = decision.response.toolCalls[0];
+      const stored = await f.tools
+        .find((t) => t.name === call.name)!
+        .execute(call.arguments, { workspace: "." });
+      const beforeReads = reads;
+      const verified = await review.review({
+        ...input,
+        evidenceMessages: [
+          ...input.request.messages,
+          { role: "assistant", content: "", toolCalls: [call] },
+          {
+            role: "tool",
+            name: call.name,
+            callId: call.id,
+            error: false,
+            content: String(stored),
+          },
+        ],
+        response: { content: "Résultat confirmé.", toolCalls: [] },
+      });
+      assert.equal((verified.audit as any).status, "verified");
+      assert.equal((verified.audit as any).verified, 1);
+      assert.equal(reads, beforeReads + 1);
+      assert.equal(
+        inferences,
+        1,
+        "verification uses storage, not another inference",
+      );
+      assert.equal(verified.response.toolCalls.length, 0, "no replay");
+    },
+  );
+
+test("memory review verifies primary writes and their final revision instead of the first receipt", async () => {
+  const f = await fixture();
+  const first = await f.memory.rememberRecord({
+    ...args,
+    kind: "fact",
+    scope: "personal",
+    projectId: null,
+  });
+  const replacement = {
+    ...args,
+    id: first.id,
+    version: first.version,
+    title: "Date précisée",
+    content: "Date confirmée : 9 septembre 1982.",
+  };
+  const last = await f.memory.update(first.id, first.version, {
+    ...replacement,
+    kind: "fact",
+    scope: "personal",
+    projectId: null,
+  });
+  const writes = [
+    { id: "first", name: "memory.remember", arguments: args },
+    { id: "last", name: "memory.update", arguments: replacement },
+  ];
+  const input = {
+    ...request(),
+    tools: f.tools,
+    messages: [
+      ...request().messages,
+      { role: "assistant" as const, content: "", toolCalls: writes },
+      ...[first, last].map((r, i) => ({
+        role: "tool" as const,
+        name: writes[i].name,
+        callId: writes[i].id,
+        error: false,
+        content: JSON.stringify(r),
+      })),
+    ],
+  };
+  let assessments = 0;
+  const result = await f.review.review({
+    runId: "primary",
+    request: input,
+    response: draft,
+    provider: {
+      id: "fake",
+      async generate() {
+        assessments++;
+        return assessed([
+          { action: "none", evidence: "", note: "Déjà mis à jour." },
+        ]);
+      },
+    },
+  });
+  assert.equal((result.audit as any).primaryWritesVerified, 2);
+  assert.equal(result.response.toolCalls.length, 0);
+  assert.equal(assessments, 1);
+});
+
+test("a failed readback or concurrent memory edit cannot become a saved confirmation", async () => {
+  for (const failure of ["outage", "concurrent", "write-error"] as const) {
+    const f = await fixture();
+    let broken = false;
+    const review = new MemoryReview(
+      {
+        search: (q) => f.memory.search(q),
+        get: (id) => {
+          if (broken) throw Error("Private outage");
+          return f.memory.get(id);
+        },
+      },
+      null,
+      memoryConsentPolicy,
+    );
+    const input = {
+      runId: failure,
+      request: { ...request(), tools: f.tools },
+      response: draft,
+      provider: {
+        id: "fake",
+        async generate() {
+          return assessed([keep]);
+        },
+      },
+    };
+    const decision = await review.review(input),
+      call = decision.response.toolCalls[0];
+    let receipt = "failed";
+    if (failure !== "write-error") {
+      receipt = String(
+        await f.tools
+          .find((t) => t.name === call.name)!
+          .execute(call.arguments, { workspace: "." }),
+      );
+      const saved = JSON.parse(receipt);
+      if (failure === "concurrent")
+        await f.memory.update(saved.id, saved.version, {
+          ...saved,
+          content: "Correction concurrente à préserver.",
+        });
+      else broken = true;
+    }
+    const result = await review.review({
+      ...input,
+      response: { content: "Tout est sauvegardé.", toolCalls: [] },
+      evidenceMessages: [
+        ...input.request.messages,
+        { role: "assistant", content: "", toolCalls: [call] },
+        {
+          role: "tool",
+          callId: call.id,
+          name: call.name,
+          error: failure === "write-error",
+          content: receipt,
+        },
+      ],
+    });
+    assert.equal((result.audit as any).status, "unconfirmed");
+    assert.match(result.revision!, /N’annonce pas/);
+    assert(!JSON.stringify(result).includes("Private outage"));
+    assert.equal(result.response.toolCalls.length, 0);
+    if (failure === "concurrent")
+      assert.equal(
+        (await f.memory.list())[0].content,
+        "Correction concurrente à préserver.",
+      );
+  }
+});
+
+test("a hard deletion is confirmed by typed absence, never by a transport failure", async () => {
+  const { MemoryNotFoundError } =
+    await import("../src/contracts/structured-memory.ts");
+  const f = await fixture(),
+    record = await f.memory.rememberRecord({
+      ...args,
+      kind: "fact",
+      scope: "personal",
+      projectId: null,
+    });
+  const call = {
+    id: "forgot",
+    name: "memory.forget",
+    arguments: { id: record.id, version: record.version },
+  };
+  const messages = [
+    { role: "user" as const, content: "Oublie ma date de naissance." },
+    { role: "assistant" as const, content: "", toolCalls: [call] },
+    {
+      role: "tool" as const,
+      name: call.name,
+      callId: call.id,
+      error: false,
+      content: JSON.stringify({
+        ...record,
+        status: "forgotten",
+        version: record.version + 1,
+      }),
+    },
+  ];
+  for (const absent of [true, false]) {
+    let assessments = 0;
+    const review = new MemoryReview(
+      {
+        search: async () => [],
+        get: async () => {
+          throw absent
+            ? new MemoryNotFoundError()
+            : Error("Timeout transport privé");
+        },
+      },
+      null,
+      memoryConsentPolicy,
+    );
+    const result = await review.review({
+      request: { ...request(), messages, tools: f.tools },
+      response: draft,
+      provider: {
+        id: "fake",
+        async generate() {
+          assessments++;
+          return assessed([
+            { action: "none", evidence: "", note: "Oubli déjà effectué." },
+          ]);
+        },
+      },
+    });
+    assert.equal(assessments, absent ? 1 : 0);
+    assert.equal(
+      (result.audit as any).status,
+      absent ? "decided" : "unconfirmed",
+    );
+  }
+});
+
+test("canonical current-turn memory receipts survive compaction without importing unrelated file payloads", async () => {
+  const f = await fixture(),
+    saved = await f.memory.rememberRecord({
+      ...args,
+      kind: "fact",
+      scope: "personal",
+      projectId: null,
+    });
+  const input = {
+    ...request(),
+    tools: f.tools,
+    messages: [{ role: "user" as const, content: phrase }],
+  };
+  const result = await f.review.review({
+    request: input,
+    response: draft,
+    evidenceMessages: [
+      ...input.messages,
+      {
+        role: "tool",
+        name: "memory.remember",
+        callId: "already",
+        error: false,
+        content: JSON.stringify(saved),
+      },
+      {
+        role: "tool",
+        name: "files.read",
+        callId: "file",
+        error: false,
+        content: "PRIVATE_UNRELATED_BODY",
+      },
+    ],
+    provider: {
+      id: "fake",
+      async generate(r) {
+        const data = JSON.parse(r.messages[0].content);
+        assert.equal(data.currentTurnResults.length, 1);
+        assert(!JSON.stringify(r).includes("PRIVATE_UNRELATED_BODY"));
+        return assessed([
+          {
+            action: "known",
+            evidence: args.content,
+            note: "Déjà conservé.",
+            arguments: { id: saved.id, version: saved.version },
+          },
+        ]);
+      },
+    },
+  });
+  assert.equal(result.response.toolCalls.length, 0);
+});
+
+test("project memories use the bound project ID rather than requiring a nonexistent tool argument", async () => {
+  const { memory } = structuredMemoryFixture(),
+    projectId = "00000000-0000-4000-8000-000000000031";
+  const review = new MemoryReview(memory, projectId, memoryConsentPolicy),
+    tools = structuredMemoryTools(memory, projectId);
+  const input = {
+    request: {
+      ...request("Pour ce projet, nous choisissons PostgreSQL."),
+      tools,
+    },
+    response: draft,
+    provider: {
+      id: "fake",
+      async generate() {
+        return assessed([
+          {
+            ...keep,
+            evidence: "Pour ce projet, nous choisissons PostgreSQL.",
+            arguments: {
+              title: "Base choisie",
+              content: "PostgreSQL est retenu pour ce projet.",
+              kind: "decision",
+              scope: "project",
+            },
+          },
+        ]);
+      },
+    },
+  };
+  const result = await review.review(input);
+  const call = result.response.toolCalls[0],
+    stored = await tools
+      .find((t) => t.name === call.name)!
+      .execute(call.arguments, { workspace: "." });
+  assert.equal(JSON.parse(String(stored)).projectId, projectId);
 });

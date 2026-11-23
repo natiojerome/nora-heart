@@ -254,7 +254,8 @@ le core ne connaît que ce contrat, sans règle mémoire, SQL ou fournisseur con
 Un audit `run.progress` de kind review consigne les catégories, hors bulles de chat.
 Un échec préserve la réponse et ajoute l’avertissement fourni par le module.
 Ce contrôle mémoire ajoute un appel modèle par tour terminé hors démo/modèle sans outils ;
-aucune reprise rétroactive ni revue en boucle.
+aucune reprise rétroactive ni décision mémoire en boucle. Après effets, une
+vérification de stockage sans inférence peut précéder le contrôle des projets.
 L’outil `memory.get` refuse les souvenirs oubliés, même avec un UUID connu ;
 le service administratif conserve leur lecture pour restauration et historique.
 Voir [MEMORY.md](MEMORY.md).
@@ -1037,6 +1038,7 @@ avec un cache limité à cette revue. Aucune dépendance au backend concret.
 CompletionReview déclare une politique failureMode optionnelle ; la revue mémoire
 choisit revise : le brouillon reste retenu, puis le modèle principal reprend si
 la vérification échoue. Les autres revues conservent leur comportement. Une seule décision mémoire, un appel primaire supplémentaire sur révision ou échec.
+Les effets sont relus sans nouvelle décision via verifyAfterTools.
 Le contrôle des projets a son propre cycle de vérification, décrit plus bas.
 
 L’absence de binding Projects désactive la création et ne lit pas le catalogue SQL.
@@ -1250,3 +1252,20 @@ pour le contrôle complet : délégation explicite de la réconciliation au mod�
 principal, sans retrait silencieux des preuves. Démo, absence d’outils ou de droit
 d’écriture : pas de contrôle d’écriture. Instructions `projectReview` configurables
 avec reset, quinzième bloc ; aucune règle NLP parallèle ni backend imposé au core.
+
+
+## Relecture des écritures mémoire
+
+MemoryReview contrôle aussi les effets mémoire, avant ProjectReview. Une seule
+décision LLM propose remember/update/forget explicite ou known/confirm/none ;
+les écritures reviennent au moteur, puis verifyAfterTools relit l’état via
+StructuredMemoryService. Les écritures principales déjà réussies sont également
+vérifiées, dernière mutation réussie par ID. Reçus canoniques filtrés mémoire et
+formulaires, pas de nouvelle copie de données transitoires après compression.
+
+MemoryNotFoundError est un type du contrat ; le service le produit pour une
+absence confirmée par le repository. Oubli distant : reçu réussi + absence typée ;
+un échec transport ne vaut pas suppression. Statut, version et contenu doivent
+correspondre au résultat attendu ; conflit ou panne déclenchent une révision du
+bilan sans rejeu/écrasement. Portée projet dérivée du fil, et non d’un argument
+absent des outils. Aucune nouvelle dépendance ni couche générique de suivi ajoutée.

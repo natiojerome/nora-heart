@@ -43,3 +43,8 @@ export interface StructuredMemoryService extends MemoryService {
   setStatus(id: string, version: number, status: MemoryRecord["status"]): Promise<MemoryRecord>;
   revisions(id: string): Promise<MemoryRecord[]>;
 }
+
+/** A confirmed missing/inaccessible record, never a transport or database outage. */
+export class MemoryNotFoundError extends Error {
+  constructor() { super("Souvenir introuvable."); this.name = "MemoryNotFoundError"; }
+}
