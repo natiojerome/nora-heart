@@ -247,3 +247,7 @@ Les sauvegardes de Heart n’arrêtent pas les unités indépendantes. Le manife
 indique externalExecution et live-copy si des programmes sont actifs ; la copie
 de leurs fichiers ne prouve pas la cohérence de leurs bases métier. Ces services
 ont leur propre procédure de sauvegarde/restauration, indépendante de Heart.
+
+Le terminal manuel propose aussi « Saisie interactive » en YOLO, désactivé par
+défaut. Envoyer/EOF sont indisponibles pour une commande indépendante ; l’arrêt
+explicite reste accessible. Le terminal isolé de développement conserve stdin.

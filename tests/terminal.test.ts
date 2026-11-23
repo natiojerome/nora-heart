@@ -291,9 +291,9 @@ test("an explicitly unbounded conversation can continue beyond eight tool rounds
 
 test('YOLO is explicit per thread, routes tools to its worker and revokes only temporary commands on exit',async()=>{
   const root=await mkdtemp(path.join(os.tmpdir(),'heart-yolo-policy-'));
-  const calls:string[]=[];
+  const calls:string[]=[];let lastInteractive:boolean|undefined;
   const command={id:'11111111-1111-4111-8111-111111111111',command:'whoami',cwd:'/',startedAt:new Date().toISOString(),status:'running' as const,exitCode:null,signal:null};
-  const host={async start(_workspace:string,input:{command:string;network?:boolean}){calls.push(input.network?'host-network':'host-no-network');return command;},async list(){return [command];},async read(){return {command:{...command,status:'completed' as const,exitCode:0},output:'root',offset:0,nextOffset:4,more:false};},async write(){},async stop(){calls.push('stop-host');return {...command,status:'interrupted' as const};}};
+  const host={async start(_workspace:string,input:{command:string;network?:boolean;interactive?:boolean}){lastInteractive=input.interactive;calls.push(input.network?'host-network':'host-no-network');return command;},async list(){return [command];},async read(){return {command:{...command,status:'completed' as const,exitCode:0},output:'root',offset:0,nextOffset:4,more:false};},async write(){},async stop(){calls.push('stop-host');return {...command,status:'interrupted' as const};}};
   try{
     const missing=await conversationFixture(path.join(root,'missing'));
     const denied=(await missing.service.create({title:'No worker'})).conversation;
@@ -308,7 +308,7 @@ test('YOLO is explicit per thread, routes tools to its worker and revokes only t
     }}),undefined,undefined,host);
     const first=(await fixture.service.create({title:'YOLO'})).conversation,second=(await fixture.service.create({title:'Protected'})).conversation;
     await fixture.service.fileAccess(first.id,{access:'yolo'});
-    await fixture.service.startCommand(first.id,{command:'whoami',cwd:'/'});
+    await fixture.service.startCommand(first.id,{command:'whoami',cwd:'/',interactive:true});assert.equal(lastInteractive,true);
     assert.deepEqual(calls,['host-network']);
     await fixture.service.send(first.id,{provider:'demo',contextWindow:8192,prompt:'Run whoami'});
     assert.deepEqual(calls,['host-network','host-network']);

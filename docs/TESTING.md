@@ -882,3 +882,8 @@ nettoyage de toutes les fixtures après preuve. Aucun redémarrage du veilleur
 crypto, aucune migration des projets existants, aucun envoi de mail dans ce lot.
 Une copie à chaud des fichiers n’est pas une qualification des backups métier
 d’un service ; utiliser ses propres procédures cohérentes.
+
+Le terminal manuel relaie interactive:true jusqu’au contrôleur hôte ; le choix
+est explicite dans l’interface et stdin/EOF sont désactivés pour les commandes
+indépendantes. Les libellés conservent YOLO/root. Régressions du terminal manuel,
+des permissions et des trois parcours navigateur relancées après ce raccordement.

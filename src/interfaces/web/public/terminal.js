@@ -16,16 +16,17 @@
         ? "Interrompue"
         : `Terminée · code ${command.exitCode}`;
   function sync() {
+    get("terminal-interactive-field").hidden = current?.fileAccess !== 'yolo';
     get("terminal-cwd-label").textContent=current?.fileAccess==='yolo'?'Dossier du serveur · chemin absolu ou relatif au fil':'Dossier depuis la racine du projet';
     get("terminal-run").disabled =
       busy || !available || !["develop","yolo"].includes(current?.fileAccess);
     get("terminal-access-help").textContent = !available
       ? "Exécution indisponible sur cette installation."
       : current?.id === "projects-root"
-        ? "Terminal manuel · racine des projets · espace isolé · réseau autorisé"
+        ? "Développement temporaire · racine des projets · espace isolé · réseau autorisé"
       : !["develop","yolo"].includes(current?.fileAccess)
         ? "Active Développement ou YOLO dans les droits de l’assistant pour lancer des commandes."
-        : current?.fileAccess === "yolo" ? "YOLO · serveur entier · root · réseau autorisé · sans confirmation"
+        : current?.fileAccess === "yolo" ? "YOLO · root · indépendant de Heart par défaut · saisie interactive temporaire en option"
         : `Espace isolé du fil · réseau ${current.networkAccess ? "autorisé" : "désactivé"}`;
   }
   async function poll() {
@@ -64,8 +65,9 @@
         offset = result.nextOffset;
         get("terminal-status").textContent = status(result.command);
         const running = result.command.status === "running";
-        for (const name of ["terminal-send", "terminal-eof", "terminal-stop"])
-          get(name).disabled = busy || !running;
+        for (const name of ["terminal-send", "terminal-eof"])
+          get(name).disabled = busy || !running || !!result.command.independent;
+        get("terminal-stop").disabled = busy || !running;
       }
     } catch (error) {
       message(errorText(error), true);
@@ -86,6 +88,7 @@
       const data = await post(`${base(id)}/commands`, {
         command: get("terminal-command").value,
         cwd: get("terminal-cwd").value || ".",
+        ...(current.fileAccess === 'yolo' ? {interactive:get("terminal-interactive").checked} : {}),
       });
       if (current?.id === id) {
         selected = data.command.id;
@@ -173,6 +176,7 @@
         message("Ouvre une conversation pour accéder à son terminal.", true);
         return;
       }
+      get("terminal-interactive").checked = false;
       get("terminal-context").textContent = current.title;
       get("terminal-dialog").showModal();
       sync();

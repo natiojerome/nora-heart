@@ -150,8 +150,8 @@ export class Conversations {
   async stopCommand(id:string,commandId:string){return {command:await (await this.execution(id)).stop(await this.workspace(id),commandId)};}
   async startCommand(id:string,body:Record<string,unknown>){
     const conversation=await this.require(id);if(!['develop','yolo'].includes(conversation.fileAccess??'read'))throw new WorkspaceError("Active le mode Développement ou YOLO pour exécuter des commandes.");
-    if(typeof body.command!=="string"||(body.cwd!==undefined&&typeof body.cwd!=="string"))throw new WorkspaceError("Commande ou dossier invalide.");
-    return {command:await (await this.execution(id)).start(await this.workspace(id),{command:body.command,cwd:body.cwd as string|undefined,network:conversation.fileAccess==='yolo'||(conversation.networkAccess??false)})};
+    if(typeof body.command!=="string"||(body.cwd!==undefined&&typeof body.cwd!=="string")||(body.interactive!==undefined&&typeof body.interactive!=="boolean"))throw new WorkspaceError("Commande ou dossier invalide.");
+    return {command:await (await this.execution(id)).start(await this.workspace(id),{command:body.command,cwd:body.cwd as string|undefined,interactive:body.interactive as boolean|undefined,network:conversation.fileAccess==='yolo'||(conversation.networkAccess??false)})};
   }
   private workState(conversation:Conversation,events:import('../contracts/storage.ts').Event[]=[]):ConversationWork {
     const active=this.active.get(conversation.id);
