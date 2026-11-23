@@ -253,3 +253,15 @@ La vérification ne consomme aucune inférence supplémentaire. Les instructions
 restent dans le bloc memoryReview existant, sans nouvel écran ni migration.
 Qualité sémantique non universelle, stockage partiellement écrit possible dans
 un lot, source inaccessible jamais assimilée à une suppression. Détails MEMORY/TESTING.
+
+
+Activation mémoire vérifiée sur heart.natio.re : bloc memoryReview mis à jour,
+15 blocs au total, profil version 26/personnalité conservés, skill code-review
+actif sans erreur. Web et worker sains, activeMutations=0. Fiche Projets réelle
+contrôlée en lecture seule aux quatre largeurs, zéro erreur JS ; aucun test sur
+les souvenirs du propriétaire. Backup complet
+`heart-postgres-20261123T104738219140Z.tar.age` du code `2f800ad` déchiffré et
+restauré dans PostgreSQL isolé sans réseau (256 Mio) : identité/compteurs et
+fichiers/configurations récupérés, conteneur et fichiers privés retirés. Aucun
+restore sur la production. Disque libre : 25 Gio. Documentation de qualification
+complétée ensuite, sans autre modification du code activé.
