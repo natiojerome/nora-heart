@@ -842,3 +842,20 @@ demandé dans ce scénario de lecture. Nouveau contrôleur systemd également
 exécuté en lecture seule sur l’unité réellement active : état running correct,
 journal inchangé et aucun processus arrêté. Cela qualifie la lecture native,
 pas un redémarrage du worker avec cette commande encore en cours.
+
+## Activation terminal et sauvegarde complète — 23 novembre 2026
+
+Sur instruction explicite du propriétaire : arrêt du veilleur crypto depuis
+l’API de conversation Heart ; état interrupted et unité systemd inactive.
+Redémarrage du worker hôte puis parcours réel via socket : Node 24 exécuté,
+sortie relue, commande longue synthétique arrêtée avec unité inactive confirmée.
+Journaux/fixtures de qualification retirés ; ancien watcher et ses données conservés
+à l’arrêt. `pnpm check` : 287 tests ; démo SDK : succès.
+
+La vérification de sauvegarde a détecté un helper installé antérieur au dépôt :
+configuration MCP et racine projets absentes de son archive. Copie installée
+alignée, backup forcé sous le verrou/maintenance habituels, puis déchiffrement,
+empreintes et périmètres vérifiés. Le pg_dump réel a été restauré dans un conteneur
+PostgreSQL jetable sans réseau, mémoire 256 Mio et données tmpfs ; identité et
+compteurs événements/conversations/connexions identiques à la source au repos.
+Conteneur et fichiers privés déchiffrés retirés. Aucun restore sur la production.

@@ -75,11 +75,15 @@ OS vierge, parcours complet DNS/ACME et ARM64 restent à qualifier.
 
 Sauvegardes chiffrées code/SQL/configurations/credentials avant et après cette
 consolidation : déchiffrement et empreintes vérifiés dans un répertoire jetable.
-La sauvegarde complète incluant les fichiers de travail reste différée pendant
-une commande active : ne pas la présenter comme créée. Les archives complètes
-existantes sont préservées sous la rétention de sept jours ; aucun volume/image
-ou dossier d’un autre projet supprimé. Les sauvegardes MCP hors serveur et leur
-restauration isolée ont été vérifiées pendant la connexion Mail.
+La sauvegarde complète incluant état, fichiers de travail, worker, configuration
+MCP et racine des projets a été créée après arrêt explicite du veilleur crypto.
+Déchiffrement/empreintes/fichiers vérifiés, véritable restauration PostgreSQL
+en conteneur isolé sans réseau (256 Mio), identité et compteurs identiques.
+Le helper installé est désormais aligné sur le dépôt : l’ancienne copie omettait
+la configuration MCP et la racine des projets. Données et journaux du veilleur
+conservés. Archives complètes existantes sous rétention de sept jours ; aucun
+volume/image ou dossier d’un autre projet supprimé. Les sauvegardes MCP hors
+serveur et leur restauration isolée ont été vérifiées pendant la connexion Mail.
 
 ## Consolidation du 23 novembre
 
@@ -102,7 +106,8 @@ régressions ; qualification réelle distincte documentée dans TESTING.md. Apr�
 Luna réel a appelé `mail_accounts` une fois : quatre comptes connectés, tour
 terminé sans erreur ni écriture mail.
 
-Web mis à jour. La nouvelle supervision terminal est dans le dépôt et testée,
-mais le worker hôte actuellement actif n’a pas été redémarré pour conserver sa
-commande longue. Son activation est la première action à reprendre quand cette
-commande est terminée. Aucun arrêt implicite du travail utilisateur.
+Web et worker hôte à jour. Sur demande explicite du propriétaire, le veilleur
+crypto de First try a été arrêté via l’outil de commande, unité inactive confirmée.
+Le worker a ensuite redémarré ; vraie exécution Node 24, lecture des sorties et
+arrêt d’une commande de test vérifiés via sa socket. Fixtures et conteneur de
+restauration supprimés, services sains ; le blocage d’activation est levé.

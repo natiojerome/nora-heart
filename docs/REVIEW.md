@@ -47,11 +47,12 @@ mutation DOM et nœuds conservés. Tests et limites dans TESTING.md.
 
 ## Limites opérationnelles actuelles
 
-Le web est à jour. Le worker hôte n’a pas été redémarré : une commande longue est
-encore active et suivie. Le nouveau comportement de reprise terminal est qualifié
-sur fixtures et en lecture seule sur une unité réellement active ; son activation de production attend la fin du
-travail. Sauvegarde complète des workspaces différée ; snapshots chiffrés du code,
-SQL et credentials vérifiés. Ne pas confondre ces deux périmètres.
+Web et worker hôte à jour. Le veilleur crypto a été arrêté sur instruction du
+propriétaire ; données et sorties conservées. Nouvelle exécution/lecture/arrêt
+qualifiées sur le worker réel. Sauvegarde complète relue et restaurée dans un
+PostgreSQL isolé sans réseau, identité et compteurs comparés. L’ancien helper
+installé a été remplacé par la version du dépôt pour couvrir aussi les accès MCP
+et la racine des projets. Blocage d’activation levé.
 
 Le serveur de test est plein ; aucun projet existant supprimé ni nouvelle machine
 achetée. Régressions exécutées sur l’hôte avec concurrence navigateur limitée,
@@ -60,6 +61,6 @@ l’hôte principal pendant le lot ; archives temporaires retirées après véri
 
 ## Suite
 
-Suivre le plan courant, en commençant par l’activation du worker à un créneau sûr.
+Suivre le plan courant : le lot de consolidation et son activation sont terminés.
 Étendre ensuite les essais à des demandes métier réelles plutôt que déclarer une
 qualification universelle de tous les outils, modèles, OS et volumes d’historique.

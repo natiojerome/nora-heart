@@ -12,25 +12,21 @@ puis régressions unitaires, SQL/restauration et navigateur. Contrats existants
 préservés ; stockage injecté à la composition, cycle de vie explicite, aucun
 framework maison ajouté. Les fournisseurs simulés restent séparés des preuves réelles.
 
-Web mis à jour ; activation du nouveau code de supervision hôte à terminer lorsque
-la commande actuellement active est terminée. Ne pas redémarrer ce worker en
-coupant silencieusement le travail utilisateur. La sauvegarde complète des
-workspaces reste différée pendant cette commande ; snapshots chiffrés du code,
-SQL et credentials vérifiés avant/après les modifications.
+Web et worker hôte mis à jour. Veilleur crypto arrêté à la demande du propriétaire,
+commande de test exécutée/lue/arrêtée via le worker actif. Sauvegarde complète
+créée et restaurée en environnement isolé ; helper de sauvegarde installé aligné
+sur le dépôt pour inclure aussi configuration MCP et racine des projets.
 
 ## Prochaines étapes utiles
 
-1. Terminer cette activation et reprendre la sauvegarde complète à un créneau sûr.
-   Vérifier l’état du worker, les anciennes sorties et les commandes actives ;
-   aucune action uncertain/rejeu automatique après redémarrage.
-2. Sur demande métier explicite, qualifier une lecture/réponse mail avec pièce
+1. Sur demande métier explicite, qualifier une lecture/réponse mail avec pièce
    jointe, identité et signature conservées. L’envoi simple Heart/Luna et sa
    réception Gmail sont déjà qualifiés ; aucun nouvel envoi de test implicite.
-3. Formaliser le parcours de mise à jour et retour arrière d’une installation
+2. Formaliser le parcours de mise à jour et retour arrière d’une installation
    indépendante. Distinguer mise à jour, réinstallation et restauration ;
    conserver les données et migrations appliquées. Puis qualifier OS vierge,
    HTTPS/DNS/ACME et ARM64 selon moyens autorisés, sans achat implicite de serveur.
-4. Mesurer les gros historiques et longs travaux sur les cerveaux effectivement
+3. Mesurer les gros historiques et longs travaux sur les cerveaux effectivement
    utilisés. Étendre la qualification mémoire/compression selon les incidents
    observés ; reprendre Venice quand son accès API est réactivé. Les tests réels
    doivent rester ciblés, avec coût observé et fixtures synthétiques.
