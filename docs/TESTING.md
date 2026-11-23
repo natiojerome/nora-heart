@@ -917,3 +917,13 @@ Preuves : [navigateur](qualification/project-tracking/browser.json),
 [Luna réel](qualification/project-tracking/luna.json) et captures au même endroit.
 La présence de texte dans evidence n’est pas une garantie universelle de sa
 véracité ; les contrôles SQL protègent la structure et les transitions.
+
+Contrôle de production en lecture seule : vraie fiche MCP sur heart.natio.re,
+objectif global et trois compteurs, aucune erreur JS et aucun débordement aux
+quatre largeurs. Aucun appel LLM ni modification de projet dans ce contrôle.
+
+Sauvegarde complète Heart de `a3594cb` : déchiffrement/empreintes et récupération
+des fichiers/configurations, pg_dump restauré dans PostgreSQL sans réseau
+(256 Mio), identité et compteurs identiques. Conteneur/données privées retirés.
+Backup MCP après migration copié hors serveur, restauration SQL/SCRAM/OpenBao
+vérifiée dans un conteneur sans réseau retiré ensuite. Aucun restore en production.

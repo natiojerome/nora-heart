@@ -41,6 +41,8 @@ historique de preuves recopié systématiquement. Le modèle utilise ensuite les
 outils Projets pour lire le détail et actualiser l’élément après un résultat
 vérifié. Une indisponibilité est explicite, sans ancien état présenté comme frais.
 Cela guide le modèle ; ce n’est pas une garantie d’initiative parfaite à chaque tour.
+Les outils du chat conservent les droits existants : connexion active, écritures
+approuvées et accès réseau ou mode YOLO autorisé pour le fil.
 
 L’ouverture, une sauvegarde, le retour dans la fenêtre et **Actualiser** relisent
 le suivi. Aucun polling périodique. Les lectures strictement simultanées identiques

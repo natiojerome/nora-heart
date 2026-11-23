@@ -154,3 +154,10 @@ modifiée par ces scénarios. Voir [PROJECTS.md](PROJECTS.md).
 Prochaine étape : utiliser ce suivi sur un projet réel pour définir ses critères
 et étapes avec l’utilisateur, puis observer les mises à jour pendant le travail.
 Aucun reclassement automatique des projets existants ni plan fictif créé pour eux.
+
+Mise en service vérifiée sur heart.natio.re : ouverture d’une vraie fiche MCP,
+objectif et compteurs affichés, aucune erreur JS aux quatre largeurs. Lecture
+seule, aucun nouveau projet utilisateur créé. Sauvegarde complète de la révision
+`a3594cb` déchiffrée et restaurée dans PostgreSQL isolé : identité/compteurs
+identiques, fichiers/configurations récupérés. Backup MCP après migration copié
+hors serveur et restauré aussi ; ressources de restauration retirées.
