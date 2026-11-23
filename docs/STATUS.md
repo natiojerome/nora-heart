@@ -240,9 +240,16 @@ MCP typée distincte d’une panne. Conflit ou résultat incertain : bilan à r�
 sans rejeu ni écrasement. Reçus canoniques filtrés conservés après compression,
 portée projet correctement dérivée du fil. Aucun nouveau module/SDK/bloc requis.
 
-321 tests `pnpm check`, démo SDK et 29 parcours navigateur passent. Un parcours
-réel a vérifié les trois opérations, mais révélé une relecture manquante après
-récupération primaire d’une évaluation échouée : chemin corrigé et testé, sans
-deuxième évaluation LLM. Qualification stricte Luna/MCP relancée avant activation.
-Le code précédent de suivi projets reste actif entre-temps.
-Suite immédiate : terminer cette qualification puis sauvegarder/activer et vérifier.
+321 tests `pnpm check`, démo SDK et 29 parcours navigateur passent ; trois parcours
+ciblés relancés après la correction de récupération passent aussi. Qualification
+réelle finale ChatGPT gpt-6-luna : 38 inférences dont 3 résumés, 7 décisions mémoire
+et 7 décisions projet. Trois omissions principales injectées : création, correction
+sur le même ID, puis suppression demandée, toutes rattrapées et relues réellement
+via le MCP. Une citation auxiliaire invalide est récupérée ; une lecture attendue
+d’un souvenir supprimé renvoie introuvable, zéro erreur d’outil inattendue.
+Bases/rôles/tokens/unités QA retirés, aucune donnée du propriétaire touchée.
+
+La vérification ne consomme aucune inférence supplémentaire. Les instructions
+restent dans le bloc memoryReview existant, sans nouvel écran ni migration.
+Qualité sémantique non universelle, stockage partiellement écrit possible dans
+un lot, source inaccessible jamais assimilée à une suppression. Détails MEMORY/TESTING.

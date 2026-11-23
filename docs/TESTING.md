@@ -1052,3 +1052,24 @@ et la distinction évaluation/vérification corrigent ce chemin. Un autre essai 
 échoué sur une réponse de statut ne restituant pas la valeur exacte demandée ;
 aucune promesse d’exactitude universelle du texte généré. Les parcours restent
 synthétiques et séparés des données utilisateur.
+
+
+Qualification finale après correction : `tests/live-context-continuity.ts --live`,
+ChatGPT gpt-6-luna medium puis low, 38 inférences (21 principales, 3 résumés,
+7 décisions mémoire, 7 décisions projet). MCP Mémoire/Projets réels de même code
+que la production, base/tenant QA séparés, budget 32 768 sans modifier la capacité
+native. Trois réponses principales volontairement remplacées par un acquittement
+sans action mémoire : revue réelle remember, update du même ID/version, puis forget
+sur demande explicite ; chaque effet a son audit verified issu d’une relecture
+réelle. Ces trois réponses sont synthétiques pour injecter la panne ; décisions,
+stockage, vérifications et les autres phases sont réels. La récupération après
+évaluation échouée puis écriture primaire est couverte par le test unitaire dédié.
+
+Le parcours final récupère aussi une citation de brouillon invalide et une demande
+de correction mémoire, sans seconde évaluation ; pas de fausse confirmation.
+Une lecture attendue d’un souvenir déjà supprimé échoue avec introuvable, aucune
+autre erreur d’outil. Mémoire et suivi fonctionnent après reprise avec réseau des
+commandes coupé, projet global non clôturé, journal/checkpoint et skill conservés.
+Nettoyage confirmé : bases/rôles/tokens/tunnels/unités et répertoire de travail QA.
+Trois parcours navigateur ciblés passent après le changement de récupération.
+[Preuve finale](qualification/memory-write-control/luna.json).
