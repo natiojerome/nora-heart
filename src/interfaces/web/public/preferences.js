@@ -2,7 +2,7 @@
 (() => {
   'use strict';
   const get=id=>document.getElementById(id);
-  const providers={chatgpt:'ChatGPT',openrouter:'OpenRouter',venice:'Venice AI',openai:'OpenAI API',anthropic:'Anthropic API',demo:'Simulation'};
+  const providers={chatgpt:'ChatGPT',openrouter:'OpenRouter',venice:'Venice AI','venice-web':'Venice web',openai:'OpenAI API',anthropic:'Anthropic API',demo:'Simulation'};
   const efforts={none:'Aucun',minimal:'Minimal',low:'Faible',medium:'Moyen',high:'Élevé',xhigh:'Très élevé',max:'Max',ultra:'Ultra'};
   let route='',settingsVersion=0,saved=null,catalog=[],catalogVersion=0,catalogReady=false,defaultsVersion=0,defaultsSaving=false;
   let consumptionVersion=0,consumptionLoading=false,consumptionAt=0,connectionSignature='';
@@ -41,7 +41,7 @@
     target.replaceChildren(...cards);if(!cards.length){const empty=node('p','Aucun fournisseur connecté. Configure une connexion dans Modèles.','field-help');target.append(empty);}
     target.removeAttribute('aria-busy');consumptionAt=Date.now();consumptionLoading=false;get('consumption-refresh').disabled=false;get('consumption-status').textContent=cards.length?'Mis à jour · '+date(new Date()):'Aucun fournisseur connecté';
   }
-  function defaultModel(){return ['chatgpt','openrouter','venice','demo'].includes(get('defaults-provider').value)?get('defaults-model').value:get('defaults-model-id').value.trim();}
+  function defaultModel(){return ['chatgpt','openrouter','venice','venice-web','demo'].includes(get('defaults-provider').value)?get('defaults-model').value:get('defaults-model-id').value.trim();}
   function effortOptions(preferred=''){
     const provider=get('defaults-provider').value,model=catalog.find(item=>item.id===defaultModel()),select=get('defaults-effort');
     select.replaceChildren(new Option('Automatique'+(model?.defaultReasoningEffort?' · '+(efforts[model.defaultReasoningEffort]||model.defaultReasoningEffort):''),''));
@@ -51,7 +51,7 @@
     window.heartControls?.sync();
   }
   async function loadDefaultsCatalog(preferredModel='',preferredEffort=''){
-    const version=++catalogVersion,provider=get('defaults-provider').value,remote=['chatgpt','openrouter','venice'].includes(provider);
+    const version=++catalogVersion,provider=get('defaults-provider').value,remote=['chatgpt','openrouter','venice','venice-web'].includes(provider);
     catalog=[];catalogReady=false;get('save-defaults').disabled=true;get('defaults-model-status').textContent=remote?'Chargement des modèles…':preferredModel?'Vérification des capacités…':'';
     get('defaults-model').hidden=!remote&&provider!=='demo';get('defaults-model-id').hidden=remote||provider==='demo';get('defaults-reload-models').hidden=provider==='demo';get('defaults-reload-models').textContent=remote?'Actualiser la liste':'Vérifier le modèle';
     get('defaults-capacity-field').hidden=remote||provider==='demo';get('defaults-capacity').disabled=remote||provider==='demo';get('defaults-model-id').value=preferredModel;

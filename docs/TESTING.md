@@ -1085,3 +1085,24 @@ restauré dans PostgreSQL isolé sans réseau (256 Mio) : identité/compteurs et
 fichiers/configurations récupérés, conteneur et fichiers privés retirés. Aucun
 restore sur la production. Disque libre : 25 Gio. Documentation de qualification
 complétée ensuite, sans autre modification du code activé.
+
+
+## Venice web, prototype refusé en réel — 23 novembre
+
+`tests/venice-web.test.ts` : catalogue loopback/sans crédits, réponse invalide,
+refus HTTP sans repli et aller-retour de l’émulateur amont installé vers le moteur
+Heart. Ce dernier contrôle utilise une réponse modèle simulée et est ignoré si
+le transport optionnel n’est pas installé. `tests/venice-web.e2e.ts` : sélection
+séparée du fournisseur API, capacité catalogue, texte de coût et réouverture sur
+viewport 390 × 844, zéro erreur JS. Données et fournisseur de fixture isolés.
+
+324 tests `pnpm check`, démo SDK et deux parcours Chromium Venice passent.
+84 tests purs de `emulate`, `lenient-json` et `server-loop` dans le checkout amont
+intact épinglé passent aussi ; aucun appel fournisseur dans ces suites.
+
+`tests/live-venice-web.ts --live` n’a PAS abouti : HTTP 403 dès l’inférence agent.
+Diagnostic indépendant du chat classique : HTTP 403 interdisant explicitement
+l’accès programmatique. Pas de contournement ni de nouvelle tentative après ce
+message. Rapport local sans secret : `qualification/venice-web/blocked.json`.
+Le fichier `live.json` est créé uniquement après un véritable parcours réussi ;
+il n’existe pas pour cet essai. Aucun déploiement du prototype ni achat effectué.

@@ -288,7 +288,7 @@ export class Conversations {
     tracking&&projectId&&conversation.selection?.provider!=='demo'?new ProjectReview(tracking,projectId,instructionValue(blocks,'projectReview'),instructionValue(blocks,'projects')):undefined);
   }
   private async selection(body:Record<string,unknown>):Promise<ModelSelection>{
-    if(!['demo','chatgpt','openai','anthropic','openrouter','venice'].includes(String(body.provider)))throw new Error('Choisir un modèle.');
+    if(!['demo','chatgpt','openai','anthropic','openrouter','venice','venice-web'].includes(String(body.provider)))throw new Error('Choisir un modèle.');
     const provider = body.provider as ModelSelection["provider"];
     const modelId = provider === "demo" ? "demo" : typeof body.modelId === "string" ? body.modelId.trim() : "";
     if (!modelId || modelId.length > 200) throw new Error("Choisir un modèle.");
@@ -296,7 +296,7 @@ export class Conversations {
     let capacitySource: ModelSelection["capacitySource"] = "configured";
     let reasoningEffort:string|undefined;
     if(body.reasoningEffort!==undefined && (provider==="demo"||typeof body.reasoningEffort!=="string"))throw new Error("Choisir un niveau d’effort compatible avec le fournisseur.");
-    if (provider === "chatgpt" || provider === "venice" || body.reasoningEffort) {
+    if (provider === "chatgpt" || provider === "venice" || provider === "venice-web" || body.reasoningEffort) {
       const model = provider==='chatgpt'?(await this.options.catalog()).models.find(model => model.id === modelId):await this.options.capabilities?.(provider,modelId);
       if (!model) throw new Error("Choisir un niveau d’effort disponible pour ce modèle.");
       if(body.reasoningEffort){if(!model.reasoningEfforts?.includes(body.reasoningEffort as string))throw new Error("Choisir un niveau d’effort disponible pour ce modèle.");reasoningEffort=body.reasoningEffort as string;}
@@ -336,7 +336,7 @@ export class Conversations {
       maximum=policies.messages.maxCharacters;
     if(!resume&&(typeof body.prompt!=='string'||(!body.prompt.trim()&&!(Array.isArray(body.attachmentIds)&&body.attachmentIds.length))))throw new Error('Message requis.');
     if(!resume&&maximum>0&&(body.prompt as string).length>maximum)throw new Error(`Message trop long : limite configurée de ${maximum} caractères.`);
-    if (!["demo", "chatgpt", "openai", "anthropic", "openrouter", "venice"].includes(String(body.provider))) throw new Error("Module inconnu.");
+    if (!["demo", "chatgpt", "openai", "anthropic", "openrouter", "venice", "venice-web"].includes(String(body.provider))) throw new Error("Module inconnu.");
     if(!resume&&interactionsFrom(await this.options.sessions.read(id)).some(item=>item.status==='pending'))throw new Error("Réponds au formulaire en attente ou annule-le avant un nouveau message.");
     if(this.busy.has(id))throw new Error('Cette conversation travaille déjà.');
     this.busy.add(id);

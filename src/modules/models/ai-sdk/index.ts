@@ -144,7 +144,7 @@ export class AiSdkProvider implements ModelProvider {
 }
 
 export interface AiSdkOptions {
-  provider: "openai" | "anthropic" | "openrouter" | "venice";
+  provider: "openai" | "anthropic" | "openrouter" | "venice" | "venice-web";
   modelId: string;
   apiKey: string;
   /** Omit to use the selected provider/SDK default; explicit CLI budgets remain supported. */
@@ -158,6 +158,23 @@ export interface AiSdkOptions {
 }
 
 export function createAiSdkProvider(options: AiSdkOptions): ModelProvider {
+  if (options.provider === "venice-web") {
+    const transport = options.fetch ?? globalThis.fetch;
+    const guarded: typeof fetch = async (input, init) => {
+      if (String(input) !== "http://127.0.0.1:3456/v1/chat/completions" || typeof init?.body !== "string")
+        throw new Error("Requête Venice web refusée.");
+      const body = JSON.parse(init.body);
+      if (body.model !== options.modelId || body.models) throw new Error("Modèle Venice web refusé.");
+      // The web endpoint does not implement sampling, output budgets or effort controls.
+      if (options.maxOutputTokens !== undefined || options.reasoningEffort)
+        throw new Error("Paramètre non pris en charge par Venice web.");
+      return transport(input, { ...init, redirect: "error" });
+    };
+    const adapter = new AiSdkProvider(createOpenAI({ name: "venice-web", apiKey: "local-bridge",
+      baseURL: "http://127.0.0.1:3456/v1", fetch: guarded }).chat(options.modelId));
+    return { id: `ai-sdk:venice-web:${options.modelId}`, supportsTools: true,
+      generate: request => adapter.generate(request) };
+  }
   if (options.provider === "venice") {
     const transport = options.fetch ?? globalThis.fetch;
     const guarded: typeof fetch = async (input, init) => {
@@ -243,3 +260,5 @@ export {readOpenRouterUsage} from './usage.ts';
 export {apiModelCapabilities} from "./capabilities.ts";
 
 export {veniceModels, readVeniceUsage} from "./venice.ts";
+
+export {veniceWebModels, veniceWebConnected} from "./venice-web.ts";

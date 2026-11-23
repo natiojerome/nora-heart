@@ -10,7 +10,7 @@ import type { ModelProvider } from "../contracts/models.ts";
 import type { Event } from "../contracts/storage.ts";
 import { Engine } from "../core/engine.ts";
 import { ChatGptAuth, ChatGptProvider, readAccountQuotaSnapshot } from "../modules/models/chatgpt/index.ts";
-import { createAiSdkProvider, openRouterModels, veniceModels, readOpenRouterUsage, readVeniceUsage } from "../modules/models/ai-sdk/index.ts";
+import { createAiSdkProvider, openRouterModels, veniceModels, readOpenRouterUsage, readVeniceUsage, veniceWebModels, veniceWebConnected } from "../modules/models/ai-sdk/index.ts";
 import { DemoProvider } from "../modules/models/demo/index.ts";
 import { BasicMemory } from "../modules/memory/basic/index.ts";
 import { openJsonStorage } from "../modules/storage/json/index.ts";
@@ -20,8 +20,8 @@ import { chatGptErrorMessage } from "./chatgpt.ts";
 
 const exec = promisify(execFile);
 const projectRoot = fileURLToPath(new URL("../../", import.meta.url));
-type Provider = "demo" | "chatgpt" | "openai" | "anthropic" | "openrouter" | "venice";
-interface Options { directory: string; authDirectory: string; displayName?: string; oauthPort?: number; quotaSnapshotFile?:string; quotaMaxAgeMs?:number; apiKeys?: { openai?: string; anthropic?: string; openrouter?:string; venice?:string } }
+type Provider = "demo" | "chatgpt" | "openai" | "anthropic" | "openrouter" | "venice" | "venice-web";
+interface Options { directory: string; authDirectory: string; displayName?: string; oauthPort?: number; quotaSnapshotFile?:string; quotaMaxAgeMs?:number; veniceWeb?: boolean; apiKeys?: { openai?: string; anthropic?: string; openrouter?:string; venice?:string } }
 export interface LoginState { status: "idle" | "pending" | "connected" | "error"; url?: string; message?: string }
 
 export class TestLab {
@@ -56,7 +56,7 @@ export class TestLab {
   }
   async state() {
     return { displayName: this.displayName, chatgpt: await this.auth.status(),
-      api: { openai: !!this.keys.openai, anthropic: !!this.keys.anthropic, openrouter:!!this.keys.openrouter, venice:!!this.keys.venice }, login: this.loginStatus() };
+      api: { openai: !!this.keys.openai, anthropic: !!this.keys.anthropic, openrouter:!!this.keys.openrouter, venice:!!this.keys.venice, ...({ "venice-web": this.options.veniceWeb === true && await veniceWebConnected() } as {"venice-web"?: boolean}) }, login: this.loginStatus() };
   }
   async setKey(provider: unknown, apiKey: unknown) {
     if ((provider !== "openai" && provider !== "anthropic" && provider !== "openrouter" && provider !== "venice") || typeof apiKey !== "string" || apiKey.length < 8 || apiKey.length > 4096 || /\s/.test(apiKey)) throw new Error("Clé ou fournisseur invalide.");
@@ -125,6 +125,7 @@ export class TestLab {
       "Compte déconnecté ici. Révocation distante non confirmée : déconnecter aussi l’application dans les réglages ChatGPT." };
   }
   async models(provider: string) {
+    if (provider === "venice-web") return { models: await veniceWebModels(), updatedAt: new Date().toISOString() };
     if (provider === "venice") {
       const models = await veniceModels();
       this.veniceModels = new Map(models.map(model => [model.id, model]));
@@ -137,6 +138,11 @@ export class TestLab {
   }
   async capabilities(provider:string,modelId:string){
     if(!modelId.trim()||modelId.length>200)throw new Error('Choisir un modèle.');
+    if (provider === "venice-web") {
+      const selected = (await veniceWebModels()).find(model => model.id === modelId);
+      if (!selected) throw new Error("Modèle absent du catalogue Venice web sans crédits.");
+      return selected;
+    }
     if (provider === "venice") {
       const models = this.veniceCatalog && Date.now() - this.veniceCatalog.at < 300000
         ? this.veniceCatalog.models : (await this.models(provider)).models;
@@ -151,8 +157,11 @@ export class TestLab {
   }
   async usage(provider:string,modelId:string,refresh=false):Promise<ProviderUsage>{
     if(modelId.length>200)throw new Error('Modèle invalide.');
-    if(!['demo','chatgpt','openai','anthropic','openrouter','venice'].includes(provider))throw new Error('Module inconnu.');
+    if(!['demo','chatgpt','openai','anthropic','openrouter','venice','venice-web'].includes(provider))throw new Error('Module inconnu.');
     const base:ProviderUsage={provider:provider as Provider,modelId,status:'unavailable',observedAt:new Date().toISOString(),source:'Connexion Heart',message:'Solde et reset non communiqués par cette connexion.'};
+    if (provider === "venice-web") return { ...base, source: "Session web Venice · pont expérimental",
+      status: await veniceWebConnected() ? "unavailable" : "unconfigured",
+      message: "Chat web, outils émulés. Modèles sans crédits uniquement. Limites du compte et disponibilité imposées par Venice ; aucun quota restant déduit.", dashboardUrl: "https://venice.ai" };
     if(provider==='demo')return {...base,status:'not_applicable',message:'Simulation locale, sans crédits ni quota fournisseur.'};
     if(provider==='chatgpt'){
       const missing={...base,source:'Compte ChatGPT · quotas Codex',message:'Quota du compte indisponible : vérifier sa connexion et le collecteur. Le plafond propre à Heart reste non communiqué.',dashboardUrl:'https://chatgpt.com/settings/usage'};
@@ -173,10 +182,14 @@ export class TestLab {
   }
   model(body: Record<string, unknown>): ModelProvider {
     const provider = body.provider as Provider;
-    if (!["demo", "chatgpt", "openai", "anthropic", "openrouter", "venice"].includes(provider)) throw new Error("Module inconnu.");
+    if (!["demo", "chatgpt", "openai", "anthropic", "openrouter", "venice", "venice-web"].includes(provider)) throw new Error("Module inconnu.");
     if (provider !== "demo" && (typeof body.modelId !== "string" || !body.modelId.trim() || body.modelId.length > 200)) throw new Error("Choisir un modèle.");
     let model: ModelProvider;
     if (provider === "demo") model = new DemoProvider();
+    else if (provider === "venice-web") {
+      if (!this.options.veniceWeb) throw new Error("Activer d’abord le pont Venice web sur le serveur.");
+      model = createAiSdkProvider({ provider, apiKey: "local-bridge", modelId: body.modelId as string });
+    }
     else if (provider === "chatgpt") model = new ChatGptProvider({ modelId: body.modelId as string, ...(typeof body.reasoningEffort==="string"&&body.reasoningEffort?{reasoningEffort:body.reasoningEffort}:{}), accessToken: signal => this.auth.accessToken(signal) });
     else {
       const apiKey = this.keys[provider];
@@ -188,7 +201,7 @@ export class TestLab {
   async test(body: Record<string, unknown>, signal?: AbortSignal) {
     if (this.busy) throw new Error("Un test est déjà en cours.");
     const provider = body.provider as Provider;
-    if (!["demo", "chatgpt", "openai", "anthropic", "openrouter", "venice"].includes(provider)) throw new Error("Module inconnu.");
+    if (!["demo", "chatgpt", "openai", "anthropic", "openrouter", "venice", "venice-web"].includes(provider)) throw new Error("Module inconnu.");
     if (typeof body.prompt !== "string" || !body.prompt.trim() || body.prompt.length > 8000) throw new Error("Message requis (8000 caractères maximum).");
     const maxSteps = body.maxSteps ?? 4;
     if (!Number.isInteger(maxSteps) || (maxSteps as number) < 1 || (maxSteps as number) > 4) throw new Error("Choisir entre 1 et 4 étapes.");

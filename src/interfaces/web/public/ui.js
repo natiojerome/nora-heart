@@ -136,7 +136,7 @@
     discussionProjects();
     const query = el("discussion-search").value.trim().toLocaleLowerCase();
     const projectId=el("discussion-project-filter").value;
-    const providers={chatgpt:"ChatGPT",openrouter:"OpenRouter",venice:"Venice AI",openai:"OpenAI",anthropic:"Anthropic",demo:"Simulation"};
+    const providers={chatgpt:"ChatGPT",openrouter:"OpenRouter",venice:"Venice AI","venice-web":"Venice web",openai:"OpenAI",anthropic:"Anthropic",demo:"Simulation"};
     const efforts={low:"faible",medium:"moyen",high:"élevé",xhigh:"très élevé",max:"max",ultra:"ultra"};
     for (const id of ["discussion-cards", "home-discussions"]) {
       const target = el(id);

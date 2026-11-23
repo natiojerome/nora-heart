@@ -32,7 +32,7 @@ let modelsRequest;
 let modelsVersion = 0;
 let modelsUpdatedAt = "";
 function usesCatalog(provider = selectedProvider()) {
-  return provider === "chatgpt" || provider === "openrouter" || provider === "venice";
+  return provider === "chatgpt" || provider === "openrouter" || provider === "venice" || provider === "venice-web";
 }
 function modelAvailable(provider = selectedProvider()) {
   if (provider === "demo") return true;
@@ -56,6 +56,7 @@ const names = {
   anthropic: "Claude · API",
   openrouter: "OpenRouter · API",
   venice: "Venice AI · API",
+  "venice-web": "Venice · web expérimental",
 };
 
 function selectedProvider() {
@@ -132,6 +133,7 @@ function renderState() {
   $("openrouter-card-status").textContent = state.api?.openrouter
     ? "Clé configurée"
     : "Clé absente";
+  $("venice-web-card-status").textContent = state.api?.["venice-web"] ? "Session connectée" : "Session ou pont absent";
   $("venice-card-status").textContent = state.api?.venice ? "Clé configurée" : "Clé absente";
   $("conversations").hidden = !state.conversationsAvailable;
   $("memories").hidden = !state.memoriesAvailable;
@@ -142,7 +144,7 @@ function renderState() {
   window.heartPreferences?.sync();
 }
 function accountKey() {
-  if (["openrouter","venice"].includes(selectedProvider())) return selectedProvider()+"-public";
+  if (["openrouter","venice","venice-web"].includes(selectedProvider())) return selectedProvider()+"-public";
   return state.chatgpt?.connected
     ? `${state.chatgpt.profile || "default"}:${state.chatgpt.clientId || state.chatgpt.email || ""}`
     : "";
@@ -280,6 +282,8 @@ function renderProvider() {
   $("cost-note").textContent =
     provider === "demo"
       ? "Simulation locale. Aucun modèle payant n’est appelé."
+      : provider === "venice-web"
+        ? "Session web Venice, outils émulés. Modèles sans crédits uniquement ; limites du compte Venice applicables."
       : provider === "openrouter"
         ? "Le modèle choisi sera utilisé avec ton compte OpenRouter, au tarif affiché. Aucun autre modèle ne prend le relais."
         : provider === "chatgpt"
@@ -422,7 +426,7 @@ async function loadModels(force = false) {
       const placeholder = document.createElement("option");
       placeholder.value = "";
       placeholder.textContent =
-        "Choisir un modèle "+(provider === "venice" ? "Venice AI" : provider === "openrouter" ? "OpenRouter" : "ChatGPT");
+        "Choisir un modèle "+(provider === "venice-web" ? "Venice web" : provider === "venice" ? "Venice AI" : provider === "openrouter" ? "OpenRouter" : "ChatGPT");
       $("model-options").replaceChildren(placeholder);
       for (const model of models) {
         const option = document.createElement("option");
@@ -445,6 +449,7 @@ async function loadModels(force = false) {
         option.dataset.detail = [
           provider === "chatgpt"
             ? "ChatGPT"
+            : provider === "venice-web" ? "Venice web · outils émulés"
             : provider === "venice" ? "Venice AI"
             : model.name.includes(":")
               ? model.name.split(":")[0]

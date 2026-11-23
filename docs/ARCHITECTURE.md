@@ -79,6 +79,11 @@ aux secrets. Détails et limites dans [WALLETS.md](WALLETS.md).
 
 ## Fournisseur Venice AI
 
+Prototype optionnel distinct `venice-web` dans le même module AI SDK : transport
+local indépendant, enveloppes d’outils traduites et validées à la frontière ;
+aucune exécution dans le proxy. Désactivé par défaut et non déployé : les essais
+réels du 23 novembre sont refusés par Venice. Voir [VENICE-WEB.md](VENICE-WEB.md).
+
 Venice est une sélection explicite du module models/ai-sdk existant, avec un
 fichier interne venice.ts pour le catalogue. Aucune dépendance supplémentaire ni
 import entre implémentations. L’app relie clés privées, catalogue/capacités et

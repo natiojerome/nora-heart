@@ -7,7 +7,7 @@ export interface ConversationWork {
   commentary?:string;
 }
 export interface ModelSelection {
-  provider: "demo" | "chatgpt" | "openai" | "anthropic" | "openrouter" | "venice";
+  provider: "demo" | "chatgpt" | "openai" | "anthropic" | "openrouter" | "venice" | "venice-web";
   modelId: string;
   contextWindow: number;
   capacitySource: "catalog" | "configured";

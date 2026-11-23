@@ -265,3 +265,24 @@ restauré dans PostgreSQL isolé sans réseau (256 Mio) : identité/compteurs et
 fichiers/configurations récupérés, conteneur et fichiers privés retirés. Aucun
 restore sur la production. Disque libre : 25 Gio. Documentation de qualification
 complétée ensuite, sans autre modification du code activé.
+
+
+## Essai Venice web avec outils émulés — 23 novembre
+
+Prototype distinct `venice-web` préparé sur demande du propriétaire. Pont local
+MIT épinglé, catalogue authentifié sans crédits relu avant les appels, validation
+JSON Schema et permissions du moteur conservées. Trois nouveaux tests locaux
+passent, dont une boucle avec le parseur réel du proxy et un modèle simulé.
+`pnpm check` : 324 tests ; démo SDK et deux parcours Chromium (API existante et
+nouvelle sélection web mobile) passent. 84 contrôles purs du parseur/flux amont
+passent séparément. Aucun de ces résultats ne valide l’inférence Venice réelle.
+
+Essai réel bloqué : route agent HTTP 403 `creator_access_required`, chat classique
+HTTP 403 refusant explicitement l’usage programmatique sous peine de suspension.
+Session et catalogue fonctionnels ne suffisent pas. Essais externes arrêtés,
+pont temporaire arrêté, copie de session supprimée, aucun abonnement activé,
+aucune route API payante ni service ou redémarrage de production. Source prête
+mais désactivée par défaut. Ne pas relancer ou changer de route/identité pour
+contourner ce refus. Voir [VENICE-WEB.md](VENICE-WEB.md), tests et rapport bloqué
+sous `docs/qualification/venice-web/`. Suite : conserver les cerveaux fonctionnels ;
+qualification Venice web seulement après résolution explicite de cet accès.
