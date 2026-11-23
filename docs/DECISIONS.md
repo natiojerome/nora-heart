@@ -537,11 +537,25 @@ protègent l’interchangeabilité sans imposer un SDK aux contrats persistants.
 
 La supervision systemd reste dans le module terminal hôte : vérifier l’unité
 avant d’affirmer une interruption ou un arrêt, préserver les sorties et le travail
-actif. Ne pas redémarrer un worker pour une mise à jour en interrompant
-silencieusement ses commandes. Les snapshots SQL/code/credentials et les
+actif. Les services des projets ne sont pas liés au cycle de vie de Heart ou du worker ;
+leur arrêt est explicite. Les snapshots SQL/code/credentials et les
 sauvegardes complètes incluant des workspaces actifs ont des garanties distinctes.
 
 Optimiser les changements visibles plutôt que redessiner une vue à chaque
 phase interne. Une réponse HTTP illisible n’est pas un succès et une réponse
 d’une ancienne connexion ne doit pas expirer la nouvelle. Aucun retry automatique
 d’écriture ajouté.
+
+## Projets autonomes — décision du propriétaire
+
+Heart développe les projets, leur exécution et leur fonctionnement ne doivent
+jamais dépendre de Heart. Aucun PartOf, pipe d’I/O, runtime embarqué ou supervision
+obligatoire par le harness. Code/configuration/runtimes/services propres aux
+projets ; déploiement persistant via conventions natives systemd ou Docker Compose.
+
+Exécution hôte indépendante par défaut, arrêt explicite, état/sorties retrouvables
+après redémarrage du worker. interactive:true réservé au stdin temporaire de
+développement. Les changements de permissions de Heart ne stoppent pas les unités
+indépendantes. La maintenance et le backup du harness ne doivent pas attendre
+leur fin ; copie à chaud marquée dans le manifeste, backups métier propres aux
+projets. Aucun transfert implicite ni relancement du veilleur crypto arrêté.

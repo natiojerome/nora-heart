@@ -10,7 +10,7 @@ Cette revue distingue les fonctions livrées des qualifications encore partielle
 | --- | --- | --- |
 | Architecture | Contrats, core, modules et assemblage séparés ; frontières testées. TypeScript strict, Node 24, pnpm. | Pas de refonte de stack justifiée par les défauts constatés. |
 | Cerveaux | ChatGPT abonnement ; OpenAI, Anthropic, OpenRouter et Venice par API. Catalogue et efforts par modèle, aucun repli implicite. | Abonnement Claude absent ; toutes les paires/modèles ne sont pas qualifiés en réel. |
-| Conversations | Plusieurs fils travaillent simultanément ; droits, modèle et workspace par fil. Historique paginé, reprise et récupération journalisées. | Un run par fil. Historique local à Heart ; centralisation distante reportée. |
+| Conversations | Plusieurs fils travaillent simultanément ; droits, modèle et workspace par fil. Programmes hôtes indépendants du cycle de vie Heart. Historique paginé, reprise et récupération journalisées. | Un run par fil. Historique local à Heart ; centralisation distante reportée. |
 | Persistance | PostgreSQL de production ; module SQLite interchangeable et contrat SQL commun. Sauvegarde locale chiffrée et restauration isolée qualifiée. | Aucun transfert automatique entre SQL ; copie des sauvegardes hors machine à choisir explicitement. |
 | Données distantes | Mémoire, projets et coffre via Nora MCPs. Projets : source métier unique distante ; artefacts physiques locaux. | Les résultats du coffre sont visibles au modèle pendant le tour ; pas de promesse de masquage de sa réponse. |
 | Mémoire/contexte | Souvenirs structurés, revue, correction/oubli, compression et lecture des originaux. Instructions et budgets configurables. | Qualification réelle ChatGPT/OpenRouter ciblée ; mémoire/compression Venice pas encore qualifiées de bout en bout. L’oubli MCP n’a pas de restauration native. |
@@ -64,3 +64,14 @@ l’hôte principal pendant le lot ; archives temporaires retirées après véri
 Suivre le plan courant : le lot de consolidation et son activation sont terminés.
 Étendre ensuite les essais à des demandes métier réelles plutôt que déclarer une
 qualification universelle de tous les outils, modèles, OS et volumes d’historique.
+
+## Indépendance des projets
+
+Défaut d’architecture corrigé : unités hôtes natives par défaut, sans PartOf, pipes
+ou runtime Heart ; annulation et changements de permissions ne stoppent pas
+ces programmes. Mode stdin temporaire explicite. Test réel : Heart et worker
+complètement arrêtés, serveur projet HTTP disponible avec PID inchangé, puis
+reprise des sorties/contrôles. Backup du harness possible pendant son activité,
+avec copie à chaud déclarée. Exploitation persistante après reboot et sauvegarde
+métier restent de la responsabilité des services propres à chaque projet, pas
+d’un daemon ou ordonnanceur Heart. Aucun ancien projet migré implicitement.

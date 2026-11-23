@@ -859,3 +859,26 @@ empreintes et périmètres vérifiés. Le pg_dump réel a été restauré dans u
 PostgreSQL jetable sans réseau, mémoire 256 Mio et données tmpfs ; identité et
 compteurs événements/conversations/connexions identiques à la source au repos.
 Conteneur et fichiers privés déchiffrés retirés. Aucun restore sur la production.
+
+## Exécution indépendante de Heart — 23 novembre 2026
+
+`pnpm check` : 287 tests et démo SDK ; `pnpm test:host` : deux intégrations natives
+root/systemd (sans fournisseur LLM), `pnpm test:backup` : trois tests ; trois
+parcours navigateur ciblés (workspace, racine projets, travaux simultanés).
+
+Nouveau test natif : projet shell sur runtime système, annulation du signal du
+modèle, vrai arrêt du processus worker, croissance continue du heartbeat, nouveau
+worker, sorties retrouvées puis arrêt explicite. PartOf vide et aucun chemin
+du code/Node embarqué de Heart dans son ExecStart. Mode stdin temporaire et ses
+annulations testés séparément ; changement de permission conservant un programme
+indépendant contrôlé dans les régressions.
+
+Qualification de l’installation active : fixture Python stdlib hors code Heart,
+arrêt complet web + worker, requête HTTP du projet réussie avec même PID,
+redémarrage Heart, reprise du contrôle. Sauvegarde complète forcée pendant que
+le projet répond : réussite, PID inchangé, manifeste externalExecution avec une
+unité native active et projectFilesConsistency=live-copy. Arrêt explicite et
+nettoyage de toutes les fixtures après preuve. Aucun redémarrage du veilleur
+crypto, aucune migration des projets existants, aucun envoi de mail dans ce lot.
+Une copie à chaud des fichiers n’est pas une qualification des backups métier
+d’un service ; utiliser ses propres procédures cohérentes.

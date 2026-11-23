@@ -17,6 +17,15 @@ commande de test exécutée/lue/arrêtée via le worker actif. Sauvegarde compl�
 créée et restaurée en environnement isolé ; helper de sauvegarde installé aligné
 sur le dépôt pour inclure aussi configuration MCP et racine des projets.
 
+## Exploitation indépendante des projets livrée
+
+Les nouveaux programmes hôtes survivent à Heart, à son worker et à l’annulation
+d’un tour. Sessions interactives temporaires distinctes. Vrai serveur de test
+resté accessible avec le même PID pendant l’arrêt complet de Heart et pendant
+son backup. Contrôle retrouvé sans redémarrer le projet. Les déploiements
+permanents utilisent leurs propres services/runtimes/configuration et backups,
+conformément à la décision du propriétaire, sans nouvelle plateforme maison.
+
 ## Prochaines étapes utiles
 
 1. Sur demande métier explicite, qualifier une lecture/réponse mail avec pièce

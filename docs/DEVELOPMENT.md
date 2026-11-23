@@ -74,7 +74,7 @@ L’application construit une instance partagée puis fournit les outils au core
 | --- | --- |
 | `terminal.exec` | Lance command, cwd relatif facultatif, timeoutMs facultatif ; retourne id, statut et première sortie. yieldTimeMs règle l’attente (500 ms par défaut, 0 immédiat), sans délai maximal de commande. |
 | `terminal.read` | État, code de sortie et sortie stdout/stderr fusionnée ; offset/length configurables. |
-| `terminal.write` | Texte sur stdin, close facultatif pour EOF. |
+| `terminal.write` | Stdin des sessions temporaires (`interactive:true` en YOLO), close pour EOF. |
 | `terminal.stop` | Arrêt avec escalade SIGKILL si nécessaire. |
 | `terminal.list` | Commandes appartenant à cet espace, sans fuite des autres fils. |
 
@@ -82,7 +82,8 @@ La permission `process.execute` est accordée en modes develop et yolo. Ce
 mode accorde aussi les écritures : une commande shell peut modifier les fichiers
 sans passer par les révisions de l’éditeur. Les autres modes ne proposent pas
 les outils terminal au modèle et le core les refuse s’ils sont demandés malgré
-tout. Changer de mode arrête les commandes actives de l’ancien exécuteur.
+tout. Changer de mode arrête seulement les commandes temporaires de l’ancien exécuteur ;
+les exécutions hôtes indépendantes sont conservées.
 Le changement de réseau ne reconfigure pas un processus déjà lancé : arrêter
 les commandes actives avant de modifier ce réglage.
 
@@ -185,15 +186,20 @@ HostExecutionClient du même module terminal. Le serveur web conserve son UID et
 ses protections. Pas d’EnvironmentFile web, de token LLM ou d’environnement parent
 transmis automatiquement au worker ou aux commandes.
 
-Chaque commande YOLO est une unité transitoire systemd root avec réseau et système
-de fichiers de l’hôte, environnement reconstruit et HOME dédié. cwd absolu accepté.
+Par défaut, chaque commande YOLO est une unité systemd indépendante, avec réseau
+et fichiers de l’hôte, environnement reconstruit, HOME et PATH système. Aucun
+Node embarqué de Heart n’est injecté dans son runtime. cwd absolu accepté.
 Le groupe de service et umask 0007 rendent les fichiers créés utilisables par Heart.
 Les commandes n’héritent pas des plafonds CPU/mémoire du web ; les ressources physiques
 et les réglages du gestionnaire de services restent applicables. Aucun timeout
 applicatif par défaut. Les journaux YOLO sont privés au worker et distincts des
 commandes isolées ; l’historique reste disponible en revenant au mode correspondant.
 ExitType=cgroup et KillMode=control-group permettent de suivre/arrêter aussi un
-enfant ayant appelé setsid. PartOf lie les commandes au cycle de vie du worker.
+enfant ayant appelé setsid. Aucun PartOf, pipe d’entrée/sortie ou watchdog ne lie
+ces unités au worker. Sorties directement écrites par systemd ; résultat final
+persisté par un wrapper POSIX autonome. Arrêter Heart ou annuler un tour ne les
+arrête pas ; terminal.stop est une action explicite. interactive:true est réservé
+aux sessions stdin temporaires de développement, qui suivent le tour/worker.
 Un processus root peut néanmoins volontairement lancer un autre service ou changer
 les réglages du serveur : YOLO est une délégation d’administration complète.
 
@@ -211,10 +217,12 @@ Installation explicite : adapter les chemins/utilisateurs de
 web. Le socket appartient à root:personal-harness (0660, dossier 0750). Toute identité
 pouvant utiliser ce socket obtient les capacités root du worker. Sans worker,
 l’option est indisponible ; aucun repli implicite, y compris pour un fil déjà YOLO.
-Revenir à Lecture/Développement arrête les commandes YOLO actives de ce fil. Pour
+Revenir à Lecture/Développement conserve les programmes indépendants et arrête
+seulement les sessions temporaires. Pour
 retirer complètement la capacité : arrêter/désactiver le worker, retirer le drop-in
-et redémarrer le web. Les métadonnées encore running après interruption sont
-présentées comme interrompues, sans réexécution.
+et redémarrer le web ; cela ne doit pas arrêter les services des projets. Après
+redémarrage, le worker consulte l’état système et les sorties existantes, sans
+relancer de commande. Un résultat final inconnu reste une interruption explicite.
 
 Références de mécanisme : [systemd-run](https://www.freedesktop.org/software/systemd/man/latest/systemd-run.html)
 et [systemd.service, ExitType](https://www.freedesktop.org/software/systemd/man/latest/systemd.service.html#ExitType=).
@@ -224,3 +232,18 @@ absence d’héritage d’un secret de test, stdin, code d’échec, arrêt des 
 détachés, annulation et refus d’un autre fil/socket absent. Le navigateur vérifie
 choix, badge, terminal, persistance et retour aux droits protégés avec un worker de
 test substitué ; cette preuve UI est distincte de celle du véritable worker root.
+
+## Exploitation des projets hors Heart
+
+Heart est un outil de développement/administration. Le projet possède son code,
+ses runtimes, dépendances, configuration et service systemd activé ou Docker
+Compose avec politique de reprise explicite. Aucun import du code Heart, chemin
+vers son Node embarqué ou service Heart obligatoire pour fonctionner. Le terminal
+isolé et les sessions interactives servent au développement, jamais à héberger
+le projet. Une unité transitoire lancée par terminal.exec survit à Heart mais
+n’est pas, à elle seule, un déploiement persistant après reboot de la machine.
+
+Les sauvegardes de Heart n’arrêtent pas les unités indépendantes. Le manifeste
+indique externalExecution et live-copy si des programmes sont actifs ; la copie
+de leurs fichiers ne prouve pas la cohérence de leurs bases métier. Ces services
+ont leur propre procédure de sauvegarde/restauration, indépendante de Heart.

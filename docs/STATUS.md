@@ -13,7 +13,8 @@ qualification réelle de chaque fournisseur/modèle.
   dépend d’aucun SDK, stockage ou adaptateur. Frontières et cycles runtime testés.
 - PostgreSQL en production, SQLite natif interchangeable via le contrat SQL et sa
   suite de conformité commune ; aucun transfert automatique des données entre SQL.
-- Conversations, historique, résumés et exécutions restent dans Heart. Plusieurs
+- Conversations, historique, résumés et tours du modèle restent dans Heart. Les
+  programmes des projets ont leurs runtimes et services indépendants. Plusieurs
   fils peuvent travailler simultanément ; une seule exécution active par fil.
   Historique par curseurs, projections jetables, reprise et effets incertains
   journalisés, jamais de rejeu aveugle.
@@ -111,3 +112,21 @@ crypto de First try a été arrêté via l’outil de commande, unité inactive 
 Le worker a ensuite redémarré ; vraie exécution Node 24, lecture des sorties et
 arrêt d’une commande de test vérifiés via sa socket. Fixtures et conteneur de
 restauration supprimés, services sains ; le blocage d’activation est levé.
+
+## Indépendance d’exécution des projets
+
+Nouvelle décision du propriétaire mise en place : Heart développe/administre les
+projets, leurs services fonctionnent sans lui. Exécution hôte native indépendante
+par défaut ; aucune dépendance PartOf, pipe ou Node embarqué. Annuler un tour,
+changer ses permissions ou arrêter/redémarrer le worker ne coupe pas ces unités.
+Le mode stdin interactive:true reste un outil temporaire de développement.
+
+Déployé et testé en production : serveur Python de fixture hors code Heart, web
+et worker complètement arrêtés, HTTP toujours disponible avec PID inchangé ;
+reprise du contrôle après redémarrage et arrêt explicite. Backup Heart réussi
+pendant son fonctionnement, manifeste live-copy explicite. Le veilleur crypto
+initial reste arrêté et ses données sont conservées. Aucun ancien projet déplacé
+ou migré implicitement. Services permanents à déployer via systemd/Compose
+propres au projet ; une commande transitoire seule ne garantit pas le redémarrage
+après reboot. Validation : 287 tests/démo, deux tests natifs opt-in, trois tests
+de backup et trois parcours navigateur ciblés.

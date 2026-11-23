@@ -1132,8 +1132,9 @@ construit une seule fois par tour, décoré par les skills si présents.
 
 Dans le module terminal, `SystemdUnits` contrôle l’état natif du processus hôte.
 L’absence d’un enfant dans la Map JS ne prouve pas l’arrêt d’une unité systemd.
-Unité active : état conservé et sauvegarde différée ; unité inactive : interruption
-persistée. Une erreur de supervision ne prouve jamais l’arrêt. Le contrat neutre
+Unité active : état conservé. Les unités indépendantes ne bloquent ni maintenance
+ni sauvegarde de Heart. Unité inactive : code de sortie natif conservé s’il existe,
+sinon interruption explicite. Une erreur de supervision ne prouve jamais l’arrêt. Le contrat neutre
 `ExecutionService` et les autres modules restent inchangés ; la supervision
 spécifique Linux est injectable à la frontière du module pour ses tests.
 
@@ -1143,3 +1144,26 @@ catalogue de travaux utilise une génération et une signature limitée aux cham
 effectivement affichés ; changer une phase interne ne reconstruit pas les cartes.
 Les tests d’architecture couvrent points d’entrée, dépendances et cycles runtime
 y compris imports dynamiques statiques, hors références purement de type.
+
+## Projets : aucune dépendance de fonctionnement à Heart
+
+Heart développe et administre, mais ne fournit pas le runtime de production des
+projets. Code, données, dépendances, configuration et déploiement système leur
+appartiennent. Services systemd persistants ou Docker Compose natif, sans import
+Heart ni dépendance de démarrage/arrêt à ses services. Les exécutions du modèle et
+les terminaux isolés sont des tâches de développement distinctes de ces services.
+
+Dans le module terminal, le chemin hôte par défaut délègue à PID 1 via systemd-run,
+avec sorties append natives et résultat écrit par un wrapper POSIX autonome.
+Pas de PartOf, de pipe Heart, de runtime Node embarqué ou d’écouteur d’annulation
+du tour. CommandSnapshot.independent distingue ce comportement ; les permissions
+de conversation ne tuent pas le programme en cours. Le nouveau worker relit état
+et fichiers sans reprise implicite. Les sessions interactive:true sont temporaires,
+avec stdin, explicitement distinctes des projets ; elles restent annulables.
+
+Les unités de commande sont transitoires à l’échelle de la machine : les projets
+permanents doivent déployer leurs propres services activés au boot. Aucun registre
+d’exploitation ni framework de runtime maison ajouté. Le backup Heart annote les
+fichiers copiés à chaud quand ces programmes tournent ; il ne remplace pas les
+sauvegardes cohérentes propres aux projets. Contrats et core restent indépendants
+du contrôleur systemd situé dans le module terminal.
