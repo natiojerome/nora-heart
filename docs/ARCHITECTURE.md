@@ -1120,3 +1120,26 @@ d’ID, de souvenirs, de clés ou d’historique pour changer une étiquette.
 Les titres de présentation sont journalisés avec `run.started.toolTitles` et
 `tool.started.title`, mais ne doublent pas l’inventaire textuel injecté. Les noms
 canoniques et descriptions/schema complets restent transmis au fournisseur.
+
+## Cycle de vie et supervision après consolidation
+
+`openWebConversations` reste le point d’assemblage concret web. Sa factory de
+stockage optionnelle retourne le contrat `SqlStorageConnection` ; aucun client
+SQL n’entre dans le core ou les autres modules. Une initialisation échouée ferme
+les ressources déjà ouvertes. La fermeture est partagée/idempotente et poursuit
+les autres étapes après erreur, puis rapporte les échecs groupés. Contexte
+construit une seule fois par tour, décoré par les skills si présents.
+
+Dans le module terminal, `SystemdUnits` contrôle l’état natif du processus hôte.
+L’absence d’un enfant dans la Map JS ne prouve pas l’arrêt d’une unité systemd.
+Unité active : état conservé et sauvegarde différée ; unité inactive : interruption
+persistée. Une erreur de supervision ne prouve jamais l’arrêt. Le contrat neutre
+`ExecutionService` et les autres modules restent inchangés ; la supervision
+spécifique Linux est injectable à la frontière du module pour ses tests.
+
+Le client HTTP garde une seule frontière de transport, sans retry des mutations.
+Réponses d’une ancienne connexion : aucun reset de la nouvelle session/CSRF. Le
+catalogue de travaux utilise une génération et une signature limitée aux champs
+effectivement affichés ; changer une phase interne ne reconstruit pas les cartes.
+Les tests d’architecture couvrent points d’entrée, dépendances et cycles runtime
+y compris imports dynamiques statiques, hors références purement de type.

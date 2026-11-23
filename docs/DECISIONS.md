@@ -1,6 +1,6 @@
 # Choix techniques actuels
 
-Décisions actives au 22 novembre 2026. Ce fichier conserve le choix courant et
+Décisions actives au 23 novembre 2026. Ce fichier conserve le choix courant et
 sa raison ; les décisions remplacées et anciens plans restent dans Git.
 L’état d’implémentation est dans [STATUS.md](STATUS.md) ; la suite et ses critères
 sont dans [PLAN.md](PLAN.md).
@@ -526,3 +526,22 @@ artificiel des modules déjà conformes aux frontières.
 Les libellés d’affichage restent dans le journal/UI ; l’inventaire injecté au
 modèle liste les noms canoniques, avec les descriptions complètes dans les schémas.
 Éviter de dupliquer les titres dans le prompt préserve les petits contextes.
+
+## Consolidation : contrats et durée de vie
+
+Conserver les frontières existantes ; injecter les ressources à la composition
+plutôt que construire un nouveau registre/framework de plugins. Le propriétaire
+de la connexion est responsable de sa fermeture, même sur initialisation échouée
+ou erreur d’une autre étape. Tests de conformité SQL et de frontières/cycles
+protègent l’interchangeabilité sans imposer un SDK aux contrats persistants.
+
+La supervision systemd reste dans le module terminal hôte : vérifier l’unité
+avant d’affirmer une interruption ou un arrêt, préserver les sorties et le travail
+actif. Ne pas redémarrer un worker pour une mise à jour en interrompant
+silencieusement ses commandes. Les snapshots SQL/code/credentials et les
+sauvegardes complètes incluant des workspaces actifs ont des garanties distinctes.
+
+Optimiser les changements visibles plutôt que redessiner une vue à chaque
+phase interne. Une réponse HTTP illisible n’est pas un succès et une réponse
+d’une ancienne connexion ne doit pas expirer la nouvelle. Aucun retry automatique
+d’écriture ajouté.

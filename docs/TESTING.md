@@ -807,3 +807,38 @@ par recherche du sujet unique dans le Gmail réel via les outils approuvés Hear
 un résultat, expéditeur @natio.re et destinataire attendus. Aucun renvoi.
 Ce scénario utilise réellement le fournisseur et les deux fournisseurs mail ;
 aucune simulation, aucune qualification implicite des réponses/PJ par cet essai.
+
+## Consolidation de plusieurs frontières — 23 novembre 2026
+
+- `pnpm check` : 287 tests ; `pnpm demo:sdk` : succès (fournisseur simulé).
+- `pnpm test:postgres` : 42 tests, CLI, dump/restauration, identité et contenus
+  comparés. Service jetable, 256 Mio, volume tmpfs, image déjà installée, nettoyé.
+- `pnpm test:backup` : deux tests de chiffrement/restauration PostgreSQL-format
+  synthétique et SQLite réel ; les tests ne lisent aucun credential de production.
+- 28 parcours Chromium exécutés avec concurrence 1 ; backend HTTP réel local,
+  états jetables et fournisseurs simulés. Reprise du test de performances après
+  le dernier changement : dix mises à jour de travail avec état visible identique,
+  zéro mutation DOM, nœuds conservés. Les changements de phase ne reconstruisent
+  plus les cartes ; aucun chiffre de latence globale ou appareil physique déduit.
+- Tests ajoutés : erreur d’initialisation/fermeture SQL, fermeture simultanée,
+  anciens résultats/session/CSRF, déconnexion sans polling résiduel, JSON HTTP
+  illisible sans rejeu d’écriture, interruption persistée/concurrente, unité
+  systemd survivante ou état inconnu, nettoyage des staging files, annulation
+  avant journalisation et points d’entrée/cycles des modules.
+
+Deux snapshots chiffrés code/SQL/configurations avant/après modifications. Le
+second inclut aussi OAuth/credentials privés et a été déchiffré en dossier
+jetable avec vérification des empreintes et du format pg_dump. Aucune restauration
+sur la production. La sauvegarde complète des workspaces reste différée pendant
+une commande hôte active : aucun snapshot cohérent de ces fichiers n’est prétendu.
+Le worker hôte est préservé ; nouvelle supervision validée sur fixtures, activation
+reportée. Web redémarré à zéro mutation active et santé vérifiée, commande hôte
+restée active. Aucun autre runtime Nora modifié, aucun nouvel envoi Mail.
+
+Après mise à jour web : `gpt-6-luna` réel, ChatGPT abonnement, effort low,
+conversation dédiée. Un appel `mail_accounts`, quatre comptes connectés, zéro
+erreur d’outil, tour terminé. Aucun brouillon, envoi ou modification de mémoire
+demandé dans ce scénario de lecture. Nouveau contrôleur systemd également
+exécuté en lecture seule sur l’unité réellement active : état running correct,
+journal inchangé et aucun processus arrêté. Cela qualifie la lecture native,
+pas un redémarrage du worker avec cette commande encore en cours.

@@ -1,6 +1,6 @@
 # Revue du code et priorités
 
-Point du 22 novembre 2026. État détaillé : [STATUS.md](STATUS.md),
+Point du 23 novembre 2026. État détaillé : [STATUS.md](STATUS.md),
 architecture : [ARCHITECTURE.md](ARCHITECTURE.md), preuves : [TESTING.md](TESTING.md).
 Cette revue distingue les fonctions livrées des qualifications encore partielles.
 
@@ -19,11 +19,12 @@ Cette revue distingue les fonctions livrées des qualifications encore partielle
 | Skills | Format portable, catalogue/lecture, activation et instructions de base. | Installation/édition/mises à jour à étendre selon les usages. |
 | Tâches | Planification durable, concurrence entre fils, pause/run-now, historique, outils chat et réservations atomiques. | Pas de rejeu aveugle d’une occurrence incertaine ; compléments de fréquences/notifications selon besoin. |
 | Interface | Mobile first, configurations unifiées, chat enrichi, fichiers/terminal manuels, formulaires et reçus mémoire. | Parcours Chromium aux quatre largeurs ; appareils physiques et très gros historiques à mesurer. |
+| Mail | Quatre boîtes connectées, 19 outils, Gmail OAuth/OVH TLS, signatures/PJ, premier envoi Luna reçu dans Gmail. | Réponse avec PJ personnelle à qualifier sur demande ; pas de traitement automatique. |
 | Consommation | Quotas ChatGPT, données OpenRouter ; soldes et limites Venice avec la clé normale et cache d’une minute. | Historique détaillé Venice réservé par le fournisseur aux clés administrateur ; pas de coût réel systématique par run. |
 
 ## Connexion initiale et wallets
 
-Nouveaux installs : compte MCP avant onboarding, clés des trois services attribuées
+Nouveaux installs : compte MCP avant onboarding, clés des quatre services attribuées
 et stockées en privé, reconnexion sans rotation. Installation native/portail HTTPS
 qualifiés ; accord opérateur limité à la fixture, navigateur email/mot de passe
 sur vrai PostgreSQL synthétique. Aucun nouveau fournisseur LLM testé dans ce lot.
@@ -32,33 +33,33 @@ activation sans restart ; conflits atomiques et répétition sans doublons test�
 Payload de sauvegarde immuable conservé pour la compatibilité des anciennes copies.
 Les anciennes installations ne changent pas implicitement d’authentification.
 
-## Dernier défaut corrigé
+## Dernière consolidation
 
-Dans First try, le validateur SDK arrêtait le tour sur appel invalide. Le moteur
-peut désormais demander au même cerveau une correction dans le budget existant.
-Tout le lot rejeté reste sans effet et les résultats déjà exécutés sont conservés.
-Un nom Heart exact autorisé est traduit localement vers son alias ; les arguments
-restent validés strictement. Le diagnostic ne contient ni arguments ni erreur SDK
-brute. Le champ fautif historique n’avait pas été conservé : il n’est pas inventé.
+Plusieurs passes ciblées, sans changement de stack ni nouveau framework :
+annulation avant démarrage, journaux atomiques, supervision native systemd,
+nettoyage des ressources après échec, réponses HTTP/session périmées, suivi des
+travaux et mutations DOM inutiles. Les détails du livré et du déploiement sont
+maintenant regroupés dans STATUS.md, pas répétés sous forme d’anciens plans.
 
-253 tests et démo SDK réussis ; parcours chat/outils et Venice relancés. Essai réel
-sur le modèle Venice utilisé avec une faute injectée : reprise puis lecture valide
-et réponse vérifiée. Cette preuve ciblée ne signifie pas que tout défaut de tous
-les modèles est corrigé. Déploiement et publication réalisés après sauvegarde.
+287 tests, démo SDK, 42 contrôles PostgreSQL et restauration, 2 tests de bundles
+chiffrés, 28 parcours navigateur. Dix réconciliations d’un travail inchangé : zéro
+mutation DOM et nœuds conservés. Tests et limites dans TESTING.md.
 
-## Prochain effort recommandé
+## Limites opérationnelles actuelles
 
-Consolider les longs travaux sur les modèles effectivement utilisés : chaînes de
-lecture/édition/test, sorties terminal longues, refus récupérables et reprise après
-interruption. Utiliser des fixtures jetables et les tests locaux pour l’essentiel,
-puis quelques appels réels ciblés avec coût mesuré. Ne pas rejouer un long tour
-propriétaire pour qualifier un correctif.
+Le web est à jour. Le worker hôte n’a pas été redémarré : une commande longue est
+encore active et suivie. Le nouveau comportement de reprise terminal est qualifié
+sur fixtures et en lecture seule sur une unité réellement active ; son activation de production attend la fin du
+travail. Sauvegarde complète des workspaces différée ; snapshots chiffrés du code,
+SQL et credentials vérifiés. Ne pas confondre ces deux périmètres.
 
-Étendre ensuite la qualification mémoire/compression au modèle Venice choisi :
-conservation des faits, correction d’un souvenir, priorité sur un ancien résumé,
-bascule de cerveau et reprise. Les preuves existantes sont celles de
-[CONTINUITY.md](CONTINUITY.md) et [TESTING.md](TESTING.md), pas une validation
-universelle de toutes les combinaisons.
+Le serveur de test est plein ; aucun projet existant supprimé ni nouvelle machine
+achetée. Régressions exécutées sur l’hôte avec concurrence navigateur limitée,
+PostgreSQL jetable en tmpfs et image déjà présente. Environ 27 Go disponibles sur
+l’hôte principal pendant le lot ; archives temporaires retirées après vérification.
 
-L’usage quotidien et les incidents observés guident les correctifs. Aucun nouveau
-framework, catalogue local miroir ou nouveau service n’est requis pour ce lot.
+## Suite
+
+Suivre le plan courant, en commençant par l’activation du worker à un créneau sûr.
+Étendre ensuite les essais à des demandes métier réelles plutôt que déclarer une
+qualification universelle de tous les outils, modèles, OS et volumes d’historique.
