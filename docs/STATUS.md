@@ -218,3 +218,13 @@ non confirmée est signalée. Contrôle trop grand : délégation explicite au m
 principal, pas de troncature des preuves. Qualité sémantique non universelle,
 pas d’atomicité entre plusieurs écritures. Texte visible et réinitialisable dans
 Instructions, quinzième bloc. Détails dans PROJECTS/TESTING.
+
+
+Activation du contrôle d’écriture vérifiée sur heart.natio.re : 15 blocs hérités,
+profil version 26/personnalité inchangés, skill code-review actif sans erreur.
+Fiche MCP réelle en lecture seule aux largeurs 320/390/768/1440, zéro erreur JS,
+aucune inférence ni modification de projet utilisateur. Web et worker hôte sains.
+Backup `heart-postgres-20261123T093215303253Z.tar.age` de `5a0c408` déchiffré,
+fichiers/configurations récupérés et PostgreSQL restauré sans réseau (256 Mio) :
+identité et compteurs identiques. Conteneur et fichiers privés retirés ; aucun
+restore sur la production. Veilleur crypto toujours arrêté, disque libre 25 Gio.
