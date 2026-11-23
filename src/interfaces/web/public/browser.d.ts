@@ -83,3 +83,20 @@ interface Window {
   };
 }
 declare function loadProjects(): Promise<void>;
+
+interface Window {
+  heartContextExperimentsReady?: Promise<void>;
+  heartContextExperiments?: {
+    sync(): void;
+    render(data: {
+      contextExperimentsSupported?: boolean;
+      conversation?: { id: string; projectId?: string | null };
+    }): void;
+    request(id: string): {
+      contextExperiments?: {
+        measureRequests: boolean;
+        compactProjectReview: boolean;
+      };
+    };
+  };
+}

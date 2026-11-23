@@ -1,3 +1,4 @@
+import {referenceRepeatedText} from "../modules/context/exact-references/index.ts";
 import {ProjectReview} from "../modules/projects/review/index.ts";
 import {projectProgressTools} from "../modules/tools/projects/index.ts";
 import {withProjectContext} from "./project-context.ts";
@@ -244,7 +245,7 @@ export async function openWebConversations(
       model: (selection) => lab.model({ ...selection }),
       capabilities: (provider, id) => lab.capabilities(provider, id),
       catalog: () => lab.models("chatgpt"),
-      engineFor: async (conversation, blocks, policies, runSkills) => {
+      engineFor: async (conversation, blocks, policies, runSkills, experiments) => {
         const scoped = new StructuredMemory(
           memoryRepository,
           {
@@ -339,7 +340,7 @@ export async function openWebConversations(
           withProjectContext(runSkills ? runSkills.context(context) : context,remoteProjects,conversation.projectId,instructionValue(blocks,"projects"),progressTools.find(t=>t.name==='projects.read')?.name),
           conversation.selection?.provider === "demo"?[]:[
             ...((!memoryConnectionId&&remoteMemoryRequired)?[]:[new MemoryReview(scoped,conversation.projectId??null,instructionValue(blocks,'memoryPolicy'),instructionValue(blocks,'memoryReview'))]),
-            ...(conversation.projectId&&remoteProjects&&progressTools.some(t=>t.name==='projects.write')?[new ProjectReview(remoteProjects,conversation.projectId,instructionValue(blocks,'projectReview'),instructionValue(blocks,'projects'))]:[]),
+            ...(conversation.projectId&&remoteProjects&&progressTools.some(t=>t.name==='projects.write')?[new ProjectReview(remoteProjects,conversation.projectId,instructionValue(blocks,'projectReview'),instructionValue(blocks,'projects'),experiments?.compactProjectReview?referenceRepeatedText:undefined)]:[]),
           ],
         );
       },

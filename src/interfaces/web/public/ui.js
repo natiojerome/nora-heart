@@ -775,6 +775,7 @@
     theme(el("theme-choice").value),
   );
   function openSettings(section="model") {
+    window.heartContextExperiments?.sync();
     const dialog=el("context-dialog");
     if(!dialog.open){window.heartWorkspace?.prepareSettings();dialog.showModal();refreshStaleCatalog();}
     for(const panel of dialog.querySelectorAll('[role="tabpanel"]'))panel.hidden=panel.id!=="settings-"+section;

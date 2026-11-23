@@ -1,3 +1,6 @@
+import {referenceRepeatedText} from "../modules/context/exact-references/index.ts";
+import {contextExperiments} from "./context-experiments.ts";
+import type {ContextExperiments} from "../contracts/context-experiments.ts";
 import {ProjectReview} from "../modules/projects/review/index.ts";
 import {projectProgressTools} from "../modules/tools/projects/index.ts";
 import {ContextError} from "../contracts/context.ts";
@@ -88,7 +91,7 @@ export class Conversations {
     defaults?: () => Promise<ConversationDefaults>;
     model: (selection: ModelSelection) => ModelProvider;
     configuration?:()=>Promise<{instructions:string;overrides:InstructionOverrides;policies:RuntimePolicies;skills?:SkillRun}>;
-    engineFor?: (conversation: Conversation, blocks: InstructionOverrides, policies:RuntimePolicies,skills?:SkillRun) => Engine | Promise<Engine>;
+    engineFor?: (conversation: Conversation, blocks: InstructionOverrides, policies:RuntimePolicies,skills?:SkillRun,experiments?:ContextExperiments) => Engine | Promise<Engine>;
     projects?: ProjectRepository;
     projectTracking?:ProjectTracking;
     capabilities?: (provider:ModelSelection["provider"],modelId:string)=>Promise<import("../contracts/models.ts").ModelCapabilities>;
@@ -244,7 +247,7 @@ export class Conversations {
     for(const event of page.events)if(event.type==='interaction.resolved')ids.add((event.data as {requestId:string}).requestId);
     if(pendingInput)ids.add(pendingInput.id);
     const interactions=[...ids].map(key=>view.interactions.get(key)).filter((item):item is NonNullable<typeof item>=>!!item);
-    return {recovery:{...recovery,workspace:workspace.runs.length||workspace.calls.length?workspace:null},recoveryAvailable:!!this.options.sessions.reconcile,
+    return {contextExperimentsSupported:true,recovery:{...recovery,workspace:workspace.runs.length||workspace.calls.length?workspace:null},recoveryAvailable:!!this.options.sessions.reconcile,
       conversation,work:this.workState(conversation,view.workEvent?[view.workEvent]:[]),interactions,pendingInput,
       workspaceRoot:path.join(this.options.workspaceDirectory,id),messageCount:view.messageCount,contextUsage:view.contextUsage,
       events:page.events,history:{...page,revision:view.revision,events:undefined,mode:window.after!==undefined?'after':window.before?'before':'latest',cursor:page.after??window.after??view.cursor},
@@ -276,7 +279,7 @@ export class Conversations {
     if(policies.tools.maxCallsPerBatch>0)instructions+=`\nLimite configurée : au plus ${policies.tools.maxCallsPerBatch} appels d’outils dans une même réponse.`;
     return instructions;
   }
-  private fallbackEngine(conversation:Conversation,blocks:InstructionOverrides,policies:RuntimePolicies,execution?:ExecutionService){
+  private fallbackEngine(conversation:Conversation,blocks:InstructionOverrides,policies:RuntimePolicies,execution?:ExecutionService,experiments:ContextExperiments={}){
     const tracking=this.options.projectTracking,projectId=conversation.projectId;
     const progress=tracking&&projectId?projectProgressTools(tracking,projectId,{overview:true,item:true,updateProject:true,createItem:true,updateItem:true}):[];
     return new Engine(this.options.sessions,[
@@ -285,7 +288,7 @@ export class Conversations {
       ...(execution?terminalTools(execution,conversation.fileAccess==='yolo'||(conversation.networkAccess??false),conversation.fileAccess==='yolo'):[]),
       ...memoryTools(this.options.memory),...interactionTools(),...progress,
     ],withProjectContext(new BoundedContext(this.options.sessions,this.options.memory,instructionValue(blocks,'compression'),policies),tracking,projectId,instructionValue(blocks,'projects'),progress.length?'projects.read':undefined),
-    tracking&&projectId&&conversation.selection?.provider!=='demo'?new ProjectReview(tracking,projectId,instructionValue(blocks,'projectReview'),instructionValue(blocks,'projects')):undefined);
+    tracking&&projectId&&conversation.selection?.provider!=='demo'?new ProjectReview(tracking,projectId,instructionValue(blocks,'projectReview'),instructionValue(blocks,'projects'),experiments.compactProjectReview?referenceRepeatedText:undefined):undefined);
   }
   private async selection(body:Record<string,unknown>):Promise<ModelSelection>{
     if(!['demo','chatgpt','openai','anthropic','openrouter','venice','venice-web'].includes(String(body.provider)))throw new Error('Choisir un modèle.');
@@ -321,7 +324,9 @@ export class Conversations {
     if(typeof requestId!=='string'||!requestId.trim()||!['answered','cancelled'].includes(String(body.status))||!body.answers||typeof body.answers!=='object'||Array.isArray(body.answers))throw new Error('Formulaire ou réponse invalide. Vérifie les champs.');
     const conversation=await this.require(id);
     if(!conversation.selection)throw new Error('Choisir un modèle.');
-    return this.run(id,{...conversation.selection},signal,{requestId,response:body as unknown as InputResponse});
+    const events=await this.options.sessions.read(id),event=events.find(e=>e.id===requestId&&e.type==='interaction.requested'),start=events.findLast(e=>e.type==='run.started'&&e.runId===event?.runId);
+    const saved=(start?.data as Record<string,unknown>|undefined)?.contextExperiments;
+    return this.run(id,{...conversation.selection,...(saved?{contextExperiments:saved}:{})},signal,{requestId,response:body as unknown as InputResponse});
   }
   async send(id:string,body:Record<string,unknown>,signal?:AbortSignal){return this.run(id,body,signal);}
   isBusy(id:string){return this.busy.has(id);}
@@ -333,7 +338,8 @@ export class Conversations {
       policies=resolvePolicies(configuration?.policies??{}),
       blocks=configuration?.overrides??{},
       identity=configuration?.instructions??await this.options.assistantInstructions?.()??`Tu es ${this.options.displayName}.`,
-      maximum=policies.messages.maxCharacters;
+      maximum=policies.messages.maxCharacters,
+      experiments=contextExperiments(body.contextExperiments);
     if(!resume&&(typeof body.prompt!=='string'||(!body.prompt.trim()&&!(Array.isArray(body.attachmentIds)&&body.attachmentIds.length))))throw new Error('Message requis.');
     if(!resume&&maximum>0&&(body.prompt as string).length>maximum)throw new Error(`Message trop long : limite configurée de ${maximum} caractères.`);
     if (!["demo", "chatgpt", "openai", "anthropic", "openrouter", "venice", "venice-web"].includes(String(body.provider))) throw new Error("Module inconnu.");
@@ -358,10 +364,10 @@ export class Conversations {
       if(!cancelling&&conversation.fileAccess==='yolo'&&!this.options.hostExecution)throw new WorkspaceError('Worker YOLO indisponible. Aucun repli implicite.');
       const execution=conversation.fileAccess==='yolo'?this.options.hostExecution:this.options.execution;
       if(!resume)await configuration?.skills?.explicit(String(body.prompt??''));
-      const engine = await this.options.engineFor?.({...conversation,selection},blocks,policies,configuration?.skills) ?? this.fallbackEngine({...conversation,selection},blocks,policies,execution);
+      const engine = await this.options.engineFor?.({...conversation,selection},blocks,policies,configuration?.skills,experiments) ?? this.fallbackEngine({...conversation,selection},blocks,policies,execution,experiments);
       if(!resume)await this.options.chatAssets?.claim(id,references.map(file=>file.id));
       runSignal.throwIfAborted();
-      await engine.run({ sessionId: id, runId:executionId, resume, prompt: typeof body.prompt==='string'?body.prompt.trim() || "Analyse les pièces jointes.":"", attachments:references, provider: model, modelIdentity:{provider,modelId},
+      await engine.run({ contextExperiments:experiments,measureModelRequests:experiments.measureRequests, sessionId: id, runId:executionId, resume, prompt: typeof body.prompt==='string'?body.prompt.trim() || "Analyse les pièces jointes.":"", attachments:references, provider: model, modelIdentity:{provider,modelId},
         displayName: this.options.displayName, instructions: await this.instructions(workspace,{...conversation,selection},blocks,policies,identity)+(configuration?.skills?.instructions(rawModel.supportsTools!==false)??''), workspace, maxSteps: conversation.maxSteps ?? 0, maxCallsPerBatch:policies.tools.maxCallsPerBatch, contextWindow,
         reserveTokens: Math.min(4096, Math.floor(contextWindow / 4)),
         permissions: new Set(["history.read" as const,...(configuration?.skills?.entries.length?["skills.read" as const]:[]),...(conversation.fileAccess === "none" ? [] : ["files.read" as const]), ...(["write","develop","yolo"].includes(conversation.fileAccess ?? "read") ? ["files.write" as const] : []), ...(["develop","yolo"].includes(conversation.fileAccess??"read") ? ["process.execute" as const] : []), "memory.read", "memory.write", ...(conversation.projectId&&this.options.projectTracking?["projects.read" as const,"projects.write" as const]:[]), "tasks.read", "tasks.write", "user.input", ...(conversation.networkAccess||conversation.fileAccess==='yolo'?["external.read" as const,"external.write" as const]:[])]), signal:runSignal,

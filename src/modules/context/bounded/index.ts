@@ -461,7 +461,7 @@ export class BoundedContext implements ContextManager {
           "Historique trop volumineux pour la compression avec ce modèle.",
         );
       request.signal?.throwIfAborted();
-      const response = await provider.generate(input);
+      const response = await provider.generate({...input,purpose:{kind:"compression"}});
       request.signal?.throwIfAborted();
       if (
         response.toolCalls.length ||

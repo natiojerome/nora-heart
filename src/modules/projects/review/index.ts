@@ -34,6 +34,7 @@ export class ProjectReview implements CompletionReview {
     private readonly projectId: string,
     private readonly instructions = projectReviewInstructions,
     private readonly policy = "",
+    private readonly encodeContext?: (value: Json) => Json,
   ) {}
   async review(
     input: Parameters<CompletionReview["review"]>[0],
@@ -60,21 +61,23 @@ export class ProjectReview implements CompletionReview {
       messages: [
         {
           role: "user",
-          content: JSON.stringify({
-            project: plan.project,
-            statistics: plan.statistics,
-            items: plan.items,
-            moreItems: !!plan.nextCursor,
-            currentTurn: messages.slice(start),
-            primaryContext: {
-              instructions: request.instructions,
-              earlierMessages: request.messages.slice(
-                0,
-                request.messages.findLastIndex((m) => m.role === "user"),
-              ),
-            },
-            draftAnswer: response.content,
-          }),
+          content: JSON.stringify(
+            (this.encodeContext ?? ((v: Json) => v))({
+              project: plan.project,
+              statistics: plan.statistics,
+              items: plan.items,
+              moreItems: !!plan.nextCursor,
+              currentTurn: messages.slice(start),
+              primaryContext: {
+                instructions: request.instructions,
+                earlierMessages: request.messages.slice(
+                  0,
+                  request.messages.findLastIndex((m) => m.role === "user"),
+                ),
+              },
+              draftAnswer: response.content,
+            } as unknown as Json),
+          ),
         },
       ],
       tools: [
@@ -149,7 +152,10 @@ export class ProjectReview implements CompletionReview {
           "Le suivi doit être finalisé, mais la revue complète dépasse le budget. Lis les étapes pertinentes avec projects.read et enregistre les changements nécessaires avec projects.write avant ton bilan, sans rejouer les actions déjà faites. Une question informative ne nécessite aucune écriture.",
       };
     request.onActivity?.("waiting");
-    const decision = await provider.generate(assessment);
+    const decision = await provider.generate({
+      ...assessment,
+      purpose: { kind: "review", name: this.name },
+    });
     request.signal?.throwIfAborted();
     if (
       decision.toolCalls.length !== 1 ||

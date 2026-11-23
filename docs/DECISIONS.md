@@ -644,3 +644,16 @@ Qualifier aussi la récupération d’une évaluation mémoire invalide/indispon
 le modèle principal peut alors réussir une écriture. Ne pas sauter sa relecture
 parce que la décision auxiliaire est déjà passée. Une visite de vérification
 après révision, sans nouvelle évaluation LLM, limitée à une reprise par contrôle.
+
+
+## Économies progressives avec référence conservée
+
+Le propriétaire veut un résultat concret dans une session et des sauvegardes de
+jalons, avec priorité à la non-régression. Premier lot limité à la mesure opt-in et
+à une déduplication réversible des textes identiques de la revue projet. Toutes
+les données restent disponibles dans sa représentation ; pas de nouvelle synthèse
+sémantique ni réduction de l’initiative mémoire. Booléens indépendants, défauts
+false, activation par fil/onglet/envoi, reprise de formulaire avec le même choix.
+Aucun déploiement global d’un réglage expérimental ni activation implicite sur les
+conversations existantes. Mesurer les résultats fonctionnels avec les économies,
+et distinguer octets/tokens estimés, facturation fournisseur et qualité sémantique.

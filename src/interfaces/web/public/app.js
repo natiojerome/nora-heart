@@ -848,6 +848,10 @@ async function renderConversation(data) {
   window.heartInteractions?.update(data);
   window.heartChat?.render(data);
   window.heartUsage?.conversation(data);
+  if(data.contextExperimentsSupported&&!window.heartContextExperiments){
+    window.heartContextExperimentsReady??=new Promise((resolve,reject)=>{const script=document.createElement('script');script.src='/context-experiments.js';script.onload=()=>resolve();script.onerror=()=>{window.heartContextExperimentsReady=undefined;script.remove();reject(new Error('Context options unavailable'));};document.head.append(script);});
+    void window.heartContextExperimentsReady.then(()=>{if(conversationId===data.conversation?.id)window.heartContextExperiments?.render(data);}).catch(()=>{});
+  }else window.heartContextExperiments?.render(data);
   syncChatActions(!!data.busy);
 }
 let catalogue=[],catalogueCursor=null,catalogueKey='',catalogueVersion=0,catalogueLoading=false;
@@ -983,6 +987,7 @@ async function sendConversation(sourceMessage) {
     const data = await post(`/api/conversations/${sendingId}/messages`, {
       prompt,
       attachmentIds: files.map((file) => file.id),
+      ...window.heartContextExperiments?.request(sendingId),
       provider: selectedProvider(),
       modelId: $("model-id").value.trim(),
       reasoningEffort:selectedReasoningEffort(),

@@ -43,6 +43,13 @@ courant pendant les longs tours/compressions. 302 tests, 29 parcours navigateur,
 Preuves et limites dans STATUS/TESTING. Aucun changement
 de finalité, permission ou autorité des données.
 
+## Économies de contexte : premier lot
+
+Mesure et déduplication réversible des revues, opt-in par fil, contrôles de
+continuité comparés et vrais appels Luna ciblés : voir CONTEXT-ECONOMY.md.
+Préserver la référence ; évaluer le gain sur les usages réels avant généralisation.
+Catalogue dynamique et changements de compression restent différés.
+
 ## Prochaines étapes utiles
 
 1. Observer le contrôle automatique de suivi sur les projets réels : critères,

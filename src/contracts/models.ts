@@ -6,6 +6,8 @@ export type ModelPhase = "context" | "waiting" | "reasoning" | "answer";
 export interface ModelProgress { kind:"commentary"; text:string }
 
 export interface ModelRequest {
+  /** Internal diagnostics only, never a provider instruction. */
+  purpose?: {kind:"response"|"compression"|"review";name?:string};
   instructions: string;
   messages: readonly Message[];
   tools: readonly ToolDefinition[];

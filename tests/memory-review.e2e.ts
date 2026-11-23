@@ -127,6 +127,14 @@ test(
       await page.fill("#password", "fake-password");
       await page.click("#login-submit");
       await page.waitForSelector("body.chat-mode", { state: "attached" });
+      await page.waitForFunction(()=>!!window.heartContextExperiments);
+      await page.evaluate(()=>(window as any).heartSettings.open('context'));
+      await page.locator('#context-experiments summary').click();
+      assert.equal(await page.locator('#context-measure').isChecked(),false);
+      assert.equal(await page.locator('#context-compact-review').isChecked(),false);
+      assert.equal(await page.locator('#context-compact-review').isDisabled(),true);
+      await page.locator('#context-measure').check();
+      await page.locator('#use-brain').click();
       await page.fill(
         "#conversation-prompt",
         "Je suis né le 12 février 1991. Quel âge ai-je ?",
@@ -139,6 +147,9 @@ test(
           ?.textContent?.includes("maintenant sauvegardée"),
       );
       assert.equal((await app.memories.list()).memories.length, 1);
+      const measured=(await app.conversations.get(conversation.id)).events.filter(e=>e.type==='run.progress'&&(e.data as any).kind==='model-usage');
+      assert(measured.length>=3);assert(measured.some(e=>(e.data as any).purpose.name==='memory'));
+
       assert.equal(await page.locator(".memory-chat-event.created").count(), 1);
       assert.match(
         await page.locator(".memory-chat-meta").innerText(),
@@ -192,6 +203,12 @@ test(
       await page.reload();
       await page.waitForSelector(".memory-chat-event.created");
       assert.equal(await page.locator(".memory-chat-event").count(), 1);
+      await page.waitForFunction(()=>!!window.heartContextExperiments);
+      await page.evaluate(()=>(window as any).heartSettings.open('context'));
+      await page.locator('#context-experiments summary').click();
+      assert.equal(await page.locator('#context-measure').isChecked(),true,'per-fil in-tab preference survives reload');
+      await page.locator('#context-measure').uncheck();
+      await page.locator('#use-brain').click();
       // Reproduce the reported normal question with a broken auxiliary review.
       let recoveredPrimary=0,failedReview=0;
       lab.model=()=>({id:'fake-recovery',async generate(request){

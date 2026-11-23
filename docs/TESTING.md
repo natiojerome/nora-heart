@@ -1106,3 +1106,22 @@ l’accès programmatique. Pas de contournement ni de nouvelle tentative après 
 message. Rapport local sans secret : `qualification/venice-web/blocked.json`.
 Le fichier `live.json` est créé uniquement après un véritable parcours réussi ;
 il n’existe pas pour cet essai. Aucun déploiement du prototype ni achat effectué.
+
+
+## Premier lot économies de contexte
+
+330 tests, démo SDK et trois parcours navigateur ciblés réussis. Reconstruction
+exacte du JSON (dont collisions de clés), conservation ordre/versions/contraintes,
+mesure sans changement des requêtes/effets ni contenu privé dans les compteurs,
+reprise de formulaire avec options et retour au défaut pour un nouvel envoi.
+Le navigateur vérifie mémoire proactive, mesure opt-in, préférence de l’onglet
+rechargée puis désactivée, aucune bulle technique ni ligne vide.
+
+pnpm qualify:context-economy --live : 9 appels réels gpt-6-luna low. Résumé réel
+partagé, consultations et progression comparées avec preuves/contrainte de clôture,
+mémoire proactive et relecture dans les deux modes. Frontières Projets/repository
+mémoire simulés, effets en fixtures temporaires ; ce n’est pas un test MCP réel.
+Sur ce cas volontairement répétitif, entrée estimée 28 752 → 13 282 (-53,8 %),
+1 415 tokens de résumé partagé séparés. Les mesures ne sont ni une tokenisation
+fournisseur exacte ni une facture. Voir CONTEXT-ECONOMY.md et
+[rapport détaillé](qualification/context-economy/luna.json).

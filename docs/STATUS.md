@@ -286,3 +286,21 @@ mais désactivée par défaut. Ne pas relancer ou changer de route/identité pou
 contourner ce refus. Voir [VENICE-WEB.md](VENICE-WEB.md), tests et rapport bloqué
 sous `docs/qualification/venice-web/`. Suite : conserver les cerveaux fonctionnels ;
 qualification Venice web seulement après résolution explicite de cet accès.
+
+
+## Économies de contexte — premier lot isolable
+
+Options par envoi/fil/onglet, défauts désactivés : compteurs par type d’appel et
+déduplication exacte du JSON de revue projet. Aucune suppression de preuve,
+mémoire proactive inchangée, journal canonique conservé, aucune migration/SDK.
+Interrupteurs dans le panneau Contexte, chargés seulement après annonce serveur.
+330 tests et démo passent ; trois parcours navigateur ciblés passent avec les
+nouveaux contrôles. Luna réel A/B : 9 inférences, stockage/frontières synthétiques,
+consultation/progression/contrainte de clôture et mémoire proactive vérifiées.
+Sur cette fixture répétitive : entrées estimées 28 752 → 13 282 (-53,8 %), sans
+extrapolation au trafic réel ou à la facture. Voir CONTEXT-ECONOMY.md.
+
+Référence source 53df0b4 sauvegardée en bundle Git chiffré, déchiffrement/empreinte
+et validité Git vérifiés, sans redémarrage. La sauvegarde complète précédente
+reste conservée. Prochaine action : sauvegarder le code vérifié, activer la version
+avec options désactivées et contrôler la production ; aucun fil réel activé d’office.

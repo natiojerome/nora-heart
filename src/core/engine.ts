@@ -1,3 +1,4 @@
+import {modelInputSizes,modelOutputSize} from "./model-observation.ts";
 import {defaultRuntimePolicies} from "../contracts/policies.ts";
 import { CompletionReviewError, type CompletionReview } from "../contracts/completion-review.ts";
 import { isDeepStrictEqual } from "node:util";
@@ -25,6 +26,8 @@ export interface RunOptions {
   workspace: string;
   permissions: ReadonlySet<Permission>;
   maxSteps?: number;
+  measureModelRequests?:boolean;
+  contextExperiments?:import("../contracts/context-experiments.ts").ContextExperiments;
   maxCallsPerBatch?:number;
   modelIdentity?: { provider: string; modelId: string };
   contextWindow?: number;
@@ -48,7 +51,7 @@ export class Engine {
   }
 
   async run(options: RunOptions): Promise<{ runId: string; text: string; waitingFor?: string; cancelled?: boolean; alreadyResolved?: boolean }> {
-    const { sessionId, provider, signal } = options;
+    const { sessionId, signal } = options;
     if (this.activeSessions.has(sessionId)) throw new Error("Cette session travaille déjà.");
     const maxSteps = options.maxSteps ?? 8;
     if (!Number.isSafeInteger(maxSteps) || maxSteps < 0) throw new Error("Budget d’étapes invalide.");
@@ -67,6 +70,21 @@ export class Engine {
       const event:Event={id:randomUUID(),at:new Date().toISOString(),runId,type,data};
       await this.sessions.append(sessionId,event);return event.id;
     };
+    const rawProvider=options.provider;
+    const provider:ModelProvider=options.measureModelRequests?{
+      id:rawProvider.id,supportsTools:rawProvider.supportsTools,
+      async generate(request){
+        const sizes=modelInputSizes(request),began=performance.now();
+        try{
+          const result=await rawProvider.generate(request);
+          await append('run.progress',{kind:'model-usage',purpose:request.purpose??{kind:'response'},provider:rawProvider.id,...sizes,estimatedOutputTokens:modelOutputSize(result),durationMs:Math.round(performance.now()-began),status:'completed'});
+          return result;
+        }catch(error){
+          await append('run.progress',{kind:'model-usage',purpose:request.purpose??{kind:'response'},provider:rawProvider.id,...sizes,durationMs:Math.round(performance.now()-began),status:'failed'});
+          throw error;
+        }
+      }
+    }:rawProvider;
     let started = false;
     let claimed = false;
     let progressWrites = Promise.resolve();
@@ -133,7 +151,7 @@ export class Engine {
         + (provider.supportsTools === false ? " Modèle sans prise en charge des appels d’outils." : " Schémas joints ; alias fournisseur = noms Heart décrits.")
         + " Appelle les noms techniques, présente les libellés. Droits du fil distincts des capacités. Heart exécute les appels séquentiellement. Vérifie les accès/programmes avant de conclure.";
       const toolTitles=Object.fromEntries(available.filter(tool=>tool.title).map(tool=>[tool.name,tool.title!]));
-      const startData={...(Object.keys(toolTitles).length?{toolTitles}:{}),provider:provider.id,tools:available.map(tool=>tool.name),permissions:[...options.permissions],toolCalling:provider.supportsTools!==false};
+      const startData={...(options.contextExperiments&&Object.values(options.contextExperiments).some(Boolean)?{contextExperiments:{measureRequests:!!options.contextExperiments.measureRequests,compactProjectReview:!!options.contextExperiments.compactProjectReview}}:{}),...(Object.keys(toolTitles).length?{toolTitles}:{}),provider:provider.id,tools:available.map(tool=>tool.name),permissions:[...options.permissions],toolCalling:provider.supportsTools!==false};
       if(options.resume && target && inputResponse){
         const resolution:Event[]=[];
         const add=(type:Event['type'],data:unknown)=>resolution.push({id:randomUUID(),at:new Date().toISOString(),runId,type,data:data as Json});
@@ -211,7 +229,7 @@ export class Engine {
         let accepting = true;
         request.onProgress = value => { if (accepting) progress(value); };
         let response;
-        try { response = await provider.generate(request); }
+        try { response = await provider.generate({...request,purpose:{kind:"response"}}); }
         catch (cause) {
           signal?.throwIfAborted();
           if (!(cause instanceof ModelToolCallError)) throw cause;

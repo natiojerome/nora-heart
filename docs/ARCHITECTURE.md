@@ -1281,3 +1281,21 @@ après reprise primaire. MemoryReview l’active pour relire les effets de récu
 si son évaluation a échoué, sans seconde évaluation modèle. Le core garde seulement
 les noms de contrôles visités ; le module garde son état de run. Aucun effet :
 no-new-effects, pas verified. Une nouvelle panne ne crée pas une boucle de contrôle.
+
+
+## Options d’économie de contexte
+
+ContextExperiments décrit deux booléens optionnels par envoi. app valide et injecte
+referenceRepeatedText dans ProjectReview ; aucune dépendance concrète entre les
+modules. L’encodeur retourne une représentation à dictionnaire uniquement en cas
+de réduction réelle, reconstruisible à l’identique. Source et preuves restent
+inchangées. Aucun cache global de données métier ni nouveau stockage SQL.
+
+Le core peut mesurer chaque generate derrière le contrat ModelProvider sans
+modifier requêtes/résultats/effets. purpose identifie réponse, compression ou revue,
+ajouté après budgétisation et ignoré par la sérialisation des adaptateurs. Les
+compteurs anonymes vont dans run.progress/model-usage, jamais dans le chat.
+Les options actives sont enregistrées avec run.started pour reprendre un formulaire.
+Défauts inchangés et absence de champ = référence. Le navigateur stocke seulement
+les booléens par UUID/onglet ; le panneau paresseux attend l’annonce de compatibilité
+serveur. Voir CONTEXT-ECONOMY.md pour les unités, limites et qualification A/B.

@@ -185,3 +185,9 @@ compaction, sans importer fichiers/web/images ni données transitoires. Les effe
 principaux et ceux de la revue sont relus au stockage, dernière mutation réussie
 par ID. Une suppression distante exige une absence typée, jamais une panne prise
 pour une base vide. La vérification n’ajoute aucune inférence. Voir MEMORY.md.
+
+
+Premier lot d’économies optionnel : mesure des appels et dictionnaire exact pour
+les répétitions de la revue projet. Le contexte principal, la compression et les
+souvenirs restent inchangés ; tags de mesure ajoutés après budgétisation.
+Choix par fil/onglet, référence par défaut. Voir [CONTEXT-ECONOMY.md](CONTEXT-ECONOMY.md).

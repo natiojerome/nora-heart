@@ -508,7 +508,7 @@
           if (receipt) timeline.append(messages.get(event.id) || receipt);
           else if (visibleMessage) timeline.append(messages.get(event.id) || message(item.role, item.content || "", event.at, item.attachments || [], event.id));
         } else if(event.type==='run.progress') {
-          if (event.runId === activeRun || event.data.kind === 'review') continue;
+          if (event.runId === activeRun || event.data.kind !== 'commentary' || typeof event.data.text !== 'string' || !event.data.text.trim()) continue;
           const detail=element('p',event.data.text,'conversation-message turn-commentary');detail.dataset.eventId=event.id;timeline.append(messages.get(event.id)||detail);
         } else if(event.type==='interaction.requested'){
           const item=data.interactions?.find(item=>item.id===event.id);if(item)timeline.append(window.heartInteractions.render(item,currentId));

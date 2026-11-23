@@ -215,7 +215,10 @@ export class MemoryReview implements CompletionReview {
         "Memory review input too large",
       );
     request.onActivity?.("waiting");
-    const assessment = await provider.generate(reviewRequest);
+    const assessment = await provider.generate({
+      ...reviewRequest,
+      purpose: { kind: "review", name: this.name },
+    });
     request.signal?.throwIfAborted();
     if (
       assessment.toolCalls.length !== 1 ||

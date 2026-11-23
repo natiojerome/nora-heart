@@ -1596,6 +1596,12 @@ Liste les fichiers de l’espace de test et explique ce que tu as trouvé.</text
         <section id="settings-context" class="settings-section" role="tabpanel"><div class="settings-section-heading"><div><h3>Contexte et mémoire</h3><p>Capacité et continuité.</p></div></div>
           <div id="context-slot"><div id="context-options" class="context-settings"><label for="context-window">Capacité du modèle · tokens</label><input id="context-window" type="number" min="4096" max="2000000" step="1" value="32768" /><p class="field-help" id="context-capacity-help">Valeur configurée à vérifier pour le modèle choisi. Comptage des entrées estimé.</p></div></div>
           <p class="field-help">Compression à 80 %. Mémoire pertinente sélectionnée automatiquement.</p>
+          <details id="context-experiments" class="settings-inventory" hidden><summary>Économies de contexte · essai</summary>
+            <p class="field-help">Ce fil, sur cet onglet. Désactivé par défaut. Effet au prochain envoi.</p>
+            <label class="setting-switch" for="context-measure"><span><strong>Mesurer les appels</strong><small>Compteurs et durées uniquement.</small></span><input id="context-measure" type="checkbox" role="switch" /></label>
+            <label class="setting-switch" for="context-compact-review"><span><strong>Dédupliquer la revue projet</strong><small>Textes identiques référencés, aucune donnée retirée.</small></span><input id="context-compact-review" type="checkbox" role="switch" /></label>
+            <p id="context-experiments-status" class="field-help" role="status" aria-live="polite"></p>
+          </details>
           <div class="settings-stats"><span><small>Messages</small><strong id="chat-message-count">0</strong></span><span><small>Capacité</small><strong id="chat-context-limit">32 768</strong></span></div>
           <span class="field-help" id="conversation-segments">Historique conservé</span>
           <details class="settings-inventory"><summary>Outils déclarés au dernier envoi</summary><p class="field-help">Liste réellement déclarée au dernier envoi.</p><ul id="conversation-tools"><li>Aucun envoi sélectionné.</li></ul></details>
