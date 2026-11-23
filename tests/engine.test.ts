@@ -110,6 +110,7 @@ test("pre-cancelled runs make no model request", async () => fixture(async f => 
   const provider: ModelProvider = { id: "never", async generate() { invoked = true; return { content: "", toolCalls: [] }; } };
   await assert.rejects(f.engine.run({ ...options(f.workspace, provider), signal: AbortSignal.abort() }));
   assert.equal(invoked, false);
+  assert.deepEqual(await f.store.read("session"), []);
 }));
 
 test('current tool inventory replaces stale history and is journaled after permission filtering',async()=>fixture(async f=>{

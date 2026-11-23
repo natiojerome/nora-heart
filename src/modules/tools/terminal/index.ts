@@ -1,3 +1,4 @@
+import { SystemdUnits, type HostUnits } from "./systemd.ts";
 import {setTimeout as wait} from 'node:timers/promises';
 import { spawn, type ChildProcessWithoutNullStreams } from "node:child_process";
 import { randomUUID } from "node:crypto";
@@ -9,6 +10,7 @@ import {
   readFile,
   writeFile,
   rename,
+  unlink,
 } from "node:fs/promises";
 import { createWriteStream } from "node:fs";
 import path from "node:path";
@@ -32,10 +34,11 @@ type Active = {
 /** Shared process journal; sandbox and host launch paths are selected explicitly. */
 class ProcessExecution implements ExecutionService {
   private readonly active = new Map<string, Active>();
+  private readonly units?: HostUnits;
   constructor(
     private readonly directory: string,
-    private readonly options: { binary?: string; nodeBinary?: string; host?: {home:string; ownerUnit?:string} } = {},
-  ) {}
+    private readonly options: { binary?: string; nodeBinary?: string; host?: {home:string; ownerUnit?:string; units?:HostUnits} } = {},
+  ) { this.units = options.host ? options.host.units ?? new SystemdUnits() : undefined; }
   private folder(id: string) {
     if (!/^[0-9a-f-]{36}$/.test(id))
       throw new ExecutionError("Commande introuvable.");
@@ -43,11 +46,18 @@ class ProcessExecution implements ExecutionService {
   }
   private async save(command: CommandSnapshot, workspace: string) {
     const target = path.join(this.folder(command.id), "command.json"),
-      temporary = target + ".tmp";
-    await writeFile(temporary, JSON.stringify({ command, workspace }), {
-      mode: 0o600,
-    });
-    await rename(temporary, target);
+      temporary = target + "." + randomUUID() + ".tmp";
+    try {
+      await writeFile(temporary, JSON.stringify({ command, workspace }), {
+        mode: 0o600,
+        flag: "wx",
+      });
+      await rename(temporary, target);
+    } finally {
+      await unlink(temporary).catch(error => {
+        if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
+      });
+    }
   }
   private async record(workspace: string, id: string) {
     const root = await realpath(workspace),
@@ -67,12 +77,14 @@ class ProcessExecution implements ExecutionService {
     }
     if (record.workspace !== root)
       throw new ExecutionError("Commande hors de cette conversation.");
-    if (record.command.status === "running")
+    if (record.command.status === "running" && !(await this.units?.active(id))) {
       record.command = {
         ...record.command,
         status: "interrupted",
         signal: "SERVICE_RESTART",
       };
+      await this.save(record.command, root);
+    }
     return record;
   }
   async start(workspace: string, input: CommandInput, signal?: AbortSignal) {
@@ -319,9 +331,16 @@ class ProcessExecution implements ExecutionService {
     if (close) active.child.stdin.end();
   }
   async stop(workspace: string, id: string) {
-    await this.record(workspace, id);
+    const record = await this.record(workspace, id);
     const active = this.active.get(id);
-    if (!active) return (await this.record(workspace, id)).command;
+    if (!active) {
+      if (record.command.status === "running" && this.units) {
+        await this.units.stop(id);
+        record.command = {...record.command, status:"interrupted", signal:"SERVICE_STOP"};
+        await this.save(record.command, record.workspace);
+      }
+      return structuredClone(record.command);
+    }
     active.command.status = "interrupted";
     active.kill("SIGTERM");
     const timer = setTimeout(() => active.kill("SIGKILL"), 1000);
@@ -354,7 +373,7 @@ export class BubblewrapExecution extends ProcessExecution {
 }
 /** Unrestricted host commands: construct only in the explicitly installed worker. */
 export class HostExecution extends ProcessExecution {
-  constructor(directory:string, options:{home:string;nodeBinary?:string;ownerUnit?:string}) {super(directory,{nodeBinary:options.nodeBinary,host:options});}
+  constructor(directory:string, options:{home:string;nodeBinary?:string;ownerUnit?:string;units?:HostUnits}) {super(directory,{nodeBinary:options.nodeBinary,host:options});}
 }
 
 export function terminalTools(

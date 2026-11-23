@@ -1,11 +1,12 @@
 import assert from "node:assert/strict";
-import { mkdtemp, mkdir, rm, readFile, writeFile } from "node:fs/promises";
+import { mkdtemp, mkdir, rm, readFile, writeFile, readdir, realpath } from "node:fs/promises";
 import path from "node:path";
 import os from "node:os";
 import { test } from "node:test";
 import { setTimeout as delay } from "node:timers/promises";
 import {
   BubblewrapExecution,
+  HostExecution,
   terminalTools,
 } from "../src/modules/tools/terminal/index.ts";
 import { LocalFiles } from "../src/modules/tools/files/index.ts";
@@ -342,3 +343,40 @@ test('terminal pagination provides executable continuation cursors without losin
   assert(pages>1);assert.equal(text,'x'.repeat(150000)+'RESULT:ok');assert.equal(result.continuation,undefined);
  });
 });
+
+
+test("orphan command recovery persists interruption atomically across concurrent reads", async () => fixture(async (root, workspace, execution) => {
+  const id = "00000000-0000-4000-8000-000000000001";
+  const folder = path.join(root, "commands", id);
+  await mkdir(folder, {recursive:true});
+  const command = {id,command:"synthetic orphan, never executed",cwd:".",startedAt:new Date().toISOString(),status:"running",exitCode:null,signal:null};
+  await writeFile(path.join(folder,"command.json"),JSON.stringify({command,workspace:await realpath(workspace)}));
+  await writeFile(path.join(folder,"output.log"),"preserved output");
+  const results = await Promise.all(Array.from({length:8},()=>execution.read(workspace,id)));
+  assert(results.every(result=>result.command.status==="interrupted" && result.command.signal==="SERVICE_RESTART"));
+  const saved=JSON.parse(await readFile(path.join(folder,"command.json"),"utf8"));
+  assert.equal(saved.command.status,"interrupted","maintenance must not see a permanently running orphan");
+  assert.equal(saved.workspace,await realpath(workspace));
+  assert.equal(await readFile(path.join(folder,"output.log"),"utf8"),"preserved output");
+  assert.deepEqual((await readdir(folder)).sort(),["command.json","output.log"]);
+}));
+
+
+test("host commands survive loss of their JS supervisor and stop only after systemd confirmation", async()=>fixture(async(root,workspace)=>{
+ const id="00000000-0000-4000-8000-000000000002",directory=path.join(root,"host-commands"),folder=path.join(directory,id);
+ await mkdir(folder,{recursive:true});
+ const original={command:{id,command:"synthetic unit, never executed",cwd:workspace,startedAt:new Date().toISOString(),status:"running",exitCode:null,signal:null},workspace:await realpath(workspace)};
+ const file=path.join(folder,"command.json");await writeFile(file,JSON.stringify(original));await writeFile(path.join(folder,"output.log"),"unchanged");
+ let running=true,stops=0;
+ const units={async active(value:string){assert.equal(value,id);return running;},async stop(value:string){assert.equal(value,id);stops++;running=false;}};
+ const execution=new HostExecution(directory,{home:root,units});
+ assert.equal((await execution.read(workspace,id)).command.status,"running");
+ assert.equal(JSON.parse(await readFile(file,"utf8")).command.status,"running","backups must still defer for a surviving unit");
+ assert.equal((await execution.stop(workspace,id)).status,"interrupted");assert.equal(stops,1);
+ assert.equal(JSON.parse(await readFile(file,"utf8")).command.signal,"SERVICE_STOP");
+ await execution.stop(workspace,id);assert.equal(stops,1,"a repeated stop must not affect any other process");
+ await writeFile(file,JSON.stringify(original));
+ const unknown=new HostExecution(directory,{home:root,units:{async active(){throw Error("Supervisor unavailable");},async stop(){throw Error("Must not stop");}}});
+ await assert.rejects(unknown.read(workspace,id),/Supervisor unavailable/);
+ assert.equal(JSON.parse(await readFile(file,"utf8")).command.status,"running");
+}));

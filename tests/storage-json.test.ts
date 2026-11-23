@@ -30,3 +30,11 @@ test("JSON storage persists identity, journal and memories without a model or en
     } finally { await reopened.close(); }
   } finally { await rm(directory, { recursive: true, force: true }); }
 });
+
+
+test("failed atomic JSON replacement removes staging files and preserves the occupied destination", async()=>{
+ const {atomicJson}=await import("../src/modules/storage/json/index.ts");
+ const {mkdtemp,mkdir,readdir,rm}=await import("node:fs/promises");
+ const root=await mkdtemp(path.join(os.tmpdir(),"heart-atomic-failure-"));
+ try {const target=path.join(root,"occupied");await mkdir(target);await assert.rejects(atomicJson(target,{value:"synthetic"}));assert.deepEqual(await readdir(root),["occupied"]);assert.deepEqual(await readdir(target),[]);}finally{await rm(root,{recursive:true,force:true});}
+});

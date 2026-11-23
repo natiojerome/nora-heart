@@ -1,6 +1,6 @@
 import { RecoveryError } from "../../../contracts/recovery.ts";
 import { randomUUID } from "node:crypto";
-import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
+import { mkdir, readFile, rename, writeFile, unlink } from "node:fs/promises";
 import path from "node:path";
 import type {
   Event,
@@ -21,11 +21,17 @@ export async function readOptional(file: string): Promise<string | null> {
 export async function atomicJson(file: string, value: unknown): Promise<void> {
   await mkdir(path.dirname(file), { recursive: true, mode: 0o700 });
   const temporary = `${file}.${randomUUID()}.tmp`;
-  await writeFile(temporary, JSON.stringify(value, null, 2) + "\n", {
-    mode: 0o600,
-    flag: "wx",
-  });
-  await rename(temporary, file);
+  try {
+    await writeFile(temporary, JSON.stringify(value, null, 2) + "\n", {
+      mode: 0o600,
+      flag: "wx",
+    });
+    await rename(temporary, file);
+  } finally {
+    await unlink(temporary).catch(error => {
+      if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
+    });
+  }
 }
 
 export class JsonlSessions implements SessionStore {

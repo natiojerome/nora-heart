@@ -58,6 +58,7 @@ export class Engine {
     };
     const runId=options.runId??randomUUID();
     if(!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(runId))throw new Error('Identifiant d’exécution invalide.');
+    signal?.throwIfAborted();
     this.activeSessions.add(sessionId);
     const append = async (type: Event["type"], data: Json) => {
       const event:Event={id:randomUUID(),at:new Date().toISOString(),runId,type,data};
