@@ -34,7 +34,8 @@ rétroactive de leur statut. Les autres pages se chargent à la demande.
 
 ## Assistant et actualisation
 
-Avant un tour rattaché à un projet, l’app lit sa fiche et les compteurs actuels.
+Avant chaque préparation principale rattachée à un projet, l’app relit sa fiche
+et les compteurs actuels, y compris après les outils d’un long tour.
 Elle injecte uniquement l’objectif, les critères, la prochaine action, le statut,
 la version et la date de lecture, avec les compteurs. Aucun plan détaillé ou
 historique de preuves recopié systématiquement. Le modèle utilise ensuite les

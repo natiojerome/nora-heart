@@ -183,7 +183,7 @@ test("unapproved new tools and changed definitions are not silently exposed; ann
     f.tools[0].inputSchema = { type: "object" };
     await assert.rejects(
       tool.execute({ query: "changed" }, { workspace: "/tmp" }),
-      /échoué ou catalogue modifié/,
+      /catalogue modifié/,
     );
     assert.equal(f.calls.length, 0);
     await assert.rejects(

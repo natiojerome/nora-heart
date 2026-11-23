@@ -229,7 +229,7 @@ test("each project turn receives a fresh compact overview and a failure never ma
       contextWindow: 32768,
     });
     assert(prompts[0].includes(f.project.objective!));
-    assert(prompts[0].includes("projects_overview"));
+    assert(prompts[0].includes("outils Projets"));
     assert(!prompts[0].includes("Detailed objective not injected"));
     assert(!prompts[0].includes("Large details not injected"));
     assert(prompts[1].includes("New remote next action"));

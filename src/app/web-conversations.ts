@@ -1,3 +1,4 @@
+import {withProjectContext} from "./project-context.ts";
 import {ProjectManagement} from "./project-management.ts";
 import { presentTools } from "./capability-labels.ts";
 import { HttpMailFiles } from "../modules/mail/http/index.ts";
@@ -330,7 +331,7 @@ export async function openWebConversations(
             ...interactionTools(),
             ...tasksTools(tasks, conversation.id),
           ]),
-          runSkills ? runSkills.context(context) : context,
+          withProjectContext(runSkills ? runSkills.context(context) : context,remoteProjects,conversation.projectId,instructionValue(blocks,"projects")),
           conversation.selection?.provider === "demo" ||
             (!memoryConnectionId && remoteMemoryRequired)
             ? undefined

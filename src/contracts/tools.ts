@@ -38,3 +38,13 @@ export interface Tool<T = string> extends ToolDefinition {
   executeWithMedia?(args: Json, context: ToolContext): Promise<ToolMediaResult>;
   resolveInput?(request: InputRequest, response: InputResponse): InputResponse;
 }
+
+/** A configuration/schema revocation detected before execution. Names identify this source's pinned tools. */
+export class ToolUnavailableError extends Error {
+  constructor(
+    readonly toolNames: readonly string[],
+    message = "Outils retirés : configuration modifiée. Aucun appel exécuté.",
+  ) {
+    super(message);
+  }
+}

@@ -161,3 +161,17 @@ seule, aucun nouveau projet utilisateur créé. Sauvegarde complète de la révi
 `a3594cb` déchiffrée et restaurée dans PostgreSQL isolé : identité/compteurs
 identiques, fichiers/configurations récupérés. Backup MCP après migration copié
 hors serveur et restauré aussi ; ressources de restauration retirées.
+
+## Instructions et continuité — qualification en cours
+
+Audit du 23 novembre : 14 blocs configurables, dont suivi des projets. Projection
+de compression sans résultats/arguments transitoires, reprise entre lots complets
+d’un long tour, ancien checkpoint/lot surdimensionné fragmenté comme données,
+réinjection des skills et état projet relu par préparation. Recherche mémoire :
+précision courte prioritaire, référence/version conservée sans doublon du corps,
+indisponibilité explicite et non bloquante pour les travaux indépendants.
+Révocation MCP détectée : source retirée des schémas/inventaires, pas de rejeu.
+
+301 tests et démo SDK passent. Qualification navigateur et scénario réel combiné
+Luna + MCP Mémoire/Projets + skills + compression en cours. Ces modifications
+source ne sont pas encore activées en production.

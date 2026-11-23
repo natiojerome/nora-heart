@@ -1,7 +1,7 @@
 # Instructions modifiables du web
 
 L’onglet **Instructions** de **Configuration**
-présente treize blocs avec leur texte effectif, leur statut Par défaut/Personnalisé
+présente quatorze blocs avec leur texte effectif, leur statut Par défaut/Personnalisé
 et le moment d’injection. Édition dans un overlay commun, aperçu du défaut fourni,
 retour de chargement/sauvegarde et conservation du brouillon en cas d’échec.
 Rétablir charge le défaut dans le brouillon ; Enregistrer applique ce retour.
@@ -36,7 +36,7 @@ au lieu d’une consigne fixe de 2500 caractères.
 
 ## Source et persistance
 
-`app/instruction-defaults.ts` assemble les treize blocs livrés.
+`app/instruction-defaults.ts` assemble les quatorze blocs livrés.
 La personnalité reste stockée dans `personalityInstructions`, le nom et le genre
 dans leurs champs existants : pas de seconde source dans les surcharges.
 `Assistant` dérive `presentationInstructions` et `personalityDefault` pour les
@@ -66,7 +66,8 @@ ne change donc pas ses consignes en cours ; elles sont relues au prochain échan
 
 | Bloc | Quand |
 | --- | --- |
-| Mémoire, consentement, affichage, mathématiques, suivi, formulaires, web | Chaque appel principal ; les outils restent filtrés par les permissions. |
+| Mémoire, consentement, affichage, mathématiques, suivi, formulaires, web, tâches | Chaque appel principal ; les outils restent filtrés par les permissions. |
+| Suivi des projets (`projects`) | Préparations principales rattachées à un projet, avec sa fiche MCP relue et les outils autorisés. |
 | Développement | Accès develop ou yolo. |
 | Exécution et autonomie | Chaque appel principal : accomplir et vérifier les actions autorisées, fichiers pour lire/éditer, terminal pour exécuter. |
 | YOLO | Accès yolo. |
@@ -150,3 +151,27 @@ les réglages d’accès restent ceux du propriétaire. La conduite technique
 d’inspection/édition/test appartient au bloc development. Les overrides restent
 conservés. Le défaut work est capturé au début du tour et réinjecté aux appels
 principaux, y compris après reprise/compression selon le mécanisme existant.
+
+## Reconstitution et sources courantes
+
+L’instantané du profil garantit identité/consignes/politiques cohérentes pour un
+tour ; il est relu au prochain envoi ou après reprise. Le moteur construit
+l’inventaire à partir des outils enregistrés, des droits et de la capacité réelle
+d’appel du modèle. Noms et schémas correspondent. Une révocation ou modification
+d’un catalogue MCP détectée avant exécution retire les outils de cette source
+du tour, y compris du prochain inventaire ; aucune approbation implicite. Une
+panne réseau n’est pas confondue avec une révocation et ne déclenche aucun rejeu.
+
+Avant chaque préparation principale : fiche/compteurs du projet relus, skills
+activés/chargés réinjectés puis budget, résumé et mémoire active reconstruits.
+Les textes d’outils/archives/souvenirs ne créent aucun droit. Les consignes de
+compression et de revue restent séparées des instructions principales ; leurs
+appels n’exposent pas les outils métier. Les résultats transitoires et leurs
+arguments sont retirés de l’entrée de compression et des résumés persistants.
+Un modèle peut recopier une donnée dans son propre texte : ce mécanisme n’est
+pas une protection universelle contre toute divulgation par le modèle.
+
+`context.usage` consigne segment, nombre de messages couverts, statut/compteur de
+recherche mémoire et estimation de taille, sans corps d’instruction ou de souvenir.
+Les erreurs de contexte sûres sont typées et affichées, sans faux diagnostic de
+connexion fournisseur. Voir [CONTEXT.md](CONTEXT.md).

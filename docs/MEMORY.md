@@ -13,11 +13,15 @@ Un souvenir possède UUID, titre, contenu entier, type (`fact`, `preference`,
 - Projet : accessible uniquement dans les conversations de ce projet, en plus
   des souvenirs personnels.
 
-Créer un projet dans le panneau Mémoire puis le sélectionner lors de la
-création d’un fil. Un projet est ici un simple UUID et un titre ; ce catalogue
-appartient à Heart, sans connexion implicite au registre ou aux données Nora.
-Le titre n’est jamais une clé. Le projet d’un fil reste fixe après création pour
-ne pas mélanger des contextes déjà échangés. Les anciens fils restent personnels.
+Les projets métier sont créés/gérés par le MCP Projets, depuis la vue Projets ou
+les outils approuvés. Leur UUID distant stable sert à la portée mémoire, jamais
+leur titre ou le nom du dossier. Seuls les artefacts physiques sont locaux. Le
+projet du fil reste fixe après création ; les anciens fils restent personnels.
+Voir [PROJECTS.md](PROJECTS.md).
+
+La mémoire de l’installation gérée utilise le MCP Mémoire, sans double écriture
+ni repli SQL implicite. Les modules SQL restent interchangeables pour les
+assemblages explicites et tests ; ils ne décrivent pas l’autorité en production.
 
 ## Contrats et assemblage
 
@@ -53,9 +57,11 @@ Un contenu identique dans deux projets reste deux souvenirs indépendants.
 Après oubli, une nouvelle création peut produire un autre ID. Restaurer l’ancien
 souvenir est alors refusé tant qu’un doublon actif existe dans cette portée.
 
-L’oubli change le statut en `forgotten` : exclusion des recherches et de la
-sélection automatique, réversible par restauration. Il ne détruit ni versions,
-ni messages, ni points de reprise déjà écrits. Ce n’est pas un effacement physique.
+Dans les repositories SQL explicites, l’oubli passe à `forgotten` et peut être
+restauré. Dans le MCP actif, l’oubli supprime physiquement le souvenir et ses
+révisions actives ; aucune restauration native. Cette capacité est annoncée dans
+l’interface et les outils. Ni l’un ni l’autre n’efface les messages ou points
+de reprise historiques déjà écrits.
 Une correction fraîche sélectionnée est présentée comme version courante ; les
 anciens échanges peuvent toujours contenir des valeurs historiques.
 
@@ -265,3 +271,18 @@ principal avec son inventaire, les reçus et le défaut de vérification. Il ne 
 pas annoncer une sauvegarde sans résultat vérifié. Ce chemin ajoute un appel
 primaire, pas une seconde revue. L’audit contient un code sûr, jamais la réponse
 brute du fournisseur ni les valeurs des souvenirs.
+
+## Injection et continuité
+
+Recherche sans nouvelle inférence avant chaque préparation. Une précision courte
+reste prioritaire dans la requête, avec le sujet précédent si nécessaire. Un fait
+déjà présent ne répète pas son corps, mais conserve la référence/version active
+relue. Correction/oubli sont donc distingués du texte historique. Les anciens
+reçus ne prouvent pas le stockage actuel ; les versions doivent être relues avant
+confirmation. Une panne de recherche est signalée comme indisponibilité, jamais
+comme mémoire vide, et ne bloque pas les travaux indépendants.
+
+Après compression : identité, consignes, outils et skills actifs restent présents,
+la fiche projet est actuelle à sa date de lecture et les souvenirs actifs sont
+réinjectés selon le budget. Résumé et mémoire durable restent séparés. Voir
+[CONTEXT.md](CONTEXT.md) et [INSTRUCTIONS.md](INSTRUCTIONS.md).

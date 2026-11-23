@@ -1,3 +1,5 @@
+import {ContextError} from "../../contracts/context.ts";
+import {ToolUnavailableError} from "../../contracts/tools.ts";
 import {ProjectManagementError,type ProjectManagement} from "../../app/project-management.ts";
 import {AccountLoginError,type AccountLogin} from '../../app/account-login.ts';
 import type {Installation} from "../../app/installation.ts";
@@ -574,6 +576,8 @@ export function createWebServer(options: Options) {
       throw new HttpError(404, "Action introuvable.");
     })().catch(error => {
       if (response.destroyed || response.writableEnded) return;
+      if(error instanceof ContextError){json(response,{error:error.message,code:error.code},400);return;}
+      if(error instanceof ToolUnavailableError){json(response,{error:error.message},409);return;}
       if(error instanceof ExternalCallError){
         const projectMessages={INVALID:'Suivi invalide : vérifie les critères, la preuve, les étapes ouvertes et l’objectif parent.',CONFLICT:'Suivi modifié ailleurs. Ferme le formulaire et actualise avant de réessayer.',NOT_FOUND:'Projet ou élément introuvable.',GONE:'Élément indisponible.',UNAVAILABLE:'Service Projets indisponible. Réessaie après actualisation.'};
         json(response,{error:request.url?.startsWith('/api/projects/')?projectMessages[error.code]:error.message},error.code==='NOT_FOUND'?404:error.code==='CONFLICT'?409:error.code==='INVALID'?400:503);return;}

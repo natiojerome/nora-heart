@@ -36,15 +36,18 @@ avant tout appel de résumé inutile.
 Au seuil :
 
 1. Conserver jusqu’à quatre tours utilisateur récents verbatim (réglables), selon
-   la place disponible, avec tous leurs appels et résultats d’outils. Le tour courant
-   reste entier. Résumer les échanges antérieurs avec l’ancien point de reprise.
+   la place disponible, avec leurs appels et résultats d’outils. Dans un long tour
+   unique, conserver la demande active et le lot récent, puis résumer les anciens
+   lots complets de ce même tour. Aucun effet déjà réalisé n’est rejoué.
 2. Demander au modèle sélectionné un résumé adapté au budget cible, sans limite
    fixe de caractères par défaut : objectif, identifiants, dates, montants, décisions,
    contraintes avec exceptions, progression, questions ouvertes et résultats
    utiles ; conserver les incertitudes. Aucun outil dans l’appel de résumé.
 3. Si le nouveau cerveau est plus petit, découper les échanges à résumer en
-   morceaux compatibles avec sa fenêtre, sans séparer un lot d’appels de ses
-   résultats. Le nombre d’appels est réglable, sans plafond Heart par défaut ; le parcours
+   morceaux compatibles avec sa fenêtre. Les lots normaux restent groupés ; un
+   ancien lot ou checkpoint trop grand est paginé comme fragments de données
+   inertes, jamais comme appels incomplets dans le protocole du fournisseur. Le
+   nombre d’appels est réglable, sans plafond Heart par défaut ; le parcours
    des groupes est fini. Aucun retry ou repli payant.
 4. Vérifier le résultat et le budget réduit, puis enregistrer atomiquement un
    événement `context.checkpoint` : version, UUID du segment, segment parent,
@@ -55,8 +58,10 @@ Au seuil :
 
 L’historique reste intact. Au redémarrage, le point de reprise est relu et sa
 référence source est contrôlée. Si le résumé, sa sauvegarde ou le budget échoue,
-aucun contexte vide n’est envoyé. Un tour courant ou un groupe indivisible trop
-volumineux est refusé explicitement. Sa réduction interne reste à développer.
+aucun contexte vide n’est envoyé. Une demande active ou le dernier lot nécessaire
+qui dépasse à lui seul la capacité reste refusé explicitement ; pas de retrait
+silencieux du contenu. Les anciens lots et checkpoints peuvent être fragmentés
+pour la compression. Un checkpoint au milieu d’un lot incomplet est refusé.
 Un changement de modèle sous le seuil conserve le contexte sans résumé forcé.
 
 Le texte d’un résumé peut perdre des nuances malgré ces contrôles. Les tests
@@ -66,8 +71,8 @@ de répétition d’outil ; ils ne prouvent pas la qualité d’une compression 
 ## Mémoire active actuelle et évolution
 
 La sélection structurée est déterministe, sans appel LLM supplémentaire.
-Elle utilise les termes du dernier sujet développé, en gardant le sujet lors
-d’un « continue ». Les candidats actifs sont limités aux souvenirs personnels
+Elle part du dernier message, y compris une correction courte, avec le sujet
+précédent pour les suivis courts tels qu’un « continue ». Les candidats actifs sont limités aux souvenirs personnels
 et au projet du fil, puis classés dans le module mémoire. Les faits entiers sont
 injectés selon le budget réel restant, ID/version compris ; aucune contrainte
 tronquée. Les plafonds fixes de nombre/caractères sont désactivés par défaut.
@@ -75,7 +80,8 @@ Un souvenir long est proposé par titre et référence à consulter via `memory.
 Ces deux limites sont configurables, 0 sans plafond, voir [POLICIES.md](POLICIES.md).
 Le nombre de souvenirs limite les faits/références effectivement injectés :
 les doublons et faits trop longs ignorés ne consomment pas de place.
-Le texte déjà présent dans le résumé ou les messages conservés n’est pas ajouté.
+Le corps déjà présent dans le résumé ou les messages conservés n’est pas répété ;
+un souvenir versionné garde une courte référence active relue.
 
 La sélection est relue avant chaque appel, y compris après réduction, correction,
 oubli ou changement de modèle. Les versions courantes sont signalées ; le texte
@@ -131,3 +137,26 @@ les résultats ne certifient aucun état courant. Les lectures sont transitoires
 ne pas recopier les archives dans le journal. Aucun accès à un autre fil.
 Voir [HISTORY.md](HISTORY.md). Un résumé peut omettre un détail : les originaux
 restent récupérables, sans prétendre rendre toute compression sans perte.
+
+## Protection et observabilité de la reprise
+
+Le moteur fournit une projection dédiée à la compression, alignée sur les
+positions canoniques : arguments/résultats des outils transitoires retirés et
+images d’outils volatiles exclues. Les skills remplacent aussi leurs anciens
+corps par des reçus dans cette projection. Seule la requête principale du tour
+autorisé garde les résultats transitoires en RAM. Le checkpoint n’est validé
+qu’après résumé, budget et append atomique ; aucune sauvegarde intermédiaire.
+Le modèle peut néanmoins recopier un secret dans son texte libre : cette limite
+reste celle des outils transitoires, pas une promesse d’invisibilité universelle.
+
+La fiche projet est relue avant chaque préparation via le contrat ProjectTracking
+de l’app. Les consignes personnalisées, le catalogue courant et les guidances
+actives sont reconstruits hors résumé. Un ancien plan, catalogue ou reçu mémoire
+reste historique ; les sources et versions courantes priment. Les droits du fil
+ne sont pas élargis par cette reconstruction.
+
+Les diagnostics `context.usage` incluent estimation, segment, messages couverts
+et disponibilité/nombre de résultats mémoire. Aucun contenu mémoire ni prompt
+complet journalisé à cet effet. Une recherche échouée est distincte d’un résultat
+vide ; les travaux indépendants restent possibles. Erreurs de budget, historique
+ou compression typées, sans leur substituer un faux problème fournisseur.

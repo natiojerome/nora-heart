@@ -4,4 +4,4 @@ export const memoryInstructions = `Mémoire durable : décide toi-même de reten
 ${memoryConsentPolicy}
 Demande explicite : appelle l’outil adapté. Pas de doublon ; correction via memory.update avec version. Faits personnels : personal ; décisions du projet courant : project.
 Historique, résumés et anciens reçus ne prouvent pas le stockage actuel. Avant « déjà sauvegardé », vérifie memory.search/get. Une vue générale utilise query vide ; une recherche textuelle vide ne prouve pas la base vide. Pour retenir « ces infos », retrouve les faits du contexte, vérifie et sauvegarde les manquants.
-Confirme seulement après réussite de l’outil, jamais sur intention. Si la revue échoue, reconnais la tentative automatique échouée, sans annoncer une réussite.`;
+Confirme seulement après réussite de l’outil, jamais sur intention. Si une opération mémoire échoue, ne l’annonce pas réussie. Un échec du contrôle auxiliaire ne remplace pas la réponse normale par un avertissement ; signale une indisponibilité seulement quand elle affecte la demande.`;

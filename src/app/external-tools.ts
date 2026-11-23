@@ -16,7 +16,7 @@ import type {
   ExternalToolSession,
 } from "../contracts/external-tools.ts";
 import type { Conversation } from "../contracts/conversations.ts";
-import type { Tool } from "../contracts/tools.ts";
+import {ToolUnavailableError,type Tool} from "../contracts/tools.ts";
 
 export class ExternalToolError extends Error {}
 const invalid = () =>
@@ -280,8 +280,8 @@ export class ExternalTools {
         live.version !== connection.version ||
         !live.tools.some((tool) => isDeepStrictEqual(tool, definition))
       )
-        throw new ExternalToolError(
-          "MCP : connexion désactivée ou modifiée. Relance avec les droits actuels.",
+        throw new ToolUnavailableError(connection.tools.map(t=>externalToolName(connection.id,t.name)),
+          "MCP : connexion désactivée ou modifiée. Outils retirés de ce tour ; poursuis avec les outils restants.",
         );
       let session: ExternalToolSession | undefined;
       try {
@@ -290,8 +290,8 @@ export class ExternalTools {
           (tool) => tool.name === definition.name,
         );
         if (!actual || !isDeepStrictEqual(actual, definition))
-          throw new ExternalToolError(
-            "MCP : catalogue modifié. Actualise et approuve les outils.",
+          throw new ToolUnavailableError(connection.tools.map(t=>externalToolName(connection.id,t.name)),
+            "MCP : catalogue modifié. Outils retirés jusqu’à actualisation et approbation.",
           );
         const result = session.callWithMedia
           ? await session.callWithMedia(definition.name, args, context.signal)
@@ -299,7 +299,7 @@ export class ExternalTools {
         this.health.set(connection.id, { status: "connected" });
         return result;
       } catch (error) {
-        if (error instanceof ExternalCallError) throw error;
+        if (error instanceof ExternalCallError || error instanceof ToolUnavailableError) throw error;
         this.health.set(connection.id, { status: "unavailable" });
         if (context.signal?.aborted)
           throw new ExternalToolError("MCP : appel interrompu.");

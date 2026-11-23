@@ -153,7 +153,7 @@ export class SkillRun {
         }
       }
     const loaded = new Map(this.loaded);
-    const messages = options.request.messages.map((message) => {
+    const project = (message: import("../contracts/messages.ts").Message) => {
       if (
         message.role !== "tool" ||
         message.error ||
@@ -189,7 +189,9 @@ export class SkillRun {
             : "Anciennes instructions inactives.",
         }),
       };
-    });
+    };
+    const messages = options.request.messages.map(project);
+    const summaryMessages = options.summaryMessages?.map(project);
     const guidance = [...loaded.values()]
       .map(
         (s) =>
@@ -201,6 +203,7 @@ export class SkillRun {
       .join("");
     return inner.prepare({
       ...options,
+      ...(summaryMessages ? { summaryMessages } : {}),
       request: {
         ...options.request,
         messages,
