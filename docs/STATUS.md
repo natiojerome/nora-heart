@@ -301,6 +301,16 @@ Sur cette fixture répétitive : entrées estimées 28 752 → 13 282 (-53,8 %),
 extrapolation au trafic réel ou à la facture. Voir CONTEXT-ECONOMY.md.
 
 Référence source 53df0b4 sauvegardée en bundle Git chiffré, déchiffrement/empreinte
-et validité Git vérifiés, sans redémarrage. La sauvegarde complète précédente
-reste conservée. Prochaine action : sauvegarder le code vérifié, activer la version
-avec options désactivées et contrôler la production ; aucun fil réel activé d’office.
+et validité Git vérifiés, sans redémarrage. La sauvegarde complète précédente reste conservée. Version 4222416 en service,
+options désactivées confirmées aux largeurs 320/390/768/1440, zéro erreur JS,
+aucun envoi modèle ou changement de préférence dans le contrôle de production.
+Profil version 26/personnalité et 15 blocs inchangés, skill sain, services actifs.
+
+Sauvegardes : référence Git chiffrée 53df0b4 (163 Mio), jalon incrémental 4222416
+(32 Kio), toutes deux déchiffrées puis restaurées ensemble dans un dépôt jetable,
+HEAD retrouvé exactement. Backup complet heart-postgres-20261123T150653280446Z.tar.age
+de 4222416 : déchiffrement et PostgreSQL restauré sans réseau (256 Mio), identité/
+compteurs et fichiers/configurations récupérés. Aucune restauration en production,
+ressources privées de vérification retirées ; 24 Gio libres. Aucun fil propriétaire
+activé d’office. Suite : utiliser la mesure sur un fil choisi et comparer le gain
+réel avant d’élargir la déduplication ; autres optimisations toujours différées.

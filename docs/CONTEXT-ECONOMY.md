@@ -80,3 +80,9 @@ une compréhension parfaite ; comparer les résultats fonctionnels reste nécess
 [Rapport synthétique Luna](qualification/context-economy/luna.json).
 Catalogue dynamique, nouvelles synthèses sémantiques et cache fournisseur restent
 hors de ce premier lot. Aucun changement automatique des conversations existantes.
+
+
+Version en service avec les options désactivées : contrôles de production en
+lecture seule aux quatre largeurs, profil et instructions conservés. Référence,
+jalon de code et sauvegarde complète chiffrés ; restauration Git de référence+
+incrément et PostgreSQL isolé vérifiés. Voir STATUS/TESTING pour les identifiants.

@@ -1125,3 +1125,18 @@ Sur ce cas volontairement répétitif, entrée estimée 28 752 → 13 282 (-53,8
 1 415 tokens de résumé partagé séparés. Les mesures ne sont ni une tokenisation
 fournisseur exacte ni une facture. Voir CONTEXT-ECONOMY.md et
 [rapport détaillé](qualification/context-economy/luna.json).
+
+
+Activation 4222416 contrôlée en lecture seule sur heart.natio.re : panneau chargé
+paresseusement après annonce serveur, deux flags off, aucun appel LLM/envoi ou
+changement de préférence, zéro erreur JS aux quatre largeurs. Profil version 26,
+personnalité/15 blocs et skill conservés. Services web/worker actifs.
+
+Référence Git 53df0b4 et incrément 4222416 chiffrés, déchiffrés puis effectivement
+restaurés ensemble dans un dépôt bare temporaire : HEAD identique. Backups de
+jalons sous /var/backups/personal-harness/context-economy (privés), incréments
+avec prérequis de référence pour éviter de recopier 163 Mio à chaque étape.
+Backup complet heart-postgres-20261123T150653280446Z.tar.age déchiffré, empreintes
+vérifiées, vrai pg_restore sans réseau (256 Mio), identité/compteurs et fichiers/
+configurations identiques. Conteneur/données temporaires retirés. Pas de restore
+sur la production ; aucun autre projet ou sauvegarde existante supprimé.
