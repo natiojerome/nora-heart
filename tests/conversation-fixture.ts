@@ -15,7 +15,7 @@ import { BasicMemory } from "../src/modules/memory/basic/index.ts";
 import { openJsonStorage } from "../src/modules/storage/json/index.ts";
 import { DemoProvider } from "../src/modules/models/demo/index.ts";
 
-export async function conversationFixture(directory: string, model?: (selection: ModelSelection) => ModelProvider, assistantInstructions?: () => Promise<string>, execution?: ExecutionService, hostExecution?:ExecutionService, defaults?:()=>Promise<ConversationDefaults>, capabilities?:(provider:ModelSelection["provider"],id:string)=>Promise<import("../src/contracts/models.ts").ModelCapabilities>, catalog?:()=>Promise<{models:import("../src/contracts/models.ts").ModelCapabilities[]}> , extraTools?:(conversation:Conversation)=>Promise<Tool[]>) {
+export async function conversationFixture(directory: string, model?: (selection: ModelSelection) => ModelProvider, assistantInstructions?: () => Promise<string>, execution?: ExecutionService, hostExecution?:ExecutionService, defaults?:()=>Promise<ConversationDefaults>, capabilities?:(provider:ModelSelection["provider"],id:string)=>Promise<import("../src/contracts/models.ts").ModelCapabilities>, catalog?:()=>Promise<{models:import("../src/contracts/models.ts").ModelCapabilities[]}> , extraTools?:(conversation:Conversation)=>Promise<Tool[]>, projects?:import("../src/contracts/projects.ts").ProjectRepository, projectTracking?:import("../src/contracts/project-tracking.ts").ProjectTracking) {
   const records = new Map<string, Conversation>();
   const repository: ConversationRepository = {
     async create(value) { records.set(value.id, structuredClone(value)); },
@@ -27,7 +27,7 @@ export async function conversationFixture(directory: string, model?: (selection:
   };
   const storage = await openJsonStorage(path.join(directory, "storage"));
   const chatAssets=chatAssetsFixture();
-  const options = { defaults, capabilities, execution, hostExecution, hostFiles:hostExecution?((workspace:string)=>new LocalFiles(workspace,true)):undefined, chatAssets:chatAssets.assets, repository, sessions: storage.sessions, memory: new BasicMemory(storage.memories),
+  const options = { projects, projectTracking, defaults, capabilities, execution, hostExecution, hostFiles:hostExecution?((workspace:string)=>new LocalFiles(workspace,true)):undefined, chatAssets:chatAssets.assets, repository, sessions: storage.sessions, memory: new BasicMemory(storage.memories),
     workspaceDirectory: path.join(directory, "workspaces"), displayName: "Nora", assistantInstructions,
     model: model ?? (() => new DemoProvider()), catalog: catalog??(async () => ({ models: [{ id: "fake-chatgpt", contextWindow: 8192, reasoningEfforts:["low","high"] }] })) };
   if(extraTools)Object.assign(options,{engineFor:async(conversation:Conversation)=>new Engine(storage.sessions,[...fileTools(),...memoryTools(options.memory),...interactionTools(),...await extraTools(conversation)],new BoundedContext(storage.sessions,options.memory))});

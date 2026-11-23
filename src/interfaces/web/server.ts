@@ -1,3 +1,4 @@
+import {ProjectManagementError,type ProjectManagement} from "../../app/project-management.ts";
 import {AccountLoginError,type AccountLogin} from '../../app/account-login.ts';
 import type {Installation} from "../../app/installation.ts";
 import {ExternalCallError} from "../../contracts/external-tools.ts";
@@ -26,7 +27,7 @@ import type { TestLab } from "../../app/test-lab.ts";
 import { WebAccess } from "../../app/web-access.ts";
 
 type Lab = Pick<TestLab, "state" | "setKey" | "loginStatus" | "startLogin" | "finishLogin" | "logoutChatGpt" | "models" | "usage" | "capabilities" | "test" | "tests">;
-interface Options { accountLogin?:AccountLogin;accountRequired?:boolean; memoryConfigured?:boolean;installation?:Installation;restart?:()=>void; projectsWorkspace?:ProjectsWorkspace; origin: string; access: WebAccess; lab: Lab; assistant?: Assistant; skills?:Skills; tasks?:Tasks; scheduler?:{state():{running:boolean;active:number;ticking:boolean;intervalMs:number;concurrency:number};tick():Promise<void>;stop?():void;start?():void}; conversations?: Conversations; memories?: Memories; maintenanceFile?: string; assetsDirectory?: string; externalTools?:ExternalTools }
+interface Options { accountLogin?:AccountLogin;accountRequired?:boolean; memoryConfigured?:boolean;installation?:Installation;restart?:()=>void; projectsWorkspace?:ProjectsWorkspace; projectManagement?:ProjectManagement; origin: string; access: WebAccess; lab: Lab; assistant?: Assistant; skills?:Skills; tasks?:Tasks; scheduler?:{state():{running:boolean;active:number;ticking:boolean;intervalMs:number;concurrency:number};tick():Promise<void>;stop?():void;start?():void}; conversations?: Conversations; memories?: Memories; maintenanceFile?: string; assetsDirectory?: string; externalTools?:ExternalTools }
 class HttpError extends Error { constructor(readonly status: number, message: string) { super(message); } }
 const safeMessages = new Set(["Réglages de skills invalides.","Limites invalides.","Message requis.","Budget de lot invalide.","Pagination invalide.","Curseur introuvable dans ce fil.",...Object.values(aiSdkErrorMessages),"Formulaire ou réponse invalide. Vérifie les champs.","Demande interactive introuvable.","Réponds au formulaire en attente ou annule-le avant un nouveau message.","Cette demande a déjà reçu une autre réponse.","Une autre demande interactive est en attente.","Historique de la demande interactive incohérent.","Outil interactif indisponible.","Reprise interactive atomique indisponible pour ce stockage.","Modèle du fil modifié ailleurs. Rouvre ses réglages.","Modèle du fil modifié ailleurs ou conversation occupée. Rouvre ses réglages.","Worker YOLO indisponible. Aucun repli implicite.","Réglages par défaut invalides.","Catalogue OpenRouter indisponible. Actualise la liste pour réessayer.","OpenRouter : choisir un identifiant de modèle terminé par :free. Aucun modèle payant autorisé.","Prompt modifié ailleurs ou limite de 100 prompts atteinte. Actualise la liste.","Prompt modifié ailleurs. Actualise la liste.","Une pièce jointe est introuvable. Actualise la liste.","Fichier déjà utilisé ou introuvable. Son historique est conservé.","Profil assistant invalide.", "Profil modifié ailleurs. Actualise avant de réessayer.","Ce fichier ne peut pas être affiché comme image.", "Souvenir invalide : titre, contenu ou type.", "Portée du souvenir invalide.",
   "Souvenir hors du projet courant.", "Ne pas mémoriser de secret.", "Souvenir introuvable.",
@@ -120,6 +121,8 @@ export function createWebServer(options: Options) {
     "/api-client.js": {name:"api-client.js",type:"text/javascript; charset=utf-8"},
     "/icons.js": {name:"icons.js",type:"text/javascript; charset=utf-8"},
     "/app.js": { name: "app.js", type: "text/javascript; charset=utf-8" },
+    "/projects.js": { name: "projects.js", type: "text/javascript; charset=utf-8" },
+    "/projects.css": { name: "projects.css", type: "text/css; charset=utf-8" },
     "/ui.js": { name: "ui.js", type: "text/javascript; charset=utf-8" },
     "/brand/mark.png": { name: "brand/mark.png", type: "image/png" },
     "/styles.css": { name: "styles.css", type: "text/css; charset=utf-8" },
@@ -341,6 +344,7 @@ export function createWebServer(options: Options) {
                   : null,
                 assistantPresets: options.assistant?.presets() ?? null,
                 tasksAvailable: !!options.tasks,
+                projectsAvailable: !!options.projectManagement||!!options.memories,
                 skillsAvailable: !!options.skills,
                 externalToolsAvailable: !!options.externalTools,
                 conversationsAvailable: !!options.conversations,
@@ -420,12 +424,21 @@ export function createWebServer(options: Options) {
         if(request.method==='POST'&&url.pathname==='/api/external-tools'){json(response,await options.externalTools.save(await body(request,Number.POSITIVE_INFINITY)));return;}
       }
       if(options.memoryConfigured===false&&url.pathname.startsWith('/api/memories'))throw new HttpError(409,'Connecte le service Mémoire dans Capacités → Connexions → Services partagés.');
+      if(url.pathname==='/api/projects'&&request.method==='GET'){json(response,options.projectManagement?await options.projectManagement.list():options.memories?await options.memories.listProjects():{projects:[]});return;}
+      if(url.pathname==='/api/projects'&&request.method==='POST'&&options.projectManagement){json(response,await options.projectManagement.create(await body(request)),201);return;}
+        const projectTracking=url.pathname.match(/^\/api\/projects\/([0-9a-f-]{36})(\/items)?$/);
+      if(projectTracking){
+        const [,id,items]=projectTracking;
+        if(!options.projectManagement){if(request.method==='GET'){json(response,{available:false});return;}throw new HttpError(409,'Connexion Projets avec suivi requise.');}
+        if(request.method==='GET'&&!items){json(response,{available:true,...await options.projectManagement.get(id,url.searchParams.get('cursor')??undefined)});return;}
+        if(request.method==='POST'){const input=await body(request,Number.POSITIVE_INFINITY);json(response,items?{item:await options.projectManagement.saveItem(id,input)}:{project:await options.projectManagement.update(id,input)});return;}
+      }
       if (options.memories) {
         const match = url.pathname.match(/^\/api\/memories\/([0-9a-f-]{36})(\/(status|revisions))?$/i);
-        if (request.method === "GET" && url.pathname === "/api/memories") { json(response, await options.memories.list()); return; }
+        if (request.method === "GET" && url.pathname === "/api/memories") { json(response, await options.memories.list(!options.projectManagement)); return; }
         if (request.method === "GET" && match && !match[2]) {json(response,await options.memories.get(match[1]));return;}
         if (request.method === "GET" && match?.[3] === "revisions") { json(response, await options.memories.revisions(match[1])); return; }
-        if (request.method === "POST" && url.pathname === "/api/projects") { json(response, await options.memories.createProject(await body(request)), 201); return; }
+      if (request.method === "POST" && url.pathname === "/api/projects") { json(response, await options.memories.createProject(await body(request)), 201); return; }
         if (request.method === "POST" && url.pathname === "/api/memories") { json(response, await options.memories.create(await body(request)), 201); return; }
         if (request.method === "POST" && match && (!match[2] || match[3] === "status")) {
           json(response, match[3] === "status" ? await options.memories.status(match[1], await body(request)) : await options.memories.update(match[1], await body(request))); return;
@@ -561,8 +574,10 @@ export function createWebServer(options: Options) {
       throw new HttpError(404, "Action introuvable.");
     })().catch(error => {
       if (response.destroyed || response.writableEnded) return;
-      if(error instanceof ExternalCallError){json(response,{error:error.message},error.code==='NOT_FOUND'?404:error.code==='CONFLICT'?409:error.code==='INVALID'?400:503);return;}
-      const known = error instanceof Error && (error instanceof AccountLoginError || /^Lot d’outils trop grand \(\d+ maximum\)\.$/.test(error.message) || /^Message trop long : limite configurée de \d+ caractères\.$/.test(error.message) || error instanceof TaskError || error instanceof SkillError || (["Ce projet est archivé.","Objectif requis.","Identifiant de création invalide."].includes(error.message)||safeMessages.has(error.message)) || error instanceof ChatInputError || error instanceof RecoveryError || error instanceof WorkspaceError || error instanceof ExecutionError || error instanceof ExternalToolError);
+      if(error instanceof ExternalCallError){
+        const projectMessages={INVALID:'Suivi invalide : vérifie les critères, la preuve, les étapes ouvertes et l’objectif parent.',CONFLICT:'Suivi modifié ailleurs. Ferme le formulaire et actualise avant de réessayer.',NOT_FOUND:'Projet ou élément introuvable.',GONE:'Élément indisponible.',UNAVAILABLE:'Service Projets indisponible. Réessaie après actualisation.'};
+        json(response,{error:request.url?.startsWith('/api/projects/')?projectMessages[error.code]:error.message},error.code==='NOT_FOUND'?404:error.code==='CONFLICT'?409:error.code==='INVALID'?400:503);return;}
+      const known = error instanceof Error && (error instanceof AccountLoginError || /^Lot d’outils trop grand \(\d+ maximum\)\.$/.test(error.message) || /^Message trop long : limite configurée de \d+ caractères\.$/.test(error.message) || error instanceof ProjectManagementError || error instanceof TaskError || error instanceof SkillError || (["Ce projet est archivé.","Objectif requis.","Identifiant de création invalide."].includes(error.message)||safeMessages.has(error.message)) || error instanceof ChatInputError || error instanceof RecoveryError || error instanceof WorkspaceError || error instanceof ExecutionError || error instanceof ExternalToolError);
       json(response, { error: error instanceof HttpError || known ? error.message : "Action impossible. Vérifie la connexion et réessaie." },
         error instanceof HttpError ? error.status : known ? 400 : 500);
     }).finally(()=>{if(mutation)activeMutations--;});

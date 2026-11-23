@@ -75,3 +75,11 @@ interface HeartTaskElements {
   "task-history": HTMLElement;
   "task-history-more": HTMLButtonElement;
 }
+
+interface Window {
+  heartProjects?: {
+    open(id: string, target: HTMLElement): void;
+    reset(): void;
+  };
+}
+declare function loadProjects(): Promise<void>;

@@ -18,6 +18,7 @@ let conversationLoaded = false;
 let configuredContextWindow = 32768;
 let memoryRecords = [];
 let memoryProjects = [];
+let projectsLoaded = false;
 let memoryEditing = null;
 let memoryBusy = false;
 let memoryLoaded = false;
@@ -86,7 +87,7 @@ function showAuthenticated(authenticated) {
     window.heartPreferences?.sync();
     memoryLoaded = false;
     memoryRecords = [];
-    memoryProjects = [];
+    memoryProjects = [];projectsLoaded=false;window.heartProjects?.reset();
     memoryEditing = null;
     $("memory-list").replaceChildren();
     $("memory-editor").reset();
@@ -134,7 +135,7 @@ function renderState() {
   $("venice-card-status").textContent = state.api?.venice ? "Clé configurée" : "Clé absente";
   $("conversations").hidden = !state.conversationsAvailable;
   $("memories").hidden = !state.memoriesAvailable;
-  $("conversation-project-box").hidden = !state.memoriesAvailable;
+  $("conversation-project-box").hidden = !(state.projectsAvailable||state.memoriesAvailable);
   renderProvider();
   if (state.login) renderLogin(state.login);
   window.heartUI?.sync();
@@ -182,6 +183,7 @@ async function refreshState() {
     tasks.push(loadMemories());
   if (state.authenticated && state.conversationsAvailable && !conversationLoaded)
     tasks.push(loadConversations().then(() => { conversationLoaded = true; }));
+  if(state.authenticated&&state.projectsAvailable&&!projectsLoaded)tasks.push(loadProjects());
   const results = await Promise.allSettled(tasks);
   for (const result of results) if (result.status === "rejected") message(errorText(result.reason), true);
   return state;
@@ -986,7 +988,8 @@ async function sendConversation(sourceMessage) {
       await renderConversation(data);
     }
     await loadConversations();
-    if (state.memoriesAvailable) await loadMemories();
+    const refreshes=await Promise.allSettled([...(state.memoriesAvailable?[loadMemories()]:[]),...(state.projectsAvailable?[loadProjects()]:[])]);
+    for(const result of refreshes)if(result.status==='rejected')message('Réponse terminée. Une liste n’a pas pu être actualisée.',true);
   } catch (error) {
     if(!replay)window.heartChat?.restoreDraft(sendingId, prompt);
     message(conversationId===sendingId?errorText(error):"Un travail en arrière-plan a échoué. Ouvre cette conversation pour voir son état.", true);
@@ -1024,14 +1027,21 @@ $("context-window").addEventListener("input", () => {
 });
 
 async function loadMemories() {
+  const owner=stateSequence;
   const data = await api("/api/memories");
+  if(owner!==stateSequence||!state.authenticated)return;
   memoryRecords = data.memories;
-  memoryProjects = data.projects;
+
   const remoteMemory=data.supportsRestore===false;
   const forgotten=$('memory-show-forgotten');if(remoteMemory)forgotten.checked=false;forgotten.disabled=remoteMemory;
   let storageNote=$('memory-storage-note');if(!storageNote){storageNote=document.createElement('p');storageNote.id='memory-storage-note';storageNote.className='field-help';$('memory-list').before(storageNote);}
   storageNote.textContent=remoteMemory?'Mémoire MCP · un oubli supprime aussi les révisions actives.':'Mémoire locale · oubli réversible.';
   memoryLoaded = true;
+  if(!state.projectsAvailable)applyProjectCatalog(data.projects);
+}
+async function loadProjects(){const owner=stateSequence;const data=await api('/api/projects');if(owner!==stateSequence||!state.authenticated)return;applyProjectCatalog(data.projects);}
+function applyProjectCatalog(projects){
+  memoryProjects=projects;projectsLoaded=true;
   window.heartUI?.memories();
   for (const id of [
     "memory-scope",
@@ -1181,7 +1191,7 @@ function renderMemories() {
     list.append(empty);
   }
 }
-async function mutateMemory(action) {
+async function mutateMemory(action,projectsChanged=false) {
   if (memoryBusy) return;
   memoryBusy = true;
   renderMemories();
@@ -1190,7 +1200,7 @@ async function mutateMemory(action) {
   try {
     await action();
     try {
-      await loadMemories();
+      if(projectsChanged)await loadProjects();else if(state.memoriesAvailable)await loadMemories();
     } catch {
       message(
         "Enregistrement effectué. La liste n’a pas pu être actualisée ; utilise Actualiser.",
@@ -1221,14 +1231,16 @@ $("project-create").addEventListener("submit", async (event) => {
     const data = await post("/api/projects", {
       title: $("project-title").value.trim(),
       objective: $("project-objective").value.trim(),
+      successCriteria: $("project-criteria").value.trim(),
       operationId: $("project-create").dataset.operationId ||= window.heartPlatform.uuid(),
     });
     $("project-dialog").close();
     $("project-title").value = "";
     $("project-objective").value = "";
+    $("project-criteria").value = "";
     delete $("project-create").dataset.operationId;
     // The shared mutation flow refreshes projects after this confirmed write.
-  });
+  },true);
 });
 $("memory-editor").addEventListener("submit", async (event) => {
   event.preventDefault();

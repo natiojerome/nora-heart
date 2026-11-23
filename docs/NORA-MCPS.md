@@ -213,3 +213,11 @@ disponible (validation en deux étapes nécessaire), pas le mot de passe normal.
 Google OAuth constitue une voie distincte, avec consentement et refresh token
 privé sur le serveur Mail ; le compte préparé conserve son UUID et ses signatures.
 La connexion du plugin Gmail de ChatGPT n’est pas un credential exportable Heart.
+
+## Suivi des objectifs
+
+Projects comporte désormais 13 outils, dont projects_overview. Heart consomme
+parentId, critères/preuves et compteurs de tout le projet via le contrat neutre
+ProjectTracking ; aucun stockage local des plans ajouté. Migration additive MCP
+002, catalogue/schémas approuvés actualisés. Détails, qualification et limites :
+[PROJECTS.md](PROJECTS.md).

@@ -75,3 +75,11 @@ reprise des sorties/contrôles. Backup du harness possible pendant son activité
 avec copie à chaud déclarée. Exploitation persistante après reboot et sauvegarde
 métier restent de la responsabilité des services propres à chaque projet, pas
 d’un daemon ou ordonnanceur Heart. Aucun ancien projet migré implicitement.
+
+## Suivi des projets
+
+Hiérarchie, critères/preuves et gardes de clôture livrés côté MCP, fiche et
+compteurs réels dans Heart. Aucun cache persistant ou miroir métier. Le modèle
+reçoit la fiche actuelle et lit le plan par outils ; son initiative et la véracité
+de ses preuves textuelles ne sont pas garanties par le schéma. Essai réel Luna
+réussi sur données synthétiques ; aucun plan des projets existants inventé.

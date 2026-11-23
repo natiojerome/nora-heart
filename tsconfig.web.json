@@ -17,6 +17,7 @@
     "src/interfaces/web/public/icons.js",
     "src/interfaces/web/public/settings.js",
     "src/interfaces/web/public/tasks.js",
-    "src/interfaces/web/public/capabilities.js"
+    "src/interfaces/web/public/capabilities.js",
+    "src/interfaces/web/public/projects.js"
   ]
 }

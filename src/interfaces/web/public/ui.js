@@ -187,7 +187,7 @@
     copy.className = "page-heading-copy";
     copy.append(
       text("h1", p.title),
-      text("p", "Conversations et souvenirs du projet.", "page-subtitle"),
+      text("p", "Objectifs, étapes et résultats.", "page-subtitle"),
     );
     const icon = document.createElement("span");
     icon.className = "page-heading-icon";
@@ -201,6 +201,7 @@
     const back = text("button", "Tous les projets", "text-button");
     back.addEventListener("click", () => {
       selectedProject = null;
+      window.heartProjects?.reset();
       target.hidden = true;
       el("screen-projects").classList.remove("project-open");
     });
@@ -218,6 +219,8 @@
       openEditor("conversation-dialog", "conversation-title");
     });
     actions.append(button);
+    const tracking=document.createElement('section');tracking.className='project-tracking';target.append(tracking);window.heartProjects?.open(id,tracking);
+    target.append(text('h3','Conversations'));
     const threads = records.filter((item) => item.projectId === id);
     for (const item of threads)
       target.append(
@@ -258,12 +261,12 @@
       target.replaceChildren();
       for (const p of memoryProjects.slice(
         0,
-        id === "home-projects" ? 3 : 100,
+        id === "home-projects" ? 3 : memoryProjects.length,
       )) {
         target.append(
           row(
             p.title,
-            `${records.filter((item) => item.projectId === p.id).length} discussion(s) récente(s)`,
+            [({planning:"À préparer",active:"En cours",blocked:"Bloqué",paused:"En pause",completed:"Terminé",archived:"Archivé"})[p.status],p.objective].filter(Boolean).join(" · ") || "Objectif à préciser",
             () => {
               location.hash = "projects";
               projectDetails(p.id);

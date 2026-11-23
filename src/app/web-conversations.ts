@@ -1,3 +1,4 @@
+import {ProjectManagement} from "./project-management.ts";
 import { presentTools } from "./capability-labels.ts";
 import { HttpMailFiles } from "../modules/mail/http/index.ts";
 import { mailFileTools } from "../modules/tools/mail-files/index.ts";
@@ -104,11 +105,9 @@ export async function openWebConversations(
         refreshDefinitions: true,
       });
     }
-    const projects: ProjectRepository = projectConnectionId
-      ? new McpProjectsRepository((name, args) =>
-          externalTools.callApproved(projectConnectionId, name, args),
-        )
-      : (projectRepository ?? {
+    const remoteProjects = projectConnectionId ? new McpProjectsRepository((name,args)=>externalTools.callApproved(projectConnectionId,name,args)) : undefined;
+    const projectManagement = remoteProjects ? new ProjectManagement(remoteProjects,remoteProjects) : undefined;
+    const projects: ProjectRepository = remoteProjects ?? (projectRepository ?? {
           async create() {
             throw new ExternalToolError(
               "MCP Projects : configure la connexion avant de créer un projet.",
@@ -206,6 +205,7 @@ export async function openWebConversations(
       sessions: storage.sessions,
       memory,
       projects,
+      projectTracking:remoteProjects,
       workspaceDirectory: path.join(directory, "conversations"),
       defaults: async () => (await assistant.defaults()).defaults,
       displayName: lab.displayName,
@@ -370,6 +370,7 @@ export async function openWebConversations(
       conversations,
       installation,
       projectsWorkspace,
+      projectManagement,
       tasks,
       scheduler,
       assistant,

@@ -135,7 +135,8 @@ src/
     models.ts               ModelProvider
     memory.ts               MemoryService, MemoryRepository et Memory
     structured-memory.ts    gestion versionnée et repository structuré
-    projects.ts             UUID et catalogue de projets Heart
+    projects.ts             UUID et catalogue de projets
+    project-tracking.ts     fiche, objectifs hiérarchiques et commandes de suivi
     storage.ts              SessionStore, événements et StorageConnection
     sql-storage.ts          contrat complet des repositories SQL et reprise
     external-tools.ts       connexions, schémas approuvés et repository MCP
@@ -187,7 +188,8 @@ src/
     chatgpt.ts              composition et commandes de connexion par abonnement
     test-lab.ts             assemblage des essais web isolés et des suites
     external-tools.ts       approbation, configuration et outils distants
-    memories.ts             administration des souvenirs et projets
+    memories.ts             administration des souvenirs
+    project-management.ts   suivi des projets via contrats injectés
     conversations.ts        catalogue, envoi et annulation dans un fil persistant
     workspace.ts            commandes propriétaire et journal fichiers séparé
     chat-assets.ts          validation, résolution des médias au bord modèle
@@ -1167,3 +1169,17 @@ d’exploitation ni framework de runtime maison ajouté. Le backup Heart annote 
 fichiers copiés à chaud quand ces programmes tournent ; il ne remplace pas les
 sauvegardes cohérentes propres aux projets. Contrats et core restent indépendants
 du contrôleur systemd situé dans le module terminal.
+
+## Suivi hiérarchique des projets
+
+ProjectTracking est un contrat distinct de ProjectRepository, adapté par
+McpProjectsRepository et injecté dans ProjectManagement/Conversations. L’app
+expose la fiche et les commandes web ; aucun SQL, règle de stockage MCP ou miroir
+local ajouté à Heart. Chargements Mémoire et Projets indépendants.
+
+Le MCP gère parentId, critères/preuves, versions et gardes transactionnelles de
+clôture. projects_overview fournit une fiche, les compteurs globaux et une page
+détaillée cohérente ; pagination courante entre les requêtes. L’app injecte la
+fiche et les compteurs par tour, détail à la demande via outils. Lectures
+simultanées regroupées, aucun cache périmé/polling. Contrôleur web séparé et
+formulaires versionnés préservés sur conflit. Voir [PROJECTS.md](PROJECTS.md).

@@ -26,16 +26,25 @@ son backup. Contrôle retrouvé sans redémarrer le projet. Les déploiements
 permanents utilisent leurs propres services/runtimes/configuration et backups,
 conformément à la décision du propriétaire, sans nouvelle plateforme maison.
 
+## Suivi des objectifs livré
+
+Objectif global, objectifs imbriqués, étapes et blocages dans le MCP, avec critères,
+preuves et gardes de clôture. Fiche web, compteurs globaux, contexte léger par tour
+et mises à jour via outils. Qualifié avec SQL/MCP réels, navigateur et Luna.
+Aucune conversion automatique des anciens plans. Voir [PROJECTS.md](PROJECTS.md).
+
 ## Prochaines étapes utiles
 
-1. Sur demande métier explicite, qualifier une lecture/réponse mail avec pièce
+1. Appliquer le suivi à un projet réel : définir critères/étapes utiles, puis
+   observer et ajuster les mises à jour après résultats, sans inventer de plan.
+2. Sur demande métier explicite, qualifier une lecture/réponse mail avec pièce
    jointe, identité et signature conservées. L’envoi simple Heart/Luna et sa
    réception Gmail sont déjà qualifiés ; aucun nouvel envoi de test implicite.
-2. Formaliser le parcours de mise à jour et retour arrière d’une installation
+3. Formaliser le parcours de mise à jour et retour arrière d’une installation
    indépendante. Distinguer mise à jour, réinstallation et restauration ;
    conserver les données et migrations appliquées. Puis qualifier OS vierge,
    HTTPS/DNS/ACME et ARM64 selon moyens autorisés, sans achat implicite de serveur.
-3. Mesurer les gros historiques et longs travaux sur les cerveaux effectivement
+4. Mesurer les gros historiques et longs travaux sur les cerveaux effectivement
    utilisés. Étendre la qualification mémoire/compression selon les incidents
    observés ; reprendre Venice quand son accès API est réactivé. Les tests réels
    doivent rester ciblés, avec coût observé et fixtures synthétiques.

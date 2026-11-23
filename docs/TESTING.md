@@ -887,3 +887,33 @@ Le terminal manuel relaie interactive:true jusqu’au contrôleur hôte ; le cho
 est explicite dans l’interface et stdin/EOF sont désactivés pour les commandes
 indépendantes. Les libellés conservent YOLO/root. Régressions du terminal manuel,
 des permissions et des trois parcours navigateur relancées après ce raccordement.
+
+## Suivi hiérarchique — 23 novembre 2026
+
+- `pnpm check` : 291 tests ; démo SDK sans appel réel : succès.
+- Suite web complète : 29 parcours. Le nouveau parcours vérifie édition globale,
+  sous-goal, task, clôture refusée, preuve, conflit conservant les champs,
+  rafraîchissement préservant le formulaire, pagination de 54 éléments, absence
+  de polling et affichage 320/390/768/1440 px. Backend de ce parcours simulé ;
+  aucun appel modèle. Projets fonctionnels sans mémoire, y compris pendant sa panne.
+- MCP : 107 contrôles avec SDK officiel/PostgreSQL réels. Cycle, parent étranger,
+  fermeture prématurée, preuve absente/effacée, réouverture, compteurs globaux,
+  concurrence clôture/réouverture, isolation des comptes, pagination et dump/restore.
+  Bases, rôles et tokens jetables supprimés ; migrations idempotentes.
+- `tests/live-project-tracking.ts --live` : vrai ChatGPT `gpt-6-luna`, medium,
+  16 appels de fournisseur. MCP de même code en base/tenant synthétiques distincts,
+  accès par tunnel SSH local et connexion approuvée. Le modèle a créé deux goals
+  imbriqués et une task, produit un fichier puis renseigné critères/résultats et
+  statuts terminés. Le test a relu le fichier et l’état distant ; projet global
+  non clôturé prématurément. Aucun email/mémoire/projet du propriétaire touché.
+
+Le parcours SQLite de persistance utilisait 8 192 tokens, désormais insuffisants
+pour le catalogue complet (échec reproduit avec le code antérieur à ce lot).
+Sa fixture passe à 32 768 ; les tests de petits contextes restent distincts et
+aucune capacité d’un vrai modèle n’est augmentée. Une course du test de relance
+chat a disparu en reprise isolée puis dans la suite complète, sans timeout relevé.
+
+Preuves : [navigateur](qualification/project-tracking/browser.json),
+[Luna réel](qualification/project-tracking/luna.json) et captures au même endroit.
+La présence de texte dans evidence n’est pas une garantie universelle de sa
+véracité ; les contrôles SQL protègent la structure et les transitions.

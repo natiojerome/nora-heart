@@ -130,3 +130,27 @@ ou migré implicitement. Services permanents à déployer via systemd/Compose
 propres au projet ; une commande transitoire seule ne garantit pas le redémarrage
 après reboot. Validation : 287 tests/démo, deux tests natifs opt-in, trois tests
 de backup et trois parcours navigateur ciblés.
+
+## Objectifs, étapes et suivi — 23 novembre
+
+Livré : objectif global avec critères/preuve/prochaine action, plusieurs goals
+et sous-goals, étapes et blocages. Fiche Projets web avec hiérarchie, formulaires
+versionnés, détails et compteurs sur tout le plan. Aucun pourcentage inventé.
+Clôture refusée sans résultat documenté ou avec descendants ouverts ; les anciens
+statuts sans preuve sont conservés et distingués. Aucun plan métier local.
+
+MCP 13 outils, migration additive et catalogue approuvé à jour. Fiche/compteurs
+frais injectés dans les tours de projet ; détail chargé via outils à la demande.
+Lectures simultanées regroupées, sans cache périmé ni polling. Projets et mémoire
+se chargent séparément ; formulaires conservés sur rafraîchissement/conflit.
+
+Validation : 291 tests `pnpm check`, démo SDK, 29 parcours navigateur ; 107
+contrôles MCP/PostgreSQL réels, incluant hiérarchie, concurrence et restauration.
+Luna réel medium : deux objectifs imbriqués et une étape terminés/documentés,
+fichier produit puis relu par le test, projet non clôturé prématurément.
+Base/compte de qualification séparés et retirés ; aucune donnée utilisateur
+modifiée par ces scénarios. Voir [PROJECTS.md](PROJECTS.md).
+
+Prochaine étape : utiliser ce suivi sur un projet réel pour définir ses critères
+et étapes avec l’utilisateur, puis observer les mises à jour pendant le travail.
+Aucun reclassement automatique des projets existants ni plan fictif créé pour eux.

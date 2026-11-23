@@ -38,7 +38,8 @@ test(
         selection: {
           provider: "demo" as const,
           modelId: "demo",
-          contextWindow: 8192,
+          // Persistence fixture uses the full tool catalogue; small-context limits have dedicated tests.
+          contextWindow: 32768,
           capacitySource: "configured" as const,
         },
         fileAccess: "write" as const,
@@ -134,11 +135,24 @@ test(
       });
       await new Promise<void>((r) => server.listen(port, "127.0.0.1", r));
       await page.reload();
-      await page.waitForFunction(() =>
-        document
-          .getElementById("conversation-history")
-          ?.textContent?.includes("Résultat de files.list"),
-      ).catch(async error=>{console.error(JSON.stringify({errors,body:(await page.textContent("body"))?.slice(-4500),events:(await persistent.conversations.get(conversation.id)).events.slice(-4)}));throw error;});
+      await page
+        .waitForFunction(() =>
+          document
+            .getElementById("conversation-history")
+            ?.textContent?.includes("Résultat de files.list"),
+        )
+        .catch(async (error) => {
+          console.error(
+            JSON.stringify({
+              errors,
+              body: (await page.textContent("body"))?.slice(-4500),
+              events: (
+                await persistent.conversations.get(conversation.id)
+              ).events.slice(-4),
+            }),
+          );
+          throw error;
+        });
       assert.deepEqual(
         (await persistent.conversations.get(conversation.id)).events,
         before,

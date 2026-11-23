@@ -559,3 +559,18 @@ développement. Les changements de permissions de Heart ne stoppent pas les unit
 indépendantes. La maintenance et le backup du harness ne doivent pas attendre
 leur fin ; copie à chaud marquée dans le manifeste, backups métier propres aux
 projets. Aucun transfert implicite ni relancement du veilleur crypto arrêté.
+
+## Objectifs hiérarchiques et progression documentée
+
+Le propriétaire demande un véritable suivi : objectif global seul ou plusieurs
+objectifs et sous-objectifs/étapes. Étendre le MCP existant plutôt que créer un
+nouveau gestionnaire local. Parents uniquement goal du même projet/utilisateur,
+sans cycle. Critère et preuve pour terminer ; descendants ouverts et blocages
+empêchent la clôture. Réouverture explicite avant nouveau travail. Aucune fermeture
+en cascade, pourcentage inventé ou réécriture des anciens statuts sans preuve.
+
+Une preuve textuelle reste une déclaration du client/modèle. Compteurs distincts
+pour terminé/documenté/annulé, pas une certification. Le modèle lit une fiche
+légère et les compteurs à chaque tour projet ; détail par outils à la demande.
+Suivi distant versionné, UI compacte sans polling et sans dépendance au chargement
+de la mémoire. Les services exécutés par les projets restent indépendants de Heart.
