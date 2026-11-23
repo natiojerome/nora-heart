@@ -36,6 +36,16 @@ OpenBao Mail, sans copie dans Heart. Transfert V4 rejoué avec les mêmes opéra
 aucun doublon ni changement de version. Prochaine étape : un parcours métier
 de lecture/réponse/PJ demandé par le propriétaire ; aucun envoi implicite.
 
+## Premier envoi réel via Luna
+
+23 novembre : conversation dédiée Heart, ChatGPT abonnement `gpt-6-luna`, effort
+low. Le modèle a découvert comptes/identité, créé le brouillon avec signature,
+puis envoyé un seul message depuis une boîte @natio.re au Gmail du propriétaire.
+Quatre outils réussis, cinq étapes, SMTP `accepted`. Réception Gmail vérifiée
+ensuite via Mail MCP avec objet unique, expéditeur/destinataire concordants et
+un seul résultat. Aucun renvoi ; ce test qualifie le parcours réel d’envoi simple,
+pas encore une réponse avec pièces jointes.
+
 ## Installation indépendante et onboarding
 
 Commande GitHub avec `--path`, Debian 12+/Ubuntu 24.04+ et systemd. Prépare Node,

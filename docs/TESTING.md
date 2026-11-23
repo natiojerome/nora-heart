@@ -794,3 +794,16 @@ aléatoire inexistant et une identité conservée par compte. Gmail OAuth natif
 trois autres comptes. Même UUID avant/après ; transfert V4 répété : reçu rejoué,
 version inchangée, sans double configuration. Aucun mail envoyé ni contenu
 personnel lu ; ces essais ne qualifient pas un envoi personnel de bout en bout.
+
+## Premier envoi réel ChatGPT Luna — 23 novembre 2026
+
+Sur demande explicite du propriétaire, via l’API web de Heart et une conversation
+dédiée persistante : fournisseur ChatGPT abonnement, `gpt-6-luna`, effort low,
+accès MCP réseau du fil, sans accès fichiers/terminal. Le modèle appelle
+`mail_accounts`, `mail_identities`, `mail_draft_save`, `mail_send` ; les quatre
+outils réussissent, tour terminé en cinq étapes, état SMTP `accepted`. Signature
+conservée, un seul destinataire, une seule intention d’envoi. Réception vérifiée
+par recherche du sujet unique dans le Gmail réel via les outils approuvés Heart :
+un résultat, expéditeur @natio.re et destinataire attendus. Aucun renvoi.
+Ce scénario utilise réellement le fournisseur et les deux fournisseurs mail ;
+aucune simulation, aucune qualification implicite des réponses/PJ par cet essai.
