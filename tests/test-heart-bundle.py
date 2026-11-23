@@ -27,9 +27,10 @@ class Bundles(unittest.TestCase):
             dump = root / 'fake.dump'
             dump.write_bytes(b'only a fixture; actual SQL restore qualified separately')
             setup = root / 'setup.json'
-            setup.write_text(json.dumps({'dumpCommand': ['cat', str(dump)], 'paths': {'workspace': str(workspace), 'config': str(config)}}))
+            setup.write_text(json.dumps({'externalExecution': {'runningIndependentCommands': 1, 'projectFilesConsistency': 'live-copy'}, 'dumpCommand': ['cat', str(dump)], 'paths': {'workspace': str(workspace), 'config': str(config)}}))
             encrypted = root / 'snapshot.age'
             manifest = bundle.create(setup, encrypted, recipient)
+            self.assertEqual(manifest['externalExecution']['projectFilesConsistency'], 'live-copy')
             self.assertNotIn(b'FAKE_TEST_ONLY', encrypted.read_bytes())
             self.assertEqual(encrypted.stat().st_mode & 0o777, 0o600)
             output = root / 'restored'
@@ -49,6 +50,22 @@ class Bundles(unittest.TestCase):
             self.assertFalse((root / 'bad').exists())
             with self.assertRaises(ValueError):
                 bundle.create(setup, encrypted, recipient)
+
+    def test_independent_projects_do_not_block_heart_backup_but_temporary_sessions_do(self):
+        spec = importlib.util.spec_from_file_location('managed', Path(__file__).resolve().parents[1] / 'scripts/heart-backup-managed.py')
+        managed = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(managed)
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            command = root / 'native'
+            command.mkdir()
+            record = command / 'command.json'
+            record.write_text(json.dumps({'command': {'status': 'running', 'independent': True}}))
+            self.assertEqual(managed.command_activity([root]), {'blocking': False, 'independent': 1})
+            record.write_text(json.dumps({'command': {'status': 'running'}}))
+            self.assertEqual(managed.command_activity([root]), {'blocking': True, 'independent': 0})
+            record.write_text(json.dumps({'command': {'status': 'completed'}}))
+            self.assertEqual(managed.command_activity([root]), {'blocking': False, 'independent': 0})
 
     def test_sqlite_native_snapshot_keeps_its_format_and_restores_under_encryption(self):
         import sqlite3

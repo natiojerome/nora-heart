@@ -43,7 +43,7 @@ def create(config_file, output, recipient):
                 archive.add(path, arcname='files/' + name, recursive=True, filter=lambda entry: None if entry.name=='files/state/maintenance' else entry)
         # Record every regular file, directory and symlink, including link targets.
         # Links are retained as data in the archive; extraction below rejects escaping links.
-        manifest = {'format': 1, **({'database': config['database']} if 'database' in config else {}), 'revision': config.get('revision'), 'scopes': list(config['paths']),
+        manifest = {'format': 1, **({'externalExecution': config['externalExecution']} if 'externalExecution' in config else {}), **({'database': config['database']} if 'database' in config else {}), 'revision': config.get('revision'), 'scopes': list(config['paths']),
                     'payloads': {name: digest(root / name) for name in ('database.dump', 'files.tar')}}
         (root / 'manifest.json').write_text(json.dumps(manifest))
         encrypted = root / 'bundle.age'

@@ -25,6 +25,20 @@ def health(endpoint):
         return json.load(response)
 
 
+def command_activity(roots):
+    """Independent native units do not own Heart's lifecycle or maintenance gate."""
+    activity = {'blocking': False, 'independent': 0}
+    for root in roots:
+        for file in Path(root).glob('*/command.json'):
+            command = json.loads(file.read_text())['command']
+            if command['status'] == 'running':
+                if command.get('independent') is True:
+                    activity['independent'] += 1
+                else:
+                    activity['blocking'] = True
+    return activity
+
+
 def main():
     if os.geteuid() != 0:
         raise RuntimeError('Root requis.')
@@ -50,11 +64,10 @@ def main():
             if not status.get('maintenance') or status.get('activeMutations') != 0:
                 print('Sauvegarde complète différée : travail ou mutation en cours.')
                 return
-            for root in ('/var/lib/personal-harness/lab/commands', '/var/lib/personal-harness-host/commands'):
-                for file in Path(root).glob('*/command.json'):
-                    if json.loads(file.read_text())['command']['status'] == 'running':
-                        print('Sauvegarde complète différée : commande à terminer ou vérifier.')
-                        return
+            activity = command_activity(('/var/lib/personal-harness/lab/commands', '/var/lib/personal-harness-host/commands'))
+            if activity['blocking']:
+                print('Sauvegarde complète différée : commande temporaire à terminer ou vérifier.')
+                return
             stopped = True
             subprocess.run(['systemctl', 'stop', 'personal-harness-web.service'], check=True)
             guard = subprocess.Popen(['/projects/nora-heart/.tools/node-v24.22.3-linux-x64/bin/node', '/projects/nora-heart/scripts/heart-backup-lock.mjs'], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True)
@@ -73,6 +86,7 @@ def main():
                 config['paths']['mcp-config']='/etc/personal-harness/nora-mcps.env'
             if Path(settings['projectsRoot']).exists():
                 config['paths']['projects'] = settings['projectsRoot']
+            config['externalExecution'] = {'runningIndependentCommands': activity['independent'], 'projectFilesConsistency': 'live-copy' if activity['independent'] else 'idle-copy'}
             config['database'] = {'driver': settings['driver'], 'format': 'pg_dump-custom' if settings['driver']=='postgres' else 'sqlite'}
             if settings['driver']=='sqlite':
                 config['dumpCommand'] = ['/projects/nora-heart/.tools/node-v24.22.3-linux-x64/bin/node', '/projects/nora-heart/scripts/heart-sqlite-dump.mjs', settings['sqliteFile']]
