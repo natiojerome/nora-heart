@@ -455,6 +455,22 @@ else {
         (e) => e.type === "message" && (e.data as any).role === "assistant",
       )
       .at(-1)!.data as any;
+    if (!answer.content.includes("ÉTAPE_SUIVANTE_732"))
+      console.log(
+        JSON.stringify({
+          qaPhase1Diagnostic: {
+            answer: answer.content,
+            progress: follow.events
+              .filter((e) => e.type === "run.progress")
+              .map((e) => e.data),
+            tools: follow.events
+              .filter((e) => e.type === "tool.started")
+              .map((e) => (e.data as any).name),
+            currentNextAction: (await app.projectManagement!.get(project.id))
+              .project.nextAction,
+          },
+        }),
+      );
     assert(answer.content.includes("REF_AFTER_RESTART_732"));
     assert(answer.content.includes("ÉTAPE_SUIVANTE_732"));
     await app.memories.status(updated.id, {
@@ -614,17 +630,32 @@ else {
       realMemoryMcp: true,
       primaryMemoryOmissionsInjected: memoryOmissionPhases.size,
       realMemoryReviewRecoveredCreateUpdateForget: true,
+      memoryReviewAudits: final.events
+        .filter(
+          (e) =>
+            e.type === "run.progress" && (e.data as any).review === "memory",
+        )
+        .map((e) => (e.data as any).audit),
       memoryWriteReadbackVerified:
         final.events.filter(
           (e) =>
             e.type === "run.progress" &&
             (e.data as any).review === "memory" &&
-            (e.data as any).audit?.status === "verified",
+            (e.data as any).audit?.status === "verified" &&
+            (e.data as any).audit?.writes > 0,
         ).length >= 3,
       realProjectsMcp: true,
       syntheticDatabase: true,
       noOwnerDataTouched: true,
     };
+    if (!report.memoryWriteReadbackVerified)
+      console.log(
+        JSON.stringify({ qaMemoryReviewAudits: report.memoryReviewAudits }),
+      );
+    assert(
+      report.memoryWriteReadbackVerified,
+      "Each recovered memory effect must be read back",
+    );
     await writeFile(
       "/tmp/heart-context-luna-report.json",
       JSON.stringify(report, null, 2) + "\n",

@@ -1269,3 +1269,10 @@ un échec transport ne vaut pas suppression. Statut, version et contenu doivent
 correspondre au résultat attendu ; conflit ou panne déclenchent une révision du
 bilan sans rejeu/écrasement. Portée projet dérivée du fil, et non d’un argument
 absent des outils. Aucune nouvelle dépendance ni couche générique de suivi ajoutée.
+
+
+CompletionReview expose aussi verifyAfterRevision : au plus une nouvelle visite
+après reprise primaire. MemoryReview l’active pour relire les effets de récupération
+si son évaluation a échoué, sans seconde évaluation modèle. Le core garde seulement
+les noms de contrôles visités ; le module garde son état de run. Aucun effet :
+no-new-effects, pas verified. Une nouvelle panne ne crée pas une boucle de contrôle.

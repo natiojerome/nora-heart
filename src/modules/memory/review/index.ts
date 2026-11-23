@@ -32,6 +32,8 @@ La note est une justification publique courte, pas un raisonnement détaillé. P
 export class MemoryReview implements CompletionReview {
   readonly name = "memory";
   readonly failureMode = "revise" as const;
+  readonly verifyAfterRevision = true;
+  private assessedRunId: string | undefined;
   readonly failureMessage =
     "La vérification de mémoire n’a pas abouti ; je ne peux pas confirmer l’état actuel des souvenirs. Les actions déjà réussies ne sont pas annulées.";
   private pending:
@@ -60,6 +62,13 @@ export class MemoryReview implements CompletionReview {
       ]);
     }
     this.pending = undefined;
+    if (input.runId && this.assessedRunId === input.runId) {
+      const effects = this.effects(input.evidenceMessages ?? request.messages);
+      return effects.length
+        ? this.verify(input, effects)
+        : { response, audit: { status: "no-new-effects", writes: 0 } };
+    }
+    this.assessedRunId = input.runId;
     const messages = input.evidenceMessages ?? request.messages;
     const definitions = new Map(request.tools.map((tool) => [tool.name, tool]));
     if (provider.supportsTools === false || !definitions.has("memory.remember"))

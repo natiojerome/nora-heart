@@ -7,6 +7,8 @@ export interface CompletionReview {
   readonly failureMessage: string;
   /** Recover a failed check: append a note, replace the draft, or resume the primary model once. */
   readonly failureMode?: "append" | "replace" | "revise";
+  /** Revisit once after primary recovery to verify its effects, without repeating the assessment. */
+  readonly verifyAfterRevision?: boolean;
   /** A scoped observation for the primary model; never publish it as the final answer. */
   review(input: {
     runId?: string;

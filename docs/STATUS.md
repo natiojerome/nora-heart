@@ -240,7 +240,9 @@ MCP typée distincte d’une panne. Conflit ou résultat incertain : bilan à r�
 sans rejeu ni écrasement. Reçus canoniques filtrés conservés après compression,
 portée projet correctement dérivée du fil. Aucun nouveau module/SDK/bloc requis.
 
-320 tests `pnpm check` et démo SDK passent. Qualification Luna/MCP réelle et
-validation navigateur en cours avant activation ; ne pas les confondre avec
-les tests simulés. Le code précédent de suivi projets reste actif entre-temps.
-Suite immédiate : terminer ces qualifications puis sauvegarder/activer et vérifier.
+321 tests `pnpm check`, démo SDK et 29 parcours navigateur passent. Un parcours
+réel a vérifié les trois opérations, mais révélé une relecture manquante après
+récupération primaire d’une évaluation échouée : chemin corrigé et testé, sans
+deuxième évaluation LLM. Qualification stricte Luna/MCP relancée avant activation.
+Le code précédent de suivi projets reste actif entre-temps.
+Suite immédiate : terminer cette qualification puis sauvegarder/activer et vérifier.

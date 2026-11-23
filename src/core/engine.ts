@@ -175,6 +175,12 @@ export class Engine {
         }
       };
       const reviewed=new Set<string>();
+      const recoveryVerified=new Set<string>();
+      const verifyRecovery=(review:CompletionReview)=>{
+        if(review.verifyAfterRevision&&!recoveryVerified.has(review.name)){
+          recoveryVerified.add(review.name);reviewed.delete(review.name);
+        }
+      };
       let revision = "";
       let toolCorrection = "";
       const revise = (draft: string, observation: string, failed: boolean,review:CompletionReview) => {
@@ -228,11 +234,11 @@ export class Engine {
             if(result.revision)revise(response.content,result.revision,false,review);
             response=result.response;
             if(result.verifyAfterTools&&response.toolCalls.length)reviewed.delete(review.name);
-            if(result.revision&&!response.toolCalls.length)continue modelLoop;
+            if(result.revision&&!response.toolCalls.length){verifyRecovery(review);continue modelLoop;}
           }catch(error){
             signal?.throwIfAborted();
             await append('run.progress',{kind:'review',review:review.name,audit:{status:'failed',code:error instanceof CompletionReviewError?error.code:'UNAVAILABLE',...(review.failureMode==='revise'?{recovery:'primary-revision'}:{})}});
-            if(review.failureMode==='revise'){revise(response.content,review.failureMessage,true,review);continue modelLoop;}
+            if(review.failureMode==='revise'){revise(response.content,review.failureMessage,true,review);verifyRecovery(review);continue modelLoop;}
             response={content:review.failureMode==='replace'?review.failureMessage:response.content+'\n\n'+review.failureMessage,toolCalls:[]};
           }
         }

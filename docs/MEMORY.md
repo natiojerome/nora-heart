@@ -244,7 +244,7 @@ La revue reçoit les lectures mémoire du tour et l’inventaire primaire. Elle 
 fournir memoryCorrection (citation du brouillon + défaut de preuve) pour demander
 une révision. Son texte ne remplace jamais directement la réponse ; le modèle
 principal répond à nouveau avec ses outils et résultats effectifs. Ce cas ajoute
-un appel primaire, sans seconde revue. Les anciennes confirmations ne deviennent pas une
+un appel primaire, sans seconde évaluation LLM ; ses effets mémoire sont relus. Les anciennes confirmations ne deviennent pas une
 source autorisant une écriture. La vue Mémoire recharge à l’entrée, sans polling.
 
 Incident du 20 novembre : date seule écrite, trois faits anciens présentés à tort
@@ -270,7 +270,7 @@ Une revue indisponible ne devient plus à elle seule la réponse utilisateur : l
 mode revise conserve le brouillon hors journal puis fait reprendre le modèle
 principal avec son inventaire, les reçus et le défaut de vérification. Il ne peut
 pas annoncer une sauvegarde sans résultat vérifié. Ce chemin ajoute un appel
-primaire, pas une seconde revue. L’audit contient un code sûr, jamais la réponse
+primaire, pas une seconde évaluation LLM ; ses effets mémoire sont ensuite relus. L’audit contient un code sûr, jamais la réponse
 brute du fournisseur ni les valeurs des souvenirs.
 
 ## Injection et continuité
@@ -321,3 +321,13 @@ troncature silencieuse. La sélection lexicale des candidats et le jugement LLM
 restent des limites : aucun mécanisme n’assure une pertinence sémantique parfaite.
 Les instructions de revue restent visibles/modifiables/resettable dans le bloc
 existant memoryReview ; aucun nouveau bloc ni service à configurer.
+
+
+Le chemin de récupération est vérifié lui aussi : si la décision mémoire échoue
+ou demande une correction du bilan, le moteur revient une fois au contrôle après
+la reprise primaire (`verifyAfterRevision`). MemoryReview distingue évaluation
+et relecture pour ne pas réévaluer ni refaire la même demande. Les écritures
+réussies pendant cette récupération sont donc contrôlées avant ProjectReview.
+Sans effet, statut no-new-effects ; pas une confirmation de souvenirs inconnus.
+Une vérification toujours impossible demande un bilan honnête, sans boucle de
+réévaluation. Le budget du tour et l’annulation restent applicables.

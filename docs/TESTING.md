@@ -1028,3 +1028,27 @@ Backup `heart-postgres-20261123T093215303253Z.tar.age` de `5a0c408` déchiffré,
 fichiers/configurations récupérés et PostgreSQL restauré sans réseau (256 Mio) :
 identité et compteurs identiques. Conteneur et fichiers privés retirés ; aucun
 restore sur la production. Veilleur crypto toujours arrêté, disque libre 25 Gio.
+
+
+## Confirmation des écritures mémoire — 23 novembre 2026
+
+321 tests `pnpm check`, démo SDK et 29 parcours navigateur réussis. Régressions
+simulées : création, correction et oubli suivis d’une véritable relecture du
+service, une seule évaluation LLM ; contrôle des écritures principales, dernière
+mutation d’un souvenir ; panne et conflit non confirmés, correction concurrente
+préservée ; suppression physique distinguée d’un timeout par absence typée ;
+reçus mémoire retrouvés après compression sans fichiers privés ; portée projet
+dérivée du fil malgré l’absence de projectId dans les arguments de l’outil.
+Les tests de consentement, refus, doublons, fausses affirmations de sauvegarde et
+ordre mémoire/projets restent réussis. Aucun changement de schéma SQL ni SDK.
+
+
+Régression supplémentaire : une évaluation indisponible provoque la reprise
+primaire ; l’écriture alors réussie est relue avant bilan, avec un seul appel
+d’évaluation mémoire. Un premier parcours réel avait bien créé/corrigé/supprimé le
+souvenir, mais un contrôle strict des audits a refusé sa qualification globale :
+la récupération primaire sautait cette relecture. Le contrat verifyAfterRevision
+et la distinction évaluation/vérification corrigent ce chemin. Un autre essai avait
+échoué sur une réponse de statut ne restituant pas la valeur exacte demandée ;
+aucune promesse d’exactitude universelle du texte généré. Les parcours restent
+synthétiques et séparés des données utilisateur.

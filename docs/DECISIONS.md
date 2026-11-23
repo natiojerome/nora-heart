@@ -440,7 +440,7 @@ Interdire la substitution directe correctedAnswer. La revue cite l’affirmation
 mémoire contestée et son défaut de preuve ; le moteur redonne la main au modèle
 principal avec ses outils, droits et résultats réels. Fournir l’inventaire primaire
 au contrôle. Coût supplémentaire seulement lorsqu’une révision est demandée ; une
-seule revue par run. Tester aussi une revue volontairement erronée, sans confondre
+seule évaluation LLM mémoire par run. Tester aussi une revue volontairement erronée, sans confondre
 ce test de faute avec une intégration fournisseur simulée.
 
 ## Un contrôle auxiliaire ne doit pas avaler une réponse normale
@@ -448,7 +448,7 @@ ce test de faute avec une intégration fournisseur simulée.
 Le mode replace de la revue mémoire effaçait une explication du Harness après
 échec du contrôle. Passer à revise : reprendre le modèle principal plutôt que
 publier l’avertissement comme réponse unique. Le brouillon non vérifié reste
-retenu ; ne pas confirmer un stockage sans reçu actuel. Une revue par run,
+retenu ; ne pas confirmer un stockage sans reçu actuel. Une évaluation LLM mémoire par run,
 reprise primaire bornée par le budget existant, aucun rejeu moteur des effets.
 Diagnostics typés et sûrs dans le journal pour distinguer protocole, citation,
 preuve, version, portée, taille et indisponibilité. Tests avec fautes injectées
@@ -637,3 +637,9 @@ Propositions non persistées hors journal existant, pas de rejeu implicite.
 Supprimer le plafond fixe de 16 décisions de revue, conserver le budget de modèle
 et le refus explicite des entrées trop grandes. L’initiative sémantique demeure
 celle du cerveau sélectionné, pas une garantie universelle obtenue par du code.
+
+
+Qualifier aussi la récupération d’une évaluation mémoire invalide/indisponible :
+le modèle principal peut alors réussir une écriture. Ne pas sauter sa relecture
+parce que la décision auxiliaire est déjà passée. Une visite de vérification
+après révision, sans nouvelle évaluation LLM, limitée à une reprise par contrôle.

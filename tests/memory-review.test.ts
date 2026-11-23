@@ -1306,3 +1306,68 @@ test("project memories use the bound project ID rather than requiring a nonexist
       .execute(call.arguments, { workspace: "." });
   assert.equal(JSON.parse(String(stored)).projectId, projectId);
 });
+
+test("a failed assessment still verifies memory written during primary recovery without a second assessment", async () => {
+  const { Engine } = await import("../src/core/engine.ts"),
+    f = await fixture(),
+    events: any[] = [];
+  let assessments = 0,
+    primary = 0;
+  const engine = new Engine(
+    {
+      async read() {
+        return [...events];
+      },
+      async append(_id, e) {
+        events.push(e);
+      },
+    },
+    f.tools,
+    undefined,
+    f.review,
+  );
+  const result = await engine.run({
+    sessionId: "recovery-readback",
+    prompt: phrase,
+    workspace: ".",
+    displayName: "QA",
+    permissions: new Set(["memory.read", "memory.write"]),
+    provider: {
+      id: "fake",
+      async generate(r): Promise<ModelResponse> {
+        if (r.tools.some((t) => t.name === "memory.assess")) {
+          assessments++;
+          throw Error("Private assessment outage");
+        }
+        primary++;
+        if (primary === 2) {
+          assert.match(r.instructions, /Le contrôle a échoué/);
+          return {
+            content: "",
+            toolCalls: [
+              {
+                id: "recovery-write",
+                name: "memory.remember",
+                arguments: args,
+              },
+            ],
+          };
+        }
+        return {
+          content: primary === 1 ? "Tu as 44 ans." : "La date est enregistrée.",
+          toolCalls: [],
+        };
+      },
+    },
+  });
+  const audits = events
+    .filter((e) => e.type === "run.progress" && e.data.review === "memory")
+    .map((e) => e.data.audit);
+  assert.equal(audits[0].status, "failed");
+  assert.equal(audits.at(-1).status, "verified");
+  assert.equal(audits.at(-1).writes, 1);
+  assert.equal(assessments, 1);
+  assert.equal((await f.memory.list()).length, 1);
+  assert.match(result.text, /enregistrée/);
+  assert(!JSON.stringify(events).includes("Private assessment outage"));
+});
