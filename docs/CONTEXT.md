@@ -160,3 +160,10 @@ et disponibilité/nombre de résultats mémoire. Aucun contenu mémoire ni promp
 complet journalisé à cet effet. Une recherche échouée est distincte d’un résultat
 vide ; les travaux indépendants restent possibles. Erreurs de budget, historique
 ou compression typées, sans leur substituer un faux problème fournisseur.
+
+Pour une compression au milieu d’un tour, les nombres de résultats réussis/échoués
+par outil déjà reçus sont reconstruits depuis le journal hors résumé. La demande
+réinjectée ne justifie pas de rejouer une opération ; les originaux restent
+consultables. Ces compteurs n’attestent pas de l’état métier/mémoire courant.
+Les fiches Projets démarrent une lecture indépendante, pour ne pas rejoindre un
+instantané commencé avant une écriture acquittée dans une autre conversation.

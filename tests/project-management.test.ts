@@ -1,3 +1,4 @@
+import type { Json } from "../src/contracts/json.ts";
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { randomUUID } from "node:crypto";
@@ -31,7 +32,7 @@ test("project tracking maps native MCP fields, real counts and pagination indepe
     f.repository.overview(id, undefined, 1),
     f.repository.overview(id, undefined, 1),
   ]);
-  assert.equal(f.calls.filter((c) => c.name === "projects_overview").length, 1);
+  assert.equal(f.calls.filter((c) => c.name === "projects_overview").length, 2);
   parallel.project.title = "Only a local mutation";
   assert.notEqual(first.project.title, parallel.project.title);
   assert.equal(first.items.length, 1);
@@ -244,4 +245,50 @@ test("each project turn receives a fresh compact overview and a failure never ma
     await conversations.storage.close();
     await rm(root, { recursive: true, force: true });
   }
+});
+
+test("a project read after an acknowledged write never joins an older in-flight snapshot", async () => {
+  const id = randomUUID();
+  let version = 1,
+    nextAction = "Ancienne étape",
+    calls = 0,
+    release!: () => void;
+  const repository = new McpProjectsRepository(
+    async (name, args): Promise<Json> => {
+      if (name === "projects_update") {
+        version++;
+        nextAction = String(args.nextAction);
+        return { id, name: "Projet", version, status: "active", nextAction };
+      }
+      const project = {
+        id,
+        name: "Projet",
+        version,
+        status: "active",
+        nextAction,
+      };
+      if (++calls === 1)
+        await new Promise<void>((resolve) => {
+          release = resolve;
+        });
+      return {
+        project,
+        items: [],
+        statistics: [],
+        nextCursor: null,
+        asOf: new Date().toISOString(),
+      };
+    },
+  );
+  const old = repository.overview(id);
+  try {
+    await repository.update(id, 1, { nextAction: "Étape ACTUELLE" });
+    const fresh = repository.overview(id);
+    assert.equal(calls, 2);
+    assert.equal((await fresh).project.nextAction, "Étape ACTUELLE");
+  } finally {
+    release();
+    await old;
+  }
+  assert.equal((await old).project.nextAction, "Ancienne étape");
 });

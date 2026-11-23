@@ -188,6 +188,7 @@ src/
     chatgpt.ts              composition et commandes de connexion par abonnement
     test-lab.ts             assemblage des essais web isolés et des suites
     external-tools.ts       approbation, configuration et outils distants
+    project-context.ts      fiche MCP actuelle réinjectée par préparation
     memories.ts             administration des souvenirs
     project-management.ts   suivi des projets via contrats injectés
     conversations.ts        catalogue, envoi et annulation dans un fil persistant
@@ -1181,5 +1182,39 @@ Le MCP gère parentId, critères/preuves, versions et gardes transactionnelles d
 clôture. projects_overview fournit une fiche, les compteurs globaux et une page
 détaillée cohérente ; pagination courante entre les requêtes. L’app injecte la
 fiche et les compteurs par tour, détail à la demande via outils. Lectures
-simultanées regroupées, aucun cache périmé/polling. Contrôleur web séparé et
+de catalogue simultanées regroupées ; fiches de suivi relues indépendamment pour
+éviter un instantané démarré avant une écriture, sans cache périmé/polling. Contrôleur web séparé et
 formulaires versionnés préservés sur conflit. Voir [PROJECTS.md](PROJECTS.md).
+
+## Reconstitution du contexte courant
+
+Le profil/les surcharges/politiques sont capturés ensemble au début du tour.
+À chaque étape : inventaire réellement permis, fiche Projets via ProjectTracking,
+guidances actives via SkillRun, puis budget/résumé/mémoire via ContextManager.
+Le core ne dépend d’aucun de ces backends. Une révocation détectée par l’app
+retourne ToolUnavailableError avec les noms approuvés de sa source ; le core
+les retire immédiatement du lot et des prochaines déclarations/inventaires.
+Pas de nouveau catalogue parallèle ou d’approbation implicite.
+
+ContextOptions porte une projection summaryMessages alignée sur les messages
+canoniques : arguments/résultats transitoires et images volatiles exclus des
+entrées de compression. Les guidances des skills sont réinjectées hors résumé
+et leurs anciens corps deviennent des reçus. BoundedContext accepte les limites
+de lots complets pendant un long tour, en conservant la demande active et le
+lot récent. Un lot/checkpoint historique surdimensionné est fragmenté comme
+données, sans appels de protocole incomplets et sans rejeu d’effet. Checkpoint
+validé par budget, référence source, lot complet et append atomique.
+
+Mémoire : recherche actuelle avec correction courte prioritaire ; versions
+relues identifiables même lorsque le corps est dédupliqué. Une indisponibilité
+reste explicite et ne bloque pas le travail indépendant. context.usage garde
+segment/messages couverts et statut/compteur de recherche sans contenu.
+ContextError transporte un code/message sûr jusqu’à l’HTTP. Pas de nouvelle
+table, dépendance, mécanisme de thread fournisseur ou copie de plan local.
+
+Le contexte de projet indique aussi l’outil d’aperçu de sa source lorsqu’il figure
+réellement dans les déclarations du tour. Les fiches ne regroupent pas leurs
+lectures en vol : une requête postérieure à une écriture part de l’autorité, sans
+rejoindre un ancien instantané. Les catalogues gardent leur regroupement léger.
+Compteurs de résultats d’outils déjà reçus reconstruits hors résumé pendant un
+long tour ; aucun argument/résultat sensible dans ces compteurs.

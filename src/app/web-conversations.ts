@@ -19,7 +19,7 @@ import { Skills } from "./skills.ts";
 import { skillTools } from "../modules/tools/skills/index.ts";
 import { instructionValue } from "./instruction-defaults.ts";
 import { MemoryReview } from "../modules/memory/review/index.ts";
-import { ExternalToolError, ExternalTools } from "./external-tools.ts";
+import { ExternalToolError, ExternalTools, externalToolName } from "./external-tools.ts";
 import { connectMcp } from "../modules/tools/mcp/index.ts";
 import { interactionTools } from "../modules/tools/interactions/index.ts";
 import { existsSync, readFileSync } from "node:fs";
@@ -283,13 +283,12 @@ export async function openWebConversations(
           instructionValue(blocks, "compression"),
           policies,
         );
+        const remoteTools=await externalTools.toolsFor(conversation,memoryConnectionId?[memoryConnectionId]:[]);
+        const projectOverviewName=projectConnectionId?externalToolName(projectConnectionId,'projects_overview'):undefined;
         return new Engine(
           storage.sessions,
           presentTools([
-            ...(await externalTools.toolsFor(
-              conversation,
-              memoryConnectionId ? [memoryConnectionId] : [],
-            )),
+            ...remoteTools,
             ...(runSkills ? skillTools(runSkills, runSkills.entries) : []),
             ...historyTools(storage.sessions, conversation.id),
             ...(mailEnabled
@@ -331,7 +330,7 @@ export async function openWebConversations(
             ...interactionTools(),
             ...tasksTools(tasks, conversation.id),
           ]),
-          withProjectContext(runSkills ? runSkills.context(context) : context,remoteProjects,conversation.projectId,instructionValue(blocks,"projects")),
+          withProjectContext(runSkills ? runSkills.context(context) : context,remoteProjects,conversation.projectId,instructionValue(blocks,"projects"),remoteTools.find(t=>t.name===projectOverviewName)?.name),
           conversation.selection?.provider === "demo" ||
             (!memoryConnectionId && remoteMemoryRequired)
             ? undefined

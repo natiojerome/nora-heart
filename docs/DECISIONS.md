@@ -27,7 +27,7 @@ sont dans [PLAN.md](PLAN.md).
 | Reprise après choix humain | Clore sans effet le reste non exécuté du lot, puis nouvelle inférence et propositions avec les droits courants. | La réponse peut invalider le plan préparé ; atomicité, idempotence, annulation sans LLM et absence de rejeu conservées. Cas A/B qualifié. |
 | Outils externes et web | SDK MCP officiel 1.32.2 encapsulé, Streamable HTTP, connexions et snapshots JSON Schema approuvés en PostgreSQL (012). Recherche locale SearXNG + lecteur public, sans abonnement ou quota commercial. | Configuration interchangeable, permissions external.read/external.write avec réseau/YOLO du fil, aucun outil ajouté automatiquement, secrets par référence d’environnement. Sessions par appel pour isoler les annulations, pas de retry ni OAuth/stdio. Écritures approuvées et résultats transitoires désormais pris en charge. Voir MCP.md. |
 | Quotas du compte | Lecteur HTTP séparé, timer 60 s, session existante en lecture seule et snapshot sans secrets, identité/fraîcheur vérifiées. | SIWC ne fournit pas ces compteurs ; afficher les vraies fenêtres générales du même compte, distinguer le plafond Heart inconnu, sans dépendre du binaire Codex ni modifier le moteur. Session source renouvelée par son client propriétaire ; erreur ou donnée périmée signalée. |
-| Inventaire outils | Liste générée par le core depuis les outils autorisés et la capacité du modèle, noms canoniques dans les descriptions, snapshot par run visible dans Contexte. | Corriger les listes périmées/inventées et distinguer droits du fil, outils réellement déclarés et programmes du terminal. Aucun catalogue manuel parallèle. |
+| Inventaire outils | Liste générée par le core depuis les outils autorisés et la capacité du modèle, noms canoniques dans les descriptions, snapshot initial et retraits explicites en cas de révocation pendant le run. | Corriger les listes périmées/inventées et distinguer droits du fil, outils réellement déclarés et programmes du terminal. Aucun catalogue manuel parallèle. |
 | Interactions | Module tools/interactions, résultat neutre InputRequest ; pause du core et réponses atomiques dans le journal, migration 010. | Boutons/formulaires indépendants du cerveau ; reprise après rechargement, réponses idempotentes, annulation sans LLM ni outil dépendant. Aucun SQL dans le module. |
 | Formules du chat | KaTeX 0.19.1 local à la demande ; extensions Marked et rendu DOM après assainissement, HTML/MathML accessible et trust:false. | Conserver le TeX dans le journal, protéger les blocs/code/prix, défiler les grandes équations sur mobile ; pas de dépendance du core ni de calcul symbolique. |
 | Affichages du chat | Markdown/GFM commun aux cerveaux, contrôleur DOM pour tableaux/cartes/images/liens ; flux d’image du workspace authentifié. | Reprendre les usages Nora sans protocole propriétaire ni migration ; images externes sur action, HTML actif interdit, génération distincte. |
@@ -304,7 +304,8 @@ reset préparé avant sauvegarde, conflits conservant le brouillon. [POLICIES.md
 
 Le pourcentage est un déclencheur de compression, pas un plafond dur supplémentaire.
 Accepter le tour indivisible ou le résumé qui dépasse ce seuil s’il tient dans le
-budget utilisable ; refuser avant résumé si le tour courant ne peut déjà pas tenir.
+budget utilisable ; refuser si la demande active et le lot nécessaire ne tiennent
+pas. Un long tour peut réduire ses anciens lots complets sans rejouer leurs effets.
 L’injection compte les souvenirs réellement ajoutés, pas les candidats ignorés.
 
 Le web lit une seule version du profil pour personnalité, surcharges et limites au
@@ -574,3 +575,30 @@ pour terminé/documenté/annulé, pas une certification. Le modèle lit une fich
 légère et les compteurs à chaque tour projet ; détail par outils à la demande.
 Suivi distant versionné, UI compacte sans polling et sans dépendance au chargement
 de la mémoire. Les services exécutés par les projets restent indépendants de Heart.
+
+## Audit des instructions et continuité
+
+Conserver les instantanés cohérents du profil par tour, mais relire l’état projet
+à chaque préparation. Les blocs configurés et les skills activés restent hors
+résumé ; le résumé ne confère aucun droit ni preuve de stockage courant. Ajouter
+le bloc projects au catalogue modifiable/resettable au lieu d’une consigne métier
+cachée dans Conversations. Aucune surcharge personnalisée écrasée.
+
+Permettre la compression des anciens lots d’un long tour, conserver demande
+active et lot récent. Ancien checkpoint/lot trop grand : fragments de données
+avec offsets/budget, jamais rupture des appels du protocole primaire. Projection
+sans arguments/résultats transitoires pour les résumés persistants, checkpoint
+atomique et valide à une frontière complète. Les textes libres du modèle restent
+soumis à son comportement ; pas de promesse universelle sur leurs contenus.
+
+Un catalogue MCP révoqué/modifié détecté avant appel retire sa source pour la
+suite du run. Pannes, versions concurrentes et refus métier restent des résultats
+à traiter sans rejeu automatique. Le journal ne copie aucun prompt complet à
+des fins de diagnostic : codes sûrs, segment, compteurs et disponibilité suffisent.
+
+Pour la fraîcheur du suivi, ne pas regrouper une fiche avec une lecture en vol
+qui pourrait avoir démarré avant un effet déjà acquitté. Le catalogue peut encore
+regrouper les lectures simultanées. Indiquer l’outil d’aperçu de la source parmi
+les outils déclarés, sans créer de catalogue parallèle. Reconstruire les compteurs
+d’effets reçus hors résumé pour les longs tours, sans confondre succès d’appel
+et résultat métier actuel.

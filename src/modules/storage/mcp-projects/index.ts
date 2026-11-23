@@ -23,7 +23,6 @@ export class McpProjectsRepository
   implements ProjectRepository, ProjectTracking
 {
   private listing?: Promise<Project[]>;
-  private readonly overviews = new Map<string, Promise<ProjectOverview>>();
   constructor(private readonly call: ProjectsMcpCall) {}
   private record(value: unknown): Project {
     const r = value as {
@@ -105,22 +104,12 @@ export class McpProjectsRepository
   async getItem(id: string) {
     return this.item(await this.call("projects_item_get", { id }));
   }
-  overview(id: string, cursor?: string, limit = 50): Promise<ProjectOverview> {
-    const key = JSON.stringify([id, cursor ?? null, limit]);
-    let pending = this.overviews.get(key);
-    if (!pending) {
-      pending = this.readOverview(id, cursor, limit).finally(() =>
-        this.overviews.delete(key),
-      );
-      this.overviews.set(key, pending);
-    }
-    return pending.then((value) => structuredClone(value));
-  }
-  private async readOverview(
+  async overview(
     id: string,
     cursor?: string,
     limit = 50,
   ): Promise<ProjectOverview> {
+    // Do not join a read started before another conversation's write.
     const value = (await this.call("projects_overview", {
       id,
       limit,

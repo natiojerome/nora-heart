@@ -46,8 +46,9 @@ Les outils du chat conservent les droits existants : connexion active, écriture
 approuvées et accès réseau ou mode YOLO autorisé pour le fil.
 
 L’ouverture, une sauvegarde, le retour dans la fenêtre et **Actualiser** relisent
-le suivi. Aucun polling périodique. Les lectures strictement simultanées identiques
-sont regroupées, sans cache périmé entre les écritures. Les réponses d’une ancienne
+le suivi. Aucun polling périodique. Le catalogue regroupe ses lectures simultanées ;
+une fiche de suivi démarre sa propre lecture pour ne pas réutiliser un instantané
+antérieur à une écriture acquittée dans une autre conversation. Les réponses d’une ancienne
 fiche/déconnexion sont ignorées. Un rafraîchissement du catalogue préserve un
 formulaire du même projet en cours d’édition ; une version concurrente exige une
 relecture au lieu d’écraser l’état distant. Les listes Mémoire/Projets se chargent

@@ -927,3 +927,54 @@ des fichiers/configurations, pg_dump restauré dans PostgreSQL sans réseau
 (256 Mio), identité et compteurs identiques. Conteneur/données privées retirés.
 Backup MCP après migration copié hors serveur, restauration SQL/SCRAM/OpenBao
 vérifiée dans un conteneur sans réseau retiré ensuite. Aucun restore en production.
+
+## Audit instructions, capacités et continuité — 23 novembre 2026
+
+302 tests `pnpm check`, démo SDK et 29 parcours navigateur réussis. PostgreSQL
+isolé 256 Mio : 42 tests et dump/restauration, identité/contenus identiques.
+Aucun changement de migration, SDK ou backend de données.
+
+`tests/context-continuity.test.ts` couvre long tour avec plusieurs compressions,
+lots complets et absence de rejeu, checkpoint trop grand lors d’un changement
+de fenêtre, pagination d’un ancien lot, projection sans arguments/résultats
+transitoires, correction courte en mémoire, panne distincte d’une base vide,
+références/version dédupliquées, fiche projet actualisée après effet, révocation
+MCP avec blocage du reste du lot, pause/reprise interactive idempotente et
+checkpoint incohérent refusé. Les tests de skills gardent leurs guidances après
+compression/redémarrage, retirent celles désactivées et interdisent des droits
+implicites. Nouveau test concurrent : une fiche après écriture ne rejoint pas
+une ancienne lecture encore en vol. Fournisseurs simulés pour ces régressions.
+
+Qualification `pnpm qualify:context --live` via deux MCP réels en base/tenant QA
+séparés, avec le vrai assemblage Conversations/SQLite temporaire. ChatGPT
+`gpt-6-luna` medium puis low, 18 inférences dont 3 résumés et 3 revues mémoire.
+Budget d’entrée de test 32 768 ; capacité native du fournisseur inchangée et
+vérifiée. Archives de charge synthétiques, résumés/réponses réellement produits
+par le modèle. Catalogue/inventaire exacts, skill chargé une fois hors résumé,
+version mémoire actuelle, fichier produit/relu et étape distante documentée,
+projet global conservé actif. Après fermeture/réouverture : nouvelles consignes,
+nouvelle mémoire/prochaine action et outils en lecture seule réellement vus.
+Après oubli physique MCP : mémoire absente sans recréation, historique distingué.
+Une lecture de cet ID supprimé renvoie introuvable : contrôle négatif attendu,
+pas une sauvegarde ratée ; aucun échec d’outil inattendu dans le dernier parcours.
+Les sources QA, tokens, rôles, bases et unités temporaires ont été retirés.
+
+Un premier parcours complet avait rencontré un refus INVALID de mise à jour
+d’étape, récupéré par le modèle avant résultat vérifié. Consigne Projects
+précisée : kind/task → done, kind/goal → completed, successCriteria/evidence et
+version relue. Le dernier parcours valide cette forme ; pas de garantie de
+zéro erreur de décision pour tout modèle/texte. Les essais préparatoires de
+configuration du budget ont été arrêtés avant inférence ; aucun repli fournisseur.
+
+[Preuve réelle finale](qualification/context-audit/luna.json),
+[premier passage](qualification/context-audit/luna-first-pass.json).
+Audit production avant activation : 13 blocs existants sans surcharge, une
+personnalité conservée et le skill code-review activé/sans erreur. Le nouveau
+bloc projects s’ajoute aux défauts hérités, sans écrire dans le profil.
+
+Limites : estimation de tokens et sélection lexicale, qualité sémantique du LLM
+non universelles. Un résumé peut omettre un détail, d’où journal conservé et
+history.read. Demande active/dernier lot nécessaires trop grands : erreur sûre,
+pas retrait silencieux. Les résultats transitoires ne sont pas versés au résumé,
+mais un modèle peut recopier une donnée dans son propre texte. Les fixtures ne
+qualifient pas toutes les fenêtres natives ni tous les fournisseurs.

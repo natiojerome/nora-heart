@@ -92,6 +92,10 @@ test("one long tool turn compacts complete batches, keeps the active goal and ne
           };
         }
         primary++;
+        if (summaries > 0) {
+          assert(request.instructions.includes("compteurs du journal"));
+          assert(request.instructions.includes('"succeeded":'));
+        }
         assert(request.instructions.includes("test.work"));
         assert.equal(
           request.messages.findLast((m) => m.role === "user")?.content,

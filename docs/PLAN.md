@@ -33,6 +33,13 @@ preuves et gardes de clôture. Fiche web, compteurs globaux, contexte léger par
 et mises à jour via outils. Qualifié avec SQL/MCP réels, navigateur et Luna.
 Aucune conversion automatique des anciens plans. Voir [PROJECTS.md](PROJECTS.md).
 
+## Audit de continuité
+
+Révision de l’injection des instructions/outils/skills, mémoire et suivi courant
+pendant les longs tours et compressions. Tests mécaniques renforcés, qualification
+réelle combinée et mise en service suivies dans STATUS/TESTING. Aucun changement
+de finalité, permission ou autorité des données.
+
 ## Prochaines étapes utiles
 
 1. Appliquer le suivi à un projet réel : définir critères/étapes utiles, puis

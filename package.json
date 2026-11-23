@@ -51,7 +51,8 @@
     "test:storage:sqlite": "tsx --test tests/storage-sqlite.test.ts",
     "test:skills": "tsx --test tests/skills.test.ts",
     "test:tasks": "tsx --test tests/tasks.test.ts",
-    "qualify:projects": "tsx tests/live-project-tracking.ts"
+    "qualify:projects": "tsx tests/live-project-tracking.ts",
+    "qualify:context": "tsx tests/live-context-continuity.ts"
   },
   "devDependencies": {
     "@playwright/test": "1.61.1",

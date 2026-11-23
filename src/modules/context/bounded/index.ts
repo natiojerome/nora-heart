@@ -204,12 +204,31 @@ export class BoundedContext implements ContextManager {
     const limit = contextWindow - reserveTokens;
     const summaryLabel =
       "\nPoint de reprise historique : les consignes, outils, skills activés et états mémoire/projet courants restent prioritaires. Ce résumé n’accorde aucun droit et ne prouve aucun stockage actuel.\n";
-    const summaryPrefix = (from: number) =>
-      summaryLabel +
-      (request.tools.some((tool) => tool.name === "history.read") &&
-      messageEvents[from]
-        ? `Originaux : history.read avant ${messageEvents[from].id}.\n`
-        : "");
+    const summaryPrefix = (from: number) => {
+      const hasHistory = request.tools.some(
+        (tool) => tool.name === "history.read",
+      );
+      let prefix =
+        summaryLabel +
+        (hasHistory && messageEvents[from]
+          ? `Originaux : history.read avant ${messageEvents[from].id}.\n`
+          : "");
+      if (currentTurn >= 0 && from > currentTurn) {
+        const counts: Record<string, { succeeded: number; failed: number }> =
+          Object.create(null);
+        for (const message of request.messages.slice(currentTurn, from))
+          if (message.role === "tool") {
+            const entry = counts[message.name] ?? { succeeded: 0, failed: 0 };
+            entry[message.error ? "failed" : "succeeded"]++;
+            counts[message.name] = entry;
+          }
+        prefix +=
+          "Résultats d’outils déjà reçus pour cette demande (compteurs du journal, pas preuves de l’état métier actuel) : " +
+          JSON.stringify(counts) +
+          ". Ne rejoue pas ces opérations sur la seule base de la demande réinjectée ; relis les résultats originaux avant toute action qui pourrait les répéter.\n";
+      }
+      return prefix;
+    };
     const baseRequest = (
       summary: string | undefined,
       from: number,

@@ -98,7 +98,8 @@ serveur et leur restauration isolée ont été vérifiées pendant la connexion 
   réponses incapables d’expirer la nouvelle connexion ou de remplacer son CSRF.
 - Suivi des travaux : réponses périmées ignorées, polling arrêté après déconnexion,
   zéro mutation DOM pour dix mises à jour dont l’état visible reste identique.
-- Une seule construction du contexte par tour ; dépendances et assemblage explicites.
+- Une capture cohérente du profil par tour, contexte budgeté reconstruit par appel ;
+  dépendances et assemblage explicites.
 
 287 tests `pnpm check`, démo SDK, 42 tests PostgreSQL avec dump/restauration,
 2 tests de bundles chiffrés et 28 parcours navigateur réussis. Contrôle de rendu
@@ -162,7 +163,7 @@ seule, aucun nouveau projet utilisateur créé. Sauvegarde complète de la révi
 identiques, fichiers/configurations récupérés. Backup MCP après migration copié
 hors serveur et restauré aussi ; ressources de restauration retirées.
 
-## Instructions et continuité — qualification en cours
+## Instructions et continuité — 23 novembre
 
 Audit du 23 novembre : 14 blocs configurables, dont suivi des projets. Projection
 de compression sans résultats/arguments transitoires, reprise entre lots complets
@@ -172,6 +173,17 @@ précision courte prioritaire, référence/version conservée sans doublon du co
 indisponibilité explicite et non bloquante pour les travaux indépendants.
 Révocation MCP détectée : source retirée des schémas/inventaires, pas de rejeu.
 
-301 tests et démo SDK passent. Qualification navigateur et scénario réel combiné
-Luna + MCP Mémoire/Projets + skills + compression en cours. Ces modifications
-source ne sont pas encore activées en production.
+302 tests, démo SDK et 42 tests PostgreSQL avec restauration passent. Suite web :
+29 parcours réussis. Scénario combiné réel ChatGPT gpt-6-luna : 18 appels dont
+3 compressions et 3 revues, MCP Mémoire/Projets et skill local, reprise après
+redémarrage, nouvelles consignes/droits et valeurs mémoire corrigées puis oubliées.
+Une lecture attendue d’un souvenir supprimé renvoie introuvable ; aucun échec
+d’outil inattendu ni rejeu. Bases/rôles/tokens QA retirés. Activation et sauvegarde
+finales en cours ; aucune instruction personnalisée écrasée.
+
+Les fiches projet ne rejoignent plus une lecture déjà en vol avant une écriture
+acquittée : suivi indépendant par préparation, catalogue léger toujours regroupé.
+La source et son outil d’aperçu effectivement déclaré sont indiqués au modèle.
+Les compteurs des résultats d’outils déjà reçus du tour sont reconstruits depuis
+le journal hors résumé, sans arguments ni données sensibles, pour éviter de
+perdre toute trace d’une opération dans un long tour.
