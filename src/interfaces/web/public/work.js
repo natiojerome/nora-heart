@@ -2,7 +2,8 @@
 (() => {
   let records = [],
     timer = null,
-    signature = "";
+    signature = "",
+    generation = 0;
   const labels = {
     running: "En cours",
     waiting: "Ta réponse attendue",
@@ -26,8 +27,9 @@
         badge.className = "discussion-work";
         row.firstElementChild.append(badge);
       }
-      badge.textContent = labels[state];
-      badge.dataset.status = state;
+      if (badge.textContent !== labels[state])
+        badge.textContent = labels[state];
+      if (badge.dataset.status !== state) badge.dataset.status = state;
     }
     const active = records.filter((item) =>
       ["running", "waiting", "interrupted"].includes(item.work?.status),
@@ -35,13 +37,18 @@
     for (const button of document.querySelectorAll(
       "#chat-back,[data-list-conversations]",
     )) {
-      if (active.length) button.dataset.workCount = String(active.length);
-      else delete button.dataset.workCount;
+      if (active.length) {
+        const count = String(active.length);
+        if (button.dataset.workCount !== count)
+          button.dataset.workCount = count;
+      } else if (button.dataset.workCount) delete button.dataset.workCount;
     }
     const target = document.getElementById("conversation-work");
     if (!target) return;
-    target.hidden = !active.length;
-    const key = JSON.stringify(active);
+    if (target.hidden !== !active.length) target.hidden = !active.length;
+    const key = JSON.stringify(
+      active.map((item) => [item.id, item.title, item.work.status]),
+    );
     if (key === signature) return;
     signature = key;
     target.replaceChildren();
@@ -93,6 +100,7 @@
   function schedule() {
     clearTimeout(timer);
     if (
+      state.authenticated &&
       !document.hidden &&
       (records.some((item) => item.work?.status === "running") ||
         conversationRequests.size > 0)
@@ -104,14 +112,17 @@
       update([]);
       return;
     }
+    const version = generation;
     try {
       const data = await api("/api/conversations/work", { quiet: true });
-      update(data.conversations);
+      if (version === generation && state.authenticated)
+        update(data.conversations);
     } catch {
-      schedule();
+      if (version === generation) schedule();
     }
   }
   function update(value) {
+    generation++;
     records = value;
     paint();
     schedule();

@@ -23,6 +23,17 @@ test('browser shares in-flight reads and preserves SVG DOM during repeated icon 
   assert.equal(requests,1);assert(independent);
   const icons=await page.evaluate(()=>{(window as any).heartIcons.render(document);const nodes=[...document.querySelectorAll('[data-icon] svg')],observer=new MutationObserver(()=>{});observer.observe(document,{subtree:true,attributes:true,childList:true,characterData:true});for(let i=0;i<10;i++)(window as any).heartIcons.render(document);const mutations=observer.takeRecords().length;observer.disconnect();return{count:nodes.length,mutations,preserved:nodes.every((svg,index)=>svg===document.querySelectorAll('[data-icon] svg')[index])};});
   assert(icons.count>10);assert.equal(icons.mutations,0);assert(icons.preserved);assert.deepEqual(errors,[]);
-  const reportDirectory=path.resolve('docs/qualification/ui-cleanup');await mkdir(reportDirectory,{recursive:true});await writeFile(path.join(reportDirectory,'2026-11-17.json'),JSON.stringify({at:new Date().toISOString(),browser:'Chromium Linux',scope:'actual browser controllers and HTTP on disposable state; no inference or owner writes',simultaneousIdenticalReads:2,networkRequests:requests,responseConsumersIndependent:independent,iconReconciliations:10,icons:icons.count,domMutations:icons.mutations,svgNodesPreserved:icons.preserved,jsErrors:errors.length,limits:['No claim about total startup time or all rendering costs','No pagination or network delta added','Physical mobile devices not qualified']},null,2)+'\n');
+  const work=await page.evaluate(()=>{
+   const controller=(window as any).heartWork,target=document.getElementById('conversation-work')!;
+   const item={id:'00000000-0000-4000-8000-000000000001',title:'Synthetic task',work:{status:'running',at:'one'}};
+   controller.update([item]);const first=target.firstElementChild,observer=new MutationObserver(()=>{});
+   observer.observe(document.body,{subtree:true,attributes:true,childList:true,characterData:true});
+   for(let i=0;i<10;i++)controller.update([{...item,work:{...item.work,at:String(i),phase:i%2?'reasoning':'waiting'}}]);
+   const mutations=observer.takeRecords().length;observer.disconnect();const preserved=first===target.firstElementChild;
+   controller.update([]);return{mutations,preserved};
+  });
+  assert.equal(work.mutations,0,'unchanged visible task state must not redraw on internal progress');assert(work.preserved);
+
+  const reportDirectory=path.resolve('docs/qualification/ui-cleanup');await mkdir(reportDirectory,{recursive:true});await writeFile(path.join(reportDirectory,'2026-11-17.json'),JSON.stringify({at:new Date().toISOString(),browser:'Chromium Linux',scope:'actual browser controllers and HTTP on disposable state; no inference or owner writes',simultaneousIdenticalReads:2,networkRequests:requests,responseConsumersIndependent:independent,iconReconciliations:10,icons:icons.count,domMutations:icons.mutations,svgNodesPreserved:icons.preserved,workReconciliations:10,workDomMutations:work.mutations,workNodesPreserved:work.preserved,jsErrors:errors.length,limits:['No claim about total startup time or all rendering costs','No pagination or network delta added','Physical mobile devices not qualified']},null,2)+'\n');
  }finally{await browser.close();server.closeAllConnections();await new Promise<void>(r=>server.close(()=>r()));await fixture.storage.close();await lab.close();await rm(directory,{recursive:true,force:true});}
 });

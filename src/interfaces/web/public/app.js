@@ -93,6 +93,7 @@ function showAuthenticated(authenticated) {
     conversationLoaded = false;
     catalogueVersion++;catalogue=[];catalogueCursor=null;catalogueKey="";catalogueLoading=false;
     conversationId = "";
+    window.heartWork?.update([]);
     window.heartChatTools?.reset();
     window.heartWorkspace?.reset();
     $("conversation-history").replaceChildren();

@@ -5,10 +5,10 @@ import vm from 'node:vm';
 
 async function fixture(transport:typeof fetch) {
  const browser:{heartHttp?:Window['heartHttp']}={},finished:unknown[]=[],tokens:string[]=[];
- let expired=0,begun=0;
+ let expired=0,begun=0,currentCsrf="fake-csrf";
  vm.runInNewContext(await readFile('src/interfaces/web/public/api-client.js','utf8'),{window:browser,fetch:transport,Headers,structuredClone,TypeError,Error});
- const client=browser.heartHttp!.create({fetch:transport,csrf:()=>'fake-csrf',receivedCsrf:value=>tokens.push(value),expired:()=>{expired++;},feedback:()=>{begun++;return error=>{finished.push(error);};}});
- return {client,tokens,finished,get expired(){return expired;},get begun(){return begun;}};
+ const client=browser.heartHttp!.create({fetch:transport,csrf:()=>currentCsrf,receivedCsrf:value=>{tokens.push(value);currentCsrf=value;},expired:()=>{expired++;},feedback:()=>{begun++;return error=>{finished.push(error);};}});
+ return {client,tokens,finished,setCsrf(value:string){currentCsrf=value;},get expired(){return expired;},get begun(){return begun;}};
 }
 function deferred<T>() {let resolve!:(value:T)=>void;const promise=new Promise<T>(r=>{resolve=r;});return{promise,resolve};}
 
@@ -42,4 +42,26 @@ test('client handles expiry and network failure once, preserves cancellation and
  let reads=0;const separate=await fixture(async()=>{reads++;return Response.json({ok:true});});
  await Promise.all([separate.client.api('/api/read',{signal:new AbortController().signal}),separate.client.api('/api/read',{signal:new AbortController().signal})]);assert.equal(reads,2);
  const stopped=await fixture(async()=>{throw new DOMException('Cancelled','AbortError');});await assert.rejects(stopped.client.api('/api/read',{signal:AbortSignal.abort()}),{name:'AbortError'});
+});
+
+
+test('browser client rejects malformed successful responses without retrying writes and normalizes methods', async()=>{
+ let writes=0;
+ const f=await fixture(async(_url,init)=>{writes++;assert.equal(init?.method,'POST');return new Response('<html>proxy failure</html>',{status:200});});
+ await assert.rejects(f.client.api('/api/save',{method:'post',body:'{}'}),/serveur illisible.*Vérifie le résultat/);
+ assert.equal(writes,1);assert.equal(f.finished.length,1);assert(f.finished[0] instanceof Error);
+ const unauthorized=await fixture(async()=>new Response('upstream response',{status:401}));
+ await assert.rejects(unauthorized.client.api('/api/private'),/session a expiré/);assert.equal(unauthorized.expired,1);
+ const empty=await fixture(async()=>new Response(null,{status:204}));
+ assert.equal(await empty.client.post('/api/no-content'),undefined);
+});
+
+
+test('a response from an older session cannot expire or overwrite a newer login',async()=>{
+ const denied=deferred<Response>();const f=await fixture(async()=>denied.promise);
+ const old=f.client.api('/api/old-read');f.setCsrf('new-session-token');
+ denied.resolve(Response.json({error:'expired'},{status:401}));await assert.rejects(old,/session a expiré/);assert.equal(f.expired,0);
+ const stale=deferred<Response>();const g=await fixture(async()=>stale.promise);
+ const reading=g.client.api('/api/state');g.setCsrf('new-session-token');
+ stale.resolve(Response.json({authenticated:true,csrf:'old-session-token'}));await reading;assert.deepEqual(g.tokens,[]);
 });

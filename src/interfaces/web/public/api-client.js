@@ -21,13 +21,14 @@
         ...options,
         headers,
       });
-      const data = await response.json().catch(() => ({}));
+      const data = await response.json().catch(() => undefined);
       return { response, data };
     }
     /** @param {string} url @param {HeartApiOptions} [options] */
     async function api(url, options = {}) {
       const { quiet = false, ...init } = options,
         method = (init.method ?? "GET").toUpperCase();
+      const requestCsrf = config.csrf();
       const finish = quiet ? () => {} : config.feedback(url, method);
       let failure;
       try {
@@ -40,7 +41,7 @@
         let entry = share ? pending.get(url) : undefined;
         if (entry) entry.readers++;
         else {
-          entry = { promise: request(url, init), readers: 1 };
+          entry = { promise: request(url, { ...init, method }), readers: 1 };
           if (share) {
             pending.set(url, entry);
             const current = entry;
@@ -53,20 +54,27 @@
         }
         const { response, data } = await entry.promise;
         if (response.status === 401) {
-          config.expired();
-          pending.clear();
+          if (config.csrf() === requestCsrf) {
+            config.expired();
+            pending.clear();
+          }
           if (url !== "/api/login")
             throw new Error("Ta session a expiré. Reconnecte-toi à l’atelier.");
         }
         if (!response.ok)
           throw new Error(
-            typeof data.message === "string"
+            typeof data?.message === "string"
               ? data.message
-              : typeof data.error === "string"
+              : typeof data?.error === "string"
                 ? data.error
                 : "L’opération n’a pas pu aboutir. Réessaie dans un instant.",
           );
-        if (typeof data.csrf === "string") config.receivedCsrf(data.csrf);
+        if (data === undefined && response.status !== 204)
+          throw new Error(
+            "Réponse du serveur illisible. Vérifie le résultat avant de relancer l’action.",
+          );
+        if (typeof data?.csrf === "string" && config.csrf() === requestCsrf)
+          config.receivedCsrf(data.csrf);
         return entry.readers > 1 ? structuredClone(data) : data;
       } catch (error) {
         failure =
